@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 24 }
+BEGIN { plan tests => 25 }
 
 use SOAP::Lite;
 
@@ -222,4 +222,10 @@ EOBASE64
   UNIVERSAL::isa(SOAP::Deserializer->parser->parser => 'XML::Parser::Lite') ?
     skip(q!External entity references are not supported in XML::Parser::Lite! => undef) :
     ok(!eval { SOAP::Deserializer->deserialize('<?xml version="1.0"?><!DOCTYPE foo [ <!ENTITY ll SYSTEM "foo.txt"> ]><root>&ll;</root>')->root } and $@ =~ /^External entity/);
+}
+
+{
+  print "Test SOAP:: prefix with no +autodispatch option...\n";
+  eval { A->SOAP::b };
+  ok($@ =~ /^SOAP:: prefix/);
 }

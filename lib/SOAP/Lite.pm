@@ -2727,7 +2727,7 @@ my $soap; # shared between SOAP and SOAP::Lite packages
     my($package, $method) = $AUTOLOAD =~ m/(?:(.+)::)([^:]+)$/;
     return if $method eq 'DESTROY';
 
-    my $soap = ref $_[0] && UNIVERSAL::isa($_[0] => 'SOAP::Lite') ? $_[0] : $soap;
+    my $soap = ref $_[0] && UNIVERSAL::isa($_[0] => 'SOAP::Lite') ? $_[0] : $soap || die "SOAP:: prefix shall only be used in combination with +autodispatch option\n";
 
     my $uri = URI->new($soap->uri);
     my $currenturi = $uri->path;
