@@ -1395,7 +1395,7 @@ sub decode {
     or die "Something wrong with MIME message: @{[$@ || $self->last_error]}\n";
 
   # initialize with empty array; autovivification doesn't work in this case --PK
-  $self->parts([]) if $entity->parts; 
+  $self->{'_parts'} = [] if $entity->parts; 
 
   # Changed to better populate the array with references
   # to the MIME::Entity to prevent memory bloat
@@ -1521,7 +1521,7 @@ sub BEGIN {
   for my $method (qw(parts)) {
     my $field = '_' . $method;
     *$method = sub {
-      my $self = shift->new;
+      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
@@ -3016,7 +3016,7 @@ sub call {
   return unless $response; # nothing to do for one-ways
 
   # little bit tricky part that binds in/out parameters
-  if (UNIVERSAL::isa($result => 'SOAP::SOM') &&
+  if (UNIVERSAL::isa($result => 'SOAPSOM') &&
       ($result->paramsout || $result->headers) &&
       $serializer->signature) {
     my $num = 0;
