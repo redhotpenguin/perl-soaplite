@@ -3955,6 +3955,26 @@ Reserved for nonRPC calls. Lets you build your own payload inside a SOAP
 envelope. All SOAP 1.1 specification rules are enforced, except method 
 specific ones. See UDDI::Lite as example.
 
+=item register_ns
+
+The register_ns subroutine allows users to register a global namespace
+with the SOAP Envelope. The first parameter is the namespace, the second
+parameter to this subroutine is an optional prefix. If a prefix is not
+provided, one will be generated automatically for you. All namespaces
+registered with the serializer get declared in the <soap:Envelope />
+element.
+
+=item find_prefix
+
+The find_prefix subroutine takes a namespace as a parameter and returns
+the assigned prefix to that namespace. This eliminates the need to declare
+and redeclare namespaces within an envelope. This subroutine is especially
+helpful in determining the proper prefix when assigning a type to a
+SOAP::Data element. A good example of how this might be used is as follows:
+
+SOAP::Data->name("foo" => $inputParams{'foo'})
+	  ->type($client->serializer->find_prefix('urn:Foo').':Foo');
+
 =back
 
 =back 
