@@ -19,6 +19,31 @@ use SOAP::Lite;
 
 # ======================================================================
 
+package UDDI::Constants;
+
+BEGIN {
+  use vars qw(%UDDI_VERSIONS $ELEMENTS $ATTRIBUTES $WITHNAMES $NAMESPACE $GENERIC);
+
+  %UDDI_VERSIONS = (
+    1 => {
+      ELEMENTS => {get_serviceDetail=>{serviceKey=>1},find_tModel=>{categoryBag=>1,name=>1,identifierBag=>1,findQualifiers=>1},tModelInstanceInfo=>{instanceDetails=>1,description=>1},address=>{addressLine=>1},categoryBag=>{keyedReference=>1},save_binding=>{authInfo=>1,bindingTemplate=>1},businessEntity=>{categoryBag=>1,businessServices=>1,name=>1,description=>1,identifierBag=>1,discoveryURLs=>1,contacts=>1},businessInfos=>{businessInfo=>1},find_business=>{categoryBag=>1,name=>1,identifierBag=>1,discoveryURLs=>1,findQualifiers=>1,tModelBag=>1},get_bindingDetail=>{bindingKey=>1},identifierBag=>{keyedReference=>1},get_businessDetailExt=>{businessKey=>1},businessServices=>{businessService=>1},tModelInfo=>{name=>1},find_service=>{categoryBag=>1,name=>1,findQualifiers=>1,tModelBag=>1},dispositionReport=>{result=>1},authToken=>{authInfo=>1},get_tModelDetail=>{tModelKey=>1},delete_tModel=>{tModelKey=>1,authInfo=>1},bindingTemplate=>{tModelInstanceDetails=>1,accessPoint=>1,description=>1,hostingRedirector=>1},tModelDetail=>{tModel=>1},businessInfo=>{serviceInfos=>1,name=>1,description=>1},get_registeredInfo=>{authInfo=>1},businessEntityExt=>{businessEntity=>1},registeredInfo=>{businessInfos=>1,tModelInfos=>1},find_binding=>{findQualifiers=>1,tModelBag=>1},serviceInfo=>{name=>1},get_businessDetail=>{businessKey=>1},delete_business=>{businessKey=>1,authInfo=>1},discoveryURLs=>{discoveryURL=>1},businessDetail=>{businessEntity=>1},contacts=>{contact=>1},tModelInstanceDetails=>{tModelInstanceInfo=>1},tModelList=>{tModelInfos=>1},delete_service=>{serviceKey=>1,authInfo=>1},tModelInfos=>{tModelInfo=>1},serviceDetail=>{businessService=>1},tModel=>{categoryBag=>1,name=>1,description=>1,identifierBag=>1,overviewDoc=>1},businessList=>{businessInfos=>1},bindingTemplates=>{bindingTemplate=>1},validate_categorization=>{businessEntity=>1,tModel=>1,businessService=>1,keyValue=>1,tModelKey=>1},contact=>{email=>1,personName=>1,phone=>1,description=>1,address=>1},discard_authToken=>{authInfo=>1},overviewDoc=>{overviewURL=>1,description=>1},delete_binding=>{bindingKey=>1,authInfo=>1},serviceList=>{serviceInfos=>1},bindingDetail=>{bindingTemplate=>1},tModelBag=>{tModelKey=>1},businessDetailExt=>{businessEntityExt=>1},serviceInfos=>{serviceInfo=>1},save_tModel=>{uploadRegister=>1,tModel=>1,authInfo=>1},findQualifiers=>{findQualifier=>1},save_business=>{businessEntity=>1,uploadRegister=>1,authInfo=>1},instanceDetails=>{instanceParms=>1,description=>1,overviewDoc=>1},businessService=>{categoryBag=>1,name=>1,bindingTemplates=>1,description=>1},save_service=>{businessService=>1,authInfo=>1},result=>{errInfo=>1}},
+      ATTRIBUTES => {get_serviceDetail=>{generic=>2},find_tModel=>{maxRows=>2,generic=>2},tModelInstanceInfo=>{tModelKey=>2},address=>{sortCode=>2,useType=>2},email=>{useType=>2},save_binding=>{generic=>2},businessEntity=>{authorizedName=>2,operator=>2,businessKey=>2},discoveryURL=>{useType=>2},find_business=>{maxRows=>2,generic=>2},get_bindingDetail=>{generic=>2},get_businessDetailExt=>{generic=>2},tModelInfo=>{tModelKey=>2},find_service=>{maxRows=>2,businessKey=>2,generic=>2},dispositionReport=>{truncated=>2,operator=>2,generic=>2},authToken=>{operator=>2,generic=>2},get_tModelDetail=>{generic=>2},bindingTemplate=>{serviceKey=>2,bindingKey=>2},delete_tModel=>{generic=>2},tModelDetail=>{truncated=>2,operator=>2,generic=>2},businessInfo=>{businessKey=>2},get_registeredInfo=>{generic=>2},registeredInfo=>{truncated=>2,operator=>2,generic=>2},phone=>{useType=>2},find_binding=>{maxRows=>2,serviceKey=>2,generic=>2},serviceInfo=>{serviceKey=>2,businessKey=>2},get_businessDetail=>{generic=>2},delete_business=>{generic=>2},businessDetail=>{truncated=>2,operator=>2,generic=>2},keyedReference=>{keyName=>2,keyValue=>2,tModelKey=>2},tModelList=>{truncated=>2,operator=>2,generic=>2},delete_service=>{generic=>2},serviceDetail=>{truncated=>2,operator=>2,generic=>2},tModel=>{authorizedName=>2,operator=>2,tModelKey=>2},businessList=>{truncated=>2,operator=>2,generic=>2},validate_categorization=>{generic=>2},contact=>{useType=>2},discard_authToken=>{generic=>2},delete_binding=>{generic=>2},serviceList=>{truncated=>2,operator=>2,generic=>2},bindingDetail=>{truncated=>2,operator=>2,generic=>2},hostingRedirector=>{bindingKey=>2},businessDetailExt=>{truncated=>2,operator=>2,generic=>2},get_authToken=>{userID=>2,generic=>2,cred=>2},save_tModel=>{generic=>2},errInfo=>{errCode=>2},save_business=>{generic=>2},accessPoint=>{URLType=>2},businessService=>{serviceKey=>2,businessKey=>2},save_service=>{generic=>2},result=>{keyType=>2,errno=>2}},
+      WITHNAMES => [qw/accessPoint address addressLine authInfo authToken bindingDetail bindingKey bindingTemplate bindingTemplates businessDetail businessDetailExt businessEntity businessEntityExt businessInfo businessInfos businessKey businessList businessService businessServices categoryBag contact contacts description discoveryURL discoveryURLs dispositionReport email errInfo findQualifier findQualifiers hostingRedirector identifierBag instanceDetails instanceParms keyValue keyedReference name overviewDoc overviewURL personName phone registeredInfo result serviceDetail serviceInfo serviceInfos serviceKey serviceList tModel tModelBag tModelDetail tModelInfo tModelInfos tModelInstanceDetails tModelInstanceInfo tModelKey tModelList uploadRegister/],
+      NAMESPACE => 'urn:uddi-org:api',
+      GENERIC => 1.0,
+    },
+    2 => {
+      ELEMENTS => {},
+      ATTRIBUTES => {},
+      WITHNAMES => [],
+      NAMESPACE => 'urn:uddi-org:api_v2',
+      GENERIC => 2.0,
+    },
+  );
+}
+
+# ======================================================================
+
 package UDDI::SOM;
 
 use vars qw(@ISA);
@@ -37,18 +62,20 @@ package UDDI::Data;
 
 use Carp ();
 
-use vars qw(@ISA $AUTOLOAD @EXPORT_OK %EXPORT_TAGS);
+use vars qw(@ISA $AUTOLOAD);
 @ISA = qw(SOAP::Data);
-
-my @elements = (with => qw/accessPoint address addressLine authInfo authToken bindingDetail bindingKey bindingTemplate bindingTemplates businessDetail businessDetailExt businessEntity businessEntityExt businessInfo businessInfos businessKey businessList businessService businessServices categoryBag contact contacts description discoveryURL discoveryURLs dispositionReport email errInfo findQualifier findQualifiers hostingRedirector identifierBag instanceDetails instanceParms keyValue keyedReference name overviewDoc overviewURL personName phone registeredInfo result serviceDetail serviceInfo serviceInfos serviceKey serviceList tModel tModelBag tModelDetail tModelInfo tModelInfos tModelInstanceDetails tModelInstanceInfo tModelKey tModelList uploadRegister/);
-@EXPORT_OK = (@elements);
-%EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
 use overload fallback => 1, '""' => sub { shift->SUPER::value };
 
-use vars qw(%elements %attributes);
-%elements = (get_serviceDetail=>{serviceKey=>1},find_tModel=>{categoryBag=>1,name=>1,identifierBag=>1,findQualifiers=>1},tModelInstanceInfo=>{instanceDetails=>1,description=>1},address=>{addressLine=>1},categoryBag=>{keyedReference=>1},save_binding=>{authInfo=>1,bindingTemplate=>1},businessEntity=>{categoryBag=>1,businessServices=>1,name=>1,description=>1,identifierBag=>1,discoveryURLs=>1,contacts=>1},businessInfos=>{businessInfo=>1},find_business=>{categoryBag=>1,name=>1,identifierBag=>1,discoveryURLs=>1,findQualifiers=>1,tModelBag=>1},get_bindingDetail=>{bindingKey=>1},identifierBag=>{keyedReference=>1},get_businessDetailExt=>{businessKey=>1},businessServices=>{businessService=>1},tModelInfo=>{name=>1},find_service=>{categoryBag=>1,name=>1,findQualifiers=>1,tModelBag=>1},dispositionReport=>{result=>1},authToken=>{authInfo=>1},get_tModelDetail=>{tModelKey=>1},delete_tModel=>{tModelKey=>1,authInfo=>1},bindingTemplate=>{tModelInstanceDetails=>1,accessPoint=>1,description=>1,hostingRedirector=>1},tModelDetail=>{tModel=>1},businessInfo=>{serviceInfos=>1,name=>1,description=>1},get_registeredInfo=>{authInfo=>1},businessEntityExt=>{businessEntity=>1},registeredInfo=>{businessInfos=>1,tModelInfos=>1},find_binding=>{findQualifiers=>1,tModelBag=>1},serviceInfo=>{name=>1},get_businessDetail=>{businessKey=>1},delete_business=>{businessKey=>1,authInfo=>1},discoveryURLs=>{discoveryURL=>1},businessDetail=>{businessEntity=>1},contacts=>{contact=>1},tModelInstanceDetails=>{tModelInstanceInfo=>1},tModelList=>{tModelInfos=>1},delete_service=>{serviceKey=>1,authInfo=>1},tModelInfos=>{tModelInfo=>1},serviceDetail=>{businessService=>1},tModel=>{categoryBag=>1,name=>1,description=>1,identifierBag=>1,overviewDoc=>1},businessList=>{businessInfos=>1},bindingTemplates=>{bindingTemplate=>1},validate_categorization=>{businessEntity=>1,tModel=>1,businessService=>1,keyValue=>1,tModelKey=>1},contact=>{email=>1,personName=>1,phone=>1,description=>1,address=>1},discard_authToken=>{authInfo=>1},overviewDoc=>{overviewURL=>1,description=>1},delete_binding=>{bindingKey=>1,authInfo=>1},serviceList=>{serviceInfos=>1},bindingDetail=>{bindingTemplate=>1},tModelBag=>{tModelKey=>1},businessDetailExt=>{businessEntityExt=>1},serviceInfos=>{serviceInfo=>1},save_tModel=>{uploadRegister=>1,tModel=>1,authInfo=>1},findQualifiers=>{findQualifier=>1},save_business=>{businessEntity=>1,uploadRegister=>1,authInfo=>1},instanceDetails=>{instanceParms=>1,description=>1,overviewDoc=>1},businessService=>{categoryBag=>1,name=>1,bindingTemplates=>1,description=>1},save_service=>{businessService=>1,authInfo=>1},result=>{errInfo=>1});
-%attributes = (get_serviceDetail=>{generic=>2},find_tModel=>{maxRows=>2,generic=>2},tModelInstanceInfo=>{tModelKey=>2},address=>{sortCode=>2,useType=>2},email=>{useType=>2},save_binding=>{generic=>2},businessEntity=>{authorizedName=>2,operator=>2,businessKey=>2},discoveryURL=>{useType=>2},find_business=>{maxRows=>2,generic=>2},get_bindingDetail=>{generic=>2},get_businessDetailExt=>{generic=>2},tModelInfo=>{tModelKey=>2},find_service=>{maxRows=>2,businessKey=>2,generic=>2},dispositionReport=>{truncated=>2,operator=>2,generic=>2},authToken=>{operator=>2,generic=>2},get_tModelDetail=>{generic=>2},bindingTemplate=>{serviceKey=>2,bindingKey=>2},delete_tModel=>{generic=>2},tModelDetail=>{truncated=>2,operator=>2,generic=>2},businessInfo=>{businessKey=>2},get_registeredInfo=>{generic=>2},registeredInfo=>{truncated=>2,operator=>2,generic=>2},phone=>{useType=>2},find_binding=>{maxRows=>2,serviceKey=>2,generic=>2},serviceInfo=>{serviceKey=>2,businessKey=>2},get_businessDetail=>{generic=>2},delete_business=>{generic=>2},businessDetail=>{truncated=>2,operator=>2,generic=>2},keyedReference=>{keyName=>2,keyValue=>2,tModelKey=>2},tModelList=>{truncated=>2,operator=>2,generic=>2},delete_service=>{generic=>2},serviceDetail=>{truncated=>2,operator=>2,generic=>2},tModel=>{authorizedName=>2,operator=>2,tModelKey=>2},businessList=>{truncated=>2,operator=>2,generic=>2},validate_categorization=>{generic=>2},contact=>{useType=>2},discard_authToken=>{generic=>2},delete_binding=>{generic=>2},serviceList=>{truncated=>2,operator=>2,generic=>2},bindingDetail=>{truncated=>2,operator=>2,generic=>2},hostingRedirector=>{bindingKey=>2},businessDetailExt=>{truncated=>2,operator=>2,generic=>2},get_authToken=>{userID=>2,generic=>2,cred=>2},save_tModel=>{generic=>2},errInfo=>{errCode=>2},save_business=>{generic=>2},accessPoint=>{URLType=>2},businessService=>{serviceKey=>2,businessKey=>2},save_service=>{generic=>2},result=>{keyType=>2,errno=>2});
+sub _init {
+  use vars qw(@EXPORT_OK %EXPORT_TAGS);
+  @EXPORT_OK = (with => @$UDDI::Constants::WITHNAMES);
+  %EXPORT_TAGS = (all => [@EXPORT_OK]);
+
+  use vars qw($elements $attributes);
+  $elements = $UDDI::Constants::ELEMENTS;
+  $attributes = $UDDI::Constants::ATTRIBUTES;
+}
 
 sub new {
   my $self = shift;
@@ -72,7 +99,7 @@ sub with {
     my($method, $attr, @value) = UNIVERSAL::isa($data => __PACKAGE__)
       ? ($data->SUPER::name, $data->SUPER::attr, $data->SUPER::value)
       : ($data, {}, shift);
-    exists $attributes{$name}{$method}
+    exists $attributes->{$name}{$method}
       # attribute
       ? $self->$method(@value)
       # sub element
@@ -88,10 +115,10 @@ sub _compileit {
 
     # GENERATE element if no parameters: businessInfo()
     return __PACKAGE__->SUPER::name($method) 
-      if !@_ && exists $elements{$method};
+      if !@_ && exists $elements->{$method};
 
     die "Expected element (UDDI::Data) as parameter for $method()\n"
-      if !ref $_[0] && exists $elements{$method};
+      if !ref $_[0] && exists $elements->{$method};
 
     # MAKE ELEMENT: name( [{attr => value},] 'old')
     if (!UNIVERSAL::isa($_[0] => __PACKAGE__)) {
@@ -107,18 +134,18 @@ sub _compileit {
       return @_ > 1 
           ? scalar($_[0]->attr->{$method} = $_[1], $_[0])               # SET
           : __PACKAGE__->SUPER::name($method => $_[0]->attr->{$method}) # GET
-        if exists $attributes{$name} && exists $attributes{$name}{$method};
+        if exists $attributes->{$name} && exists $attributes->{$name}{$method};
 
       # GET ELEMENT: businessInfos->businessInfo
       my @elems = grep {
         ref $_ && UNIVERSAL::isa($_ => __PACKAGE__) && $_->SUPER::name eq $method
       } map {ref $_ eq 'ARRAY' ? @$_ : $_} $_[0]->value;
       return wantarray? @elems : $elems[0]
-        if exists $elements{$name} && exists $elements{$name}{$method};
+        if exists $elements->{$name} && exists $elements->{$name}{$method};
 
       # MAKE ELEMENT: businessInfos(businessInfo('something'))
       return __PACKAGE__->SUPER::name($method => @_) 
-        if exists $elements{$method} && exists $elements{$method}{$name};
+        if exists $elements->{$method} && exists $elements->{$method}{$name};
     }
 
     # handle UDDI::Data->method() calls for those SOAP::Data methods 
@@ -234,6 +261,28 @@ BEGIN { # handle exports
   $EXPORT_TAGS{all} =     [map {@{$EXPORT_TAGS{$_}}} qw/inquiry publish/];
   Exporter::export_ok_tags('all');
 }
+
+my $uddiversion;
+
+sub uddiversion {
+  my $self = shift;
+  my $version = shift or return $uddiversion;
+
+  die qq!Wrong UDDI version. Supported versions: @{[
+        join ", ", keys %UDDI::Constants::UDDI_VERSIONS]}\n!
+    unless defined $UDDI::Constants::UDDI_VERSIONS{$version};
+
+  foreach (keys %{$UDDI::Constants::UDDI_VERSIONS{$version}}) {
+    eval "\$UDDI::Constants::$_ = \$UDDI::Constants::UDDI_VERSIONS{$version}->{$_}" or die;
+  }
+
+  UDDI::Data->_init;
+
+  $uddiversion = $version;
+  $self;
+}
+
+BEGIN { UDDI::Lite->uddiversion(1) }
 
 sub new { 
   my $self = shift;
