@@ -1372,7 +1372,6 @@ sub parts {
 
 sub get_multipart_id {
   my ($id) = shift;
-#  print STDERR "get_multipart_id($id)\n";
   ($id || '') =~ /^<?([^>]+)>?$/; $1 || '';
 }
 
@@ -1404,7 +1403,6 @@ sub decode {
   }
 
   my @result = ();
-#  print STDERR "Decoding ".$entity->head->mime_type."\n";
   if ($entity->head->mime_type eq 'multipart/form-data') {
     # In this case @result will contain all parts where the first
     # element is the main payload or body - i believe this case is
@@ -1419,10 +1417,8 @@ sub decode {
     die "Can't handle MIME messsage with specified type (@{[$entity->head->mime_type]})\n";
   }
   if (@result) {
-#    print STDERR "MIMEParser::decode - returning \@result\n";
     return @result;
   } elsif ($entity->bodyhandle->as_string) {
-#    print STDERR "MIMEParser::decode - returning body only\n";
     return [undef, '', undef, $entity->bodyhandle->as_string];
   } else {
     die "No content in MIME message\n";
@@ -1725,7 +1721,6 @@ sub mimedecode {
   foreach ($self->mimeparser->decode($_[0])) {
     my($id, $location, $type, $value) = @$_;
     unless ($body) { # we are here for the first time, so it's a MAIN part
-#      print STDERR "mimedecode: unless(body)\n";
       $body = $self->parser->decode($value);
       $self->base($location); # store the base location
     } else {
@@ -1733,9 +1728,6 @@ sub mimedecode {
       my $part = $type eq 'text/xml' &&
 	!$SOAP::Constants::DO_NOT_PROCESS_XML_IN_MIME ?
 	  $self->parser->decode($value) : ['mimepart', {}, $value];
-#      print STDERR "mimedecode: id=$id\n";
-#      print STDERR "mimedecode: value=$value\n";
-#      print STDERR "mimedecode: part=".$part."\n";
       # ********WARNING********
       # This below looks like unnecessary bloat!!!
       # I should probably dereference the mimepart
@@ -1777,10 +1769,8 @@ sub deserialize {
   # Having this code here makes multirefs in the Body work, but multirefs
   # that reference XML fragments in a MIME part do not work.
   if (keys %{$self->ids()}) {
-#    print STDERR "deserialize - traverse_ids(parsed)\n";
     $self->traverse_ids($parsed);
   } else {
-#    print STDERR "deserialize - ids(parsed)\n";
     $self->ids($parsed);
   }
   $self->decode_object($parsed);
@@ -1793,12 +1783,6 @@ sub deserialize {
     # the SOAP::Lite->mimeparser instance so that I can skip this?
     $som->{'_parts'} = $self->mimeparser->parts; 
   }
-  # Having this code here makes mime messages work, but multirefs do not.
-  #if ($self->mimeparser->{'_parts'}) {
-  #  $self->traverse_ids($parsed);
-  #} else {
-  #  $self->ids($parsed);
-  #}
   return $som;
 }
 
