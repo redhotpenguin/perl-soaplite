@@ -6,8 +6,8 @@ from your COM applications. Examples in Visual Basic, Excel/VBA, Perl,
 JavaScript and ASP are provided. 
 
 Interface comes in two versions: standalone and minimal.
-Both versions were tested on Windows 98 and 2K, but should work on 
-Windows 9x/Me/NT/2K.
+Both versions were tested on Windows 2K and XP, but should work on 
+Windows 9x/Me/NT/2K/XP.
 Minimal version requires Perl installation, but comes in a small size.
 Standalone version doesn't require ANYTHING (including Perl), but comes
 as one big dll. Both libraries are compiled using the latest version of
@@ -17,7 +17,7 @@ Standalone:              http://www.soaplite.com/download/SOAP-Lite-COM-standalo
 Minimal (Perl required): http://www.soaplite.com/download/SOAP-Lite-COM-minimal-latest.zip
 
 You may create your own version (all source code and batch files are provided),
-but it'll require PerlCtrl utility that comes as part of Perl Development Kit
+but it'll require PerlCtrl utility that comes with Perl Development Kit
 from ActiveState (http://activestate.com/). Batch files are written for the 
 latest PDK version (v6). The library can ONLY be created on Windows NT, 2K, or 
 XP, but will work on any Windows platform.
@@ -159,4 +159,4 @@ cntFoo = myPerlObj.Scalar.some_method()
 
 MORE INFORMATION
 
-For more information, see http://velocity.activestate.com/docs/PDK/PerlCtrl/Issues.html
+For more information, see http://aspn.activestate.com/ASPN/docs/PDK/6.0/PerlCtrl_overview.html
