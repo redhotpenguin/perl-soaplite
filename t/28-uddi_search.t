@@ -31,14 +31,19 @@ unless (defined $r && defined $r->envelope) {
 }
 # ------------------------------------------------------
 
-plan tests => 6;
-
 my($serviceInfo) = grep { $_->name =~ /stock quote/i } find_business(name('XMethods'))
   -> businessInfos 
   -> businessInfo            
   -> serviceInfos
   -> serviceInfo             
 ;  
+
+unless (defined $serviceInfo) {
+  print "1..0 # Skip: getQuote service doesn't exist on XMethods\n";
+  exit;
+}
+
+plan tests => 6;
 
 ok($serviceInfo->name);
 ok($serviceInfo->serviceKey);
