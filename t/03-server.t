@@ -151,8 +151,9 @@ Content-ID: <calc061400a.b@soaplite.com>
 EOM
 );
  
-my $is_mimeparser = eval { SOAP::Packager::MIME->new; 1 };
-(my $reason = $@) =~ s/ at .+// unless $is_mimeparser;
+eval "SOAP::Packager::MIME->new->initialize_parser";
+my $is_mimetools_installed = $@ ? 0 : 1;
+(my $reason = $@) =~ s/ at .+// unless $is_mimetools_installed;
 print "MIME tests will be skipped: $reason" if defined $reason;
 my $package = '
   package Calculator;
@@ -169,7 +170,7 @@ my $package = '
 
   foreach (keys %tests) {
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-    if ($_ =~ /XML/ || $is_mimeparser) {
+    if ($_ =~ /XML/ || $is_mimetools_installed) {
       ok( ($result->faultstring || '') =~ /Failed to access class \(Calculator\)/ );
     } else {
       skip($reason => undef);
@@ -180,7 +181,7 @@ my $package = '
 
   foreach (keys %tests) {
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-    if ($_ =~ /XML/ || $is_mimeparser) {
+    if ($_ =~ /XML/ || $is_mimetools_installed) {
       ok(($result->result || 0) == 7);
     } else {
       skip($reason => undef);

@@ -12,7 +12,8 @@ use Test;
 
 BEGIN {
   use SOAP::Lite;
-  unless (eval { SOAP::Packager::MIME->new; 1 }) {
+  eval { SOAP::Packager::MIME->new->initialize_parser; 1 };
+  if ($@) {
     $@ =~ s/ at .+//; 
     print "1..0 # Skip: $@"; exit;
   }
