@@ -1721,8 +1721,7 @@ sub BEGIN {
   for my $method (qw(ids hrefs parts parser base xmlschemas xmlschema context)) {
     my $field = '_' . $method;
     *$method = sub {
-      my $self = shift->new; # this makes things work, but all this lazy initing has got to go. IMHO
-#      my $self = shift;
+      my $self = shift->new;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
 
     }
@@ -1758,14 +1757,13 @@ sub baselocation {
   if ($location) { 
     my $uri = URI->new($location); 
     # make absolute location if relative
-    $location = $uri->abs($self->base)->as_string unless $uri->scheme;
+    $location = $uri->abs($self->base || 'thismessage:/')->as_string unless $uri->scheme;
   }
-  $location;
+  return $location;
 }
 
 # Returns the envelope and populates SOAP::Packager with parts
 sub decode_parts {
-#  my $self = shift->new; # stop this!!! no reinitialization all the time!
   my $self = shift;
   my $env = $self->context->packager->unpackage($_[0]);
   my $body = $self->parser->decode($env);
@@ -2213,8 +2211,6 @@ sub new {
       _action        => '',
       _options       => {},
     } => $class;
-    # TODO - problematic as this creates a recursive data structure
-    #$self->init_context();
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
     }
@@ -2359,6 +2355,7 @@ sub find_target {
 
   no strict 'refs';
 
+# TODO - sort this mess out:
 # SOAP::Lite 0.60:
 #  unless (defined %{"${class}::"}) {   
 # Patch to SOAP::Lite 0.60:
@@ -3000,7 +2997,7 @@ sub new {
 }
 
 sub init_context {
-  my $self = shift;
+  my $self = shift->new;
   $self->{'_deserializer'}->{'_context'} = $self;
   $self->{'_serializer'}->{'_context'} = $self;
 }       
