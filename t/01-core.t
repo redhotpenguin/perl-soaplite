@@ -198,7 +198,7 @@ EOBASE64
   print "Check for unspecified Transport module test(s)...\n";
 
   eval { SOAP::Lite->new->abc() };
-  ok($@ =~ /Transport is not specified/);
+  ok($@ =~ /A service address has not been specified/);
 }
 
 {

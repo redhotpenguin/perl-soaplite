@@ -427,7 +427,7 @@ my %encode_attribute = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&q
 sub encode_attribute { (my $e = $_[0]) =~ s/([&<>\"])/$encode_attribute{$1}/g; $e }
 
 my %encode_data = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', "\xd" => '&#xd;');
-sub encode_data { (my $e = $_[0]) =~ s/([&<>\015])/$encode_data{$1}/g; $e =~ s/\]\]>/\]\]&gt;/g; $e }
+sub encode_data { my $e = $_[0]; if ($e) { $e =~ s/([&<>\015])/$encode_data{$1}/g; $e =~ s/\]\]>/\]\]&gt;/g; } $e }
 
 # methods for internal tree (SOAP::Deserializer, SOAP::SOM and SOAP::Serializer)
 
@@ -1367,7 +1367,7 @@ sub envelope {
 
     # Find all the SOAP Message Parts (attachments)
     } elsif (defined($_) && ref($_) && 
-             $self->context && $self->context->packager->is_supported_part($_)) {
+      $self->context && $self->context->packager->is_supported_part($_)) {
       $self->context->packager->push_part($_);
 
     # Find all the SOAP Body elements
@@ -1393,6 +1393,7 @@ sub envelope {
       $body = SOAP::Data->name($method)->attr( { 'xmlns' => $self->uri } );
       #$body = SOAP::Data->name($method)->uri($self->uri); # original return before use_prefix
     }
+    # This is breaking a unit test right now...
     $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
       if $body;
   } elsif ($type eq 'fault') {
