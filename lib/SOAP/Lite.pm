@@ -1201,9 +1201,9 @@ sub envelope {
     # -> attr({'xmlns' => ''})
       -> value(\SOAP::Data->set_value(
         SOAP::Data->name(faultcode => SOAP::Serializer::qualify($self->envprefix => $parameters[0]))->type(""),
-        SOAP::Data->name(faultstring => $parameters[1]),
+        SOAP::Data->name(faultstring => $parameters[1])->type(""),
         defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
-        defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3]) : (),
+        defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3])->type("") : (),
       ));
   } elsif ($type eq 'freeform') {
     SOAP::Trace::freeform(@parameters);
