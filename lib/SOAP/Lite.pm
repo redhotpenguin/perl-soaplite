@@ -278,14 +278,28 @@ package SOAP::Constants;
 
 BEGIN {
 
+  use constant URI_1999_SCHEMA_XSD  => "http://www.w3.org/1999/XMLSchema";
+  use constant URI_1999_SCHEMA_XSI  => "http://www.w3.org/1999/XMLSchema-instance";
+  use constant URI_2000_SCHEMA_XSD  => "http://www.w3.org/2000/10/XMLSchema";
+  use constant URI_2000_SCHEMA_XSI  => "http://www.w3.org/2000/10/XMLSchema-instance";
+  use constant URI_2001_SCHEMA_XSD  => "http://www.w3.org/2001/XMLSchema";
+  use constant URI_2001_SCHEMA_XSI  => "http://www.w3.org/2001/XMLSchema-instance";
+
   use constant URI_LITERAL_ENC       => "";
   use constant URI_SOAP11_ENC        => "http://schemas.xmlsoap.org/soap/encoding/";
   use constant URI_SOAP11_ENV        => "http://schemas.xmlsoap.org/soap/envelope/";
   use constant URI_SOAP11_NEXT_ACTOR => "http://schemas.xmlsoap.org/soap/actor/next";
-  use constant URI_SOAP12_ENC        => "http://www.w3.org/2002/12/soap-encoding";
-  use constant URI_SOAP12_ENV        => "http://www.w3.org/2002/12/soap-envelope";
-  use constant URI_SOAP12_NOENC      => "http://www.w3.org/2002/12/soap-envelope/encoding/none";
-  use constant URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2002/12/soap-envelope/role/next";
+  use constant URI_SOAP12_ENC        => "http://www.w3.org/2003/05/soap-encoding";
+  use constant URI_SOAP12_ENV        => "http://www.w3.org/2003/05/soap-envelope";
+  use constant URI_SOAP12_NOENC      => "http://www.w3.org/2003/05/soap-envelope/encoding/none";
+  use constant URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2003/05/soap-envelope/role/next";
+
+  # These URIs are not the *current* 1.2 URIs
+  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2001/06/*";
+  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2001/09/*";
+  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2001/12/*";
+  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2002/06/*";
+  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2002/12/*";
 
   use vars qw($NSMASK $ELMASK);
 
@@ -320,27 +334,27 @@ BEGIN {
 
   %SOAP_VERSIONS = (
     ($SOAP_VERSION = 1.1) => {
-      NEXT_ACTOR => URI_SOAP11_NEXT_ACTOR,
-      NS_ENV => URI_SOAP11_ENV,
-      NS_ENC => URI_SOAP11_ENC,
-      DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
+      NEXT_ACTOR                => URI_SOAP11_NEXT_ACTOR,
+      NS_ENV                    => URI_SOAP11_ENV,
+      NS_ENC                    => URI_SOAP11_ENC,
+      DEFAULT_XML_SCHEMA        => URI_2001_SCHEMA_XSD,
       DEFAULT_HTTP_CONTENT_TYPE => 'text/xml',
     },
     1.2 => {
-      NEXT_ACTOR => URI_SOAP12_NEXT_ACTOR,
-      NS_ENV => URI_SOAP12_ENV,
-      NS_ENC => URI_SOAP12_ENC,
-      DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
+      NEXT_ACTOR                => URI_SOAP12_NEXT_ACTOR,
+      NS_ENV                    => URI_SOAP12_ENV,
+      NS_ENC                    => URI_SOAP12_ENC,
+      DEFAULT_XML_SCHEMA        => URI_2001_SCHEMA_XSD,
       DEFAULT_HTTP_CONTENT_TYPE => 'application/soap',
     },
   );
 
   # schema namespaces                                    
-  %XML_SCHEMAS = (
-    'http://www.w3.org/1999/XMLSchema' => 'SOAP::XMLSchema1999',
-    'http://www.w3.org/2001/XMLSchema' => 'SOAP::XMLSchema2001',
-    'http://schemas.xmlsoap.org/soap/encoding/' => 'SOAP::XMLSchemaSOAP1_1',
-    'http://www.w3.org/2001/06/soap-encoding' => 'SOAP::XMLSchemaSOAP1_2',
+  %XML_SCHEMAS = ( # The '()' is necessary to put constants in SCALAR form
+    URI_1999_SCHEMA_XSD() => 'SOAP::XMLSchema1999',
+    URI_2001_SCHEMA_XSD() => 'SOAP::XMLSchema2001',
+    URI_SOAP11_ENC()      => 'SOAP::XMLSchemaSOAP1_1',
+    URI_SOAP12_ENC()      => 'SOAP::XMLSchemaSOAP1_2',
   );
   
   $NS_XSI_ALL = join join('|', map {"$_-instance"} grep {/XMLSchema/} keys %XML_SCHEMAS), '(?:', ')';
@@ -352,7 +366,7 @@ BEGIN {
   $NS_APS = 'http://xml.apache.org/xml-soap';
   
   # SOAP::Lite namespace
-  $NS_SL_HEADER = 'http://namespaces.soaplite.com/header';
+  $NS_SL_HEADER   = 'http://namespaces.soaplite.com/header';
   $NS_SL_PERLTYPE = 'http://namespaces.soaplite.com/perl';
 
   # default prefixes
@@ -721,9 +735,9 @@ sub BEGIN {
   }
   # Is this necessary? Seems like work for nothing when a user could just use
   # SOAP::Utils directly.
-#  for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
-#    *$method = \&{'SOAP::Utils::'.$method};
-#  }
+  # for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
+  #   *$method = \&{'SOAP::Utils::'.$method};
+  # }
 }
 
 sub DESTROY { SOAP::Trace::objects('()') }
@@ -951,7 +965,7 @@ sub maptypetouri {
         : $SOAP::Constants::NS_SL_PERLTYPE
       unless exists $self->maptype->{$name};
     $type = $self->maptype->{$name} 
-      ? qualify($self->namespaces->{$self->maptype->{$name}} ||= gen_ns, $type)
+      ? SOAP::Utils::qualify($self->namespaces->{$self->maptype->{$name}} ||= gen_ns, $type)
       : undef;
   }
   return $type;
@@ -989,13 +1003,13 @@ sub encode_object {
     # try to call method specified for this type
     my @values = map { 
       # store null/nil attribute if value is undef
-      local $attr->{qualify(xsi => $self->xmlschemaclass->nilValue)} = $self->xmlschemaclass->as_undef(1)
+      local $attr->{SOAP::Utils::qualify(xsi => $self->xmlschemaclass->nilValue)} = $self->xmlschemaclass->as_undef(1)
         unless defined;
       $self->can($method) && $self->$method($_, $name || gen_name, $object->SOAP::Data::type, $attr)
         || $self->typecast($_, $name || gen_name, $object->SOAP::Data::type, $attr)
         || $self->encode_object($_, $name, $object->SOAP::Data::type, $attr)
     } @realvalues;
-    $object->SOAP::Data::signature([map {join $;, $_->[0], disqualify($_->[1]->{'xsi:type'} || '')} @values]) if @values;
+    $object->SOAP::Data::signature([map {join $;, $_->[0], SOAP::Utils::disqualify($_->[1]->{'xsi:type'} || '')} @values]) if @values;
     return wantarray ? @values : $values[0];
   } 
 
@@ -1036,7 +1050,7 @@ sub encode_scalar {
   my $schemaclass = $self->xmlschemaclass;
 
   # null reference
-  return [$name, {%$attr, qualify(xsi => $schemaclass->nilValue) => $schemaclass->as_undef(1)}] unless defined $value;
+  return [$name, {%$attr, SOAP::Utils::qualify(xsi => $schemaclass->nilValue) => $schemaclass->as_undef(1)}] unless defined $value;
 
   # object reference
   return [$name, {'xsi:type' => $self->maptypetouri($type), %$attr}, [$self->encode_object($$value)], $self->gen_id($value)] if ref $value;
@@ -1065,12 +1079,12 @@ sub encode_array {
   my $num = @items;
   my($arraytype, %types) = '-';
   for (@items) { $arraytype = $_->[1]->{'xsi:type'} || '-'; $types{$arraytype}++ }
-  $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
+  $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? SOAP::Utils::qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
 
-  $type = qualify($self->encprefix => 'Array') if $self->autotype && !defined $type;
+  $type = SOAP::Utils::qualify($self->encprefix => 'Array') if $self->autotype && !defined $type;
 
-  return [$name || qualify($self->encprefix => 'Array'), 
-          {qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
+  return [$name || SOAP::Utils::qualify($self->encprefix => 'Array'), 
+          {SOAP::Utils::qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
           [@items], 
           $self->gen_id($array)
   ];
@@ -1095,10 +1109,10 @@ sub encode_literal_array {
   my $num = @items;
   my($arraytype, %types) = '-';
   for (@items) { $arraytype = $_->[1]->{'xsi:type'} || '-'; $types{$arraytype}++ }
-  $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
-  $type = qualify($self->encprefix => 'Array') if !defined $type;
-  return [$name || qualify($self->encprefix => 'Array'), 
-          {qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
+  $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? SOAP::Utils::qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
+  $type = SOAP::Utils::qualify($self->encprefix => 'Array') if !defined $type;
+  return [$name || SOAP::Utils::qualify($self->encprefix => 'Array'), 
+          {SOAP::Utils::qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
           [@items], 
           $self->gen_id($array)
   ];
@@ -1217,7 +1231,7 @@ sub toqname {
   my $long = shift;
 
   return $long unless $long =~ /^\{(.*)\}(.+)$/;
-  return qualify $self->namespaces->{$1} ||= gen_ns, $2;
+  return SOAP::Utils::qualify $self->namespaces->{$1} ||= gen_ns, $2;
 }
 
 sub attrstoqname {
@@ -1250,7 +1264,7 @@ sub tag {
   my $tagjoiner = " ";
   if ($level == 1) {
     my $namespaces = $self->namespaces;
-    foreach (keys %$namespaces) { $attrs->{qualify(xmlns => $namespaces->{$_})} = $_ }
+    foreach (keys %$namespaces) { $attrs->{SOAP::Utils::qualify(xmlns => $namespaces->{$_})} = $_ }
     $prolog = qq!<?xml version="1.0" encoding="@{[$self->encoding]}"?>!
       if defined $self->encoding;
     $prolog .= "\n" if $self->readable;
@@ -1335,14 +1349,15 @@ sub serialize { SOAP::Trace::trace('()');
 
 sub envelope {
   SOAP::Trace::trace('()');
-  my $self = shift->new; # stop reinitializing!!!
+  my $self = shift->new; # stop reinitializing!!!?
   my $type = shift;
   my(@parameters, @header);
   for (@_) { 
     if (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'SOAP::Header')) {
       push(@header, $_); 
     #} elsif (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'MIME::Entity')) {
-    } elsif (defined($_) && ref($_) && $self->context->packager->is_supported_part($_)) {
+    } elsif (defined($_) && ref($_) && 
+             $self->context && $self->context->packager->is_supported_part($_)) {
       $self->context->packager->push_part($_);
     } else {
       push(@parameters, $_);
@@ -1884,11 +1899,18 @@ sub decode_value {
 
   # check encodingStyle
   # future versions may bind deserializer to encodingStyle
-  my $encodingStyle = $attrs->{"{$SOAP::Constants::NS_ENV}encodingStyle"};
+  my $encodingStyle = $attrs->{"{$SOAP::Constants::NS_ENV}encodingStyle"} || "";
+  my (%union,%isect);
+  # TODO - SOAP 1.2 and 1.1 have different rules about valid encodingStyle values
+  #        For example, in 1.1 - any http://schemas.xmlsoap.org/soap/encoding/*
+  #        value is valid
+  # Find intersection of declared and supported encoding styles
+  foreach my $e (@SOAP::Constants::SUPPORTED_ENCODING_STYLES, split(/ +/,$encodingStyle)) {
+    $union{$e}++ && $isect{$e}++;
+  }
   die "Unrecognized/unsupported value of encodingStyle attribute '$encodingStyle'"
-    if defined($encodingStyle) &&
-       length($encodingStyle) > 0 &&
-       !grep {/$encodingStyle/} @SOAP::Constants::SUPPORTED_ENCODING_STYLES;
+    if defined($encodingStyle) && length($encodingStyle) > 0 && !%isect &&
+       !(SOAP::Lite->soapversion == 1.1 && $encodingStyle =~ /(?:^|\b)$SOAP::Constants::NS_ENC/);
 
        # removed to provide literal support in 0.65
        #$encodingStyle !~ /(?:^|\b)$SOAP::Constants::NS_ENC/;

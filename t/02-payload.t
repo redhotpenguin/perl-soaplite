@@ -180,7 +180,6 @@ my($a, $s, $r, $serialized, $deserialized);
   $serialized = SOAP::Serializer
     ->readable(1)
     ->method('mymethod' => [[1, 2], [3, 4]]);
-
   ok($serialized =~ m!soapenc:arrayType="soapenc:Array\[2\]"!);
 }
 
@@ -392,7 +391,7 @@ my($a, $s, $r, $serialized, $deserialized);
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
 	 xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
-         soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+     soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
 <soap:Body>
 <m:doublerResponse1 soapenc:root="0" xmlns:m="http://soaplite.com/">
 <nums>1</nums>
@@ -412,7 +411,7 @@ my($a, $s, $r, $serialized, $deserialized);
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
 	 xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
-         soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+     soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
 <soap:Body>
 <m:doublerResponse1 root="0" xmlns:m="http://soaplite.com/">
 <nums>1</nums>
@@ -432,7 +431,7 @@ my($a, $s, $r, $serialized, $deserialized);
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
 	 xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
-         soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+     soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
 <soap:Body>
 <m:doublerResponse1 soapenc:root="1" xmlns:m="http://soaplite.com/">
 <nums>1</nums>
@@ -591,9 +590,9 @@ my($a, $s, $r, $serialized, $deserialized);
 
   $a = q!<?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope
-  xmlns:soapenc="http://www.w3.org/2001/06/soap-encoding"
-  soap:encodingStyle="http://www.w3.org/2001/06/soap-encoding"
-  xmlns:soap="http://www.w3.org/2001/06/soap-envelope"
+  xmlns:soapenc="http://www.w3.org/2003/05/soap-encoding"
+  soap:encodingStyle="http://www.w3.org/2003/05/soap-encoding"
+  xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 <soap:Body>
