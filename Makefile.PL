@@ -5,23 +5,24 @@ use ExtUtils::MakeMaker;
 require 5.004;
 use strict;
 
-my @PREREQS = ();
-#push @PREREQS, ["<feature>","<installed module>",<dependency hash>,<install by default, 2=always>];
-push @PREREQS,["Core Package","SOAP::Lite",{"XML::Parser" => "2.23","MIME::Base64" => "0", "URI" => "0"},2];
-push @PREREQS,["Client HTTP support","",{"LWP::UserAgent" => "0"},1];
-push @PREREQS,["Client HTTPS support","SOAP::Transport::HTTPS::Client",{"Crypt::SSLeay" => "0"},0];
-push @PREREQS,["Client SMTP/sendmail support","SOAP::Transport::MAILTO::Client",{"MIME::Lite" => "0"},1];
-push @PREREQS,["Client FTP support","SOAP::Transport::FTP::Client",{"Net::FTP" => "0","IO::File" => "0"},0];
-push @PREREQS,["Standalone HTTP server","SOAP::Transport::HTTP::Daemon",{"HTTP::Daemon" => "0"},1];
-push @PREREQS,["Apache/mod_perl server","SOAP::Transport::HTTP::Apache",{"Apache" => "0"},0];
-push @PREREQS,["FastCGI server","SOAP::Transport::HTTP::FCGI",{"FGGI" => "0"},0];
-push @PREREQS,["POP3 server","SOAP::Transport::POP3::Server",{"Net::POP3" => "0","MIME::Parser" => "6.106"},1];
-push @PREREQS,["IO server","SOAP::Transport::IO::Server",{"IO::File" => "0"},0];
-push @PREREQS,["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => "0"},1];
-push @PREREQS,["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => "0"},0];
-push @PREREQS,["MIME messages","SOAP::MIMEParser",{"MIME::Parser" => "6.106"},1];
-push @PREREQS,["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => "0"},0];
-push @PREREQS,["Compression support for HTTP","SOAP::Transport::HTTP",{"Compress::Zlib" => "0"},0];
+my @PREREQS = (
+# ["<feature>","<installed module>",<dependency hash>,<install by default, 2=always>];
+  ["Core Package","SOAP::Lite",{"XML::Parser" => "2.23","MIME::Base64" => "0", "URI" => "0"},2],
+  ["Client HTTP support","",{"LWP::UserAgent" => "0"},1],
+  ["Client HTTPS support","SOAP::Transport::HTTPS::Client",{"Crypt::SSLeay" => "0"},0],
+  ["Client SMTP/sendmail support","SOAP::Transport::MAILTO::Client",{"MIME::Lite" => "0"},1],
+  ["Client FTP support","SOAP::Transport::FTP::Client",{"Net::FTP" => "0","IO::File" => "0"},0],
+  ["Standalone HTTP server","SOAP::Transport::HTTP::Daemon",{"HTTP::Daemon" => "0"},1],
+  ["Apache/mod_perl server","SOAP::Transport::HTTP::Apache",{"Apache" => "0"},0],
+  ["FastCGI server","SOAP::Transport::HTTP::FCGI",{"FGGI" => "0"},0],
+  ["POP3 server","SOAP::Transport::POP3::Server",{"Net::POP3" => "0","MIME::Parser" => "6.106"},1],
+  ["IO server","SOAP::Transport::IO::Server",{"IO::File" => "0"},0],
+  ["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => "0"},1],
+  ["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => "0"},0],
+  ["MIME messages","SOAP::MIMEParser",{"MIME::Parser" => "6.106"},1],
+  ["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => "0"},0],
+  ["Compression support for HTTP","SOAP::Transport::HTTP",{"Compress::Zlib" => "0"},0],
+);
 
 use Getopt::Long;
 
@@ -44,10 +45,10 @@ EOI
 my(%options, %config, %has_module_cache);
 
 # Initialize the prereq table and all help text
-for (my $i=0;$i<=$#PREREQS;$i++) {
-  my ($feature,$dep,$modules,$default) = @{$PREREQS[$i]};
+foreach my $prereq (@PREREQS) {
+  my ($feature,$dep,$modules,$default) = @$prereq;
   next unless $dep ne "";
-  $PREREQS[$i][3] = has_all_modules($modules) unless $PREREQS[$i][3] == 2;
+  $prereq->[3] = has_all_modules($modules) unless $prereq->[3] == 2;
 
   my $module = do { $dep =~ s/::/-/g; $dep };
   my $shortcut = do { (my $t = $module) =~ s/SOAP-(?:Transport-)?//; $t };
@@ -88,13 +89,13 @@ do {
   # Loop through each prerequisite and ask the user if they wish to
   # install it or not - reset prereqs, cause they change each time
   %prereqs = ();
-  for (my $i=0;$i<=$#PREREQS;$i++) {
-    my ($feature,$dep,$modules,$default) = @{$PREREQS[$i]};
+  for my $prereq (@PREREQS) {
+    my ($feature,$dep,$modules,$default) = @$prereq;
     next unless $dep ne "";
-    unless ($proceed || $PREREQS[$i][3] == 2) {
-      $PREREQS[$i][3] = (ExtUtils::MakeMaker::prompt("Do you plan to use ".$PREREQS[$i][0]."? (yes/no)", $1) =~ /^\s*(y)/i);
+    unless ($proceed || $prereq->[3] == 2) { # need to use $prereq, because we modify actual value
+      $prereq->[3] = (ExtUtils::MakeMaker::prompt("Do you plan to use ${feature}?" => ($prereq->[3] ? 'yes' : 'no')) =~ /^\s*(y)/i);
     }
-    (%prereqs = (%prereqs, map { $_,$PREREQS[$i][2]{$_} } keys %{$PREREQS[$i][2]})) if $PREREQS[$i][3];
+    (%prereqs = (%prereqs, map { $_,$modules->{$_} } keys %$modules)) if $prereq->[3];
   }
 } while (!$proceed);
 
@@ -126,9 +127,9 @@ WriteMakefile(
 # Maintains a cache of what 3rd party modules you have
 # installed
 sub has_module {
-  my ($mod) = @_;
-  return $has_module_cache{$mod} if $has_module_cache{$mod};
-  return ($has_module_cache{$mod} = eval("require $mod"));
+  my ($mod, $version) = @_;
+  $version ||= '';
+  return ($has_module_cache{$mod} ||= eval("require $mod $version"));
 }
 
 # Return 1 if all modules contained in the inputed array
@@ -136,7 +137,7 @@ sub has_module {
 sub has_all_modules {
   my ($mods) = @_;
   foreach my $mod (keys %$mods) {
-    return 0 if !has_module($mod);
+    return 0 if !has_module($mod, $mods->{$mod});
   }
   return 1;
 }
@@ -146,7 +147,7 @@ sub print_prereq {
   my ($feature,$dep,$modules,$install) = @_;
   my $i = 0;
   foreach my $module (keys %$modules) {
-    my $detected = (has_module($module) ? "*" : " ");
+    my $detected = (has_module($module, $modules->{$module}) ? "*" : " ");
     printf("%-29s [%s] %-16s %-8s\n",($i++ == 0 ? $feature : ""),$detected,$module,($i == 1 ? ($install ? ($install == 2 ? "always" : "[ yes ]") : "[ no ]") : ""));
   }
 }
