@@ -2357,7 +2357,7 @@ sub new {
       _transport     => SOAP::Transport->new,
       _serializer    => SOAP::Serializer->new,
       _deserializer  => SOAP::Deserializer->new,
-      _packager      => SOAP::Packager->new,
+      _packager      => SOAP::Packager::MIME->new,
       _on_action     => sub { ; },
       _on_dispatch   => sub { return; }, 
       _dispatch_to   => [], 
@@ -3108,7 +3108,7 @@ sub new {
       _transport    => SOAP::Transport->new,
       _serializer   => SOAP::Serializer->new,
       _deserializer => SOAP::Deserializer->new,
-      _packager     => SOAP::Packager->new, # TODO - autodetect packager to use (DIME vs MIME)
+      _packager     => SOAP::Packager::MIME->new, # TODO - autodetect packager to use (DIME vs MIME)
       _autoresult   => 0,
       _on_action    => sub { sprintf '"%s#%s"', shift || '', shift },
       _on_fault     => sub {ref $_[1] ? return $_[1] : Carp::croak $_[0]->transport->is_success ? $_[1] : $_[0]->transport->status},
@@ -3392,6 +3392,14 @@ L<SOAP::Fault> - Provides support for Faults on server side
 
 L<SOAP::Utils> - A set of private and public utility subroutines
 
+=item F<lib/SOAP/Packager.pm>
+
+L<SOAP::Packager> - Provides an abstract class for implementing custom packagers.
+
+L<SOAP::Packager::MIME|SOAP::Packager/SOAP::Packager::MIME> - Provides MIME support to SOAP::Lite
+
+L<SOAP::Packager::DIME|SOAP::Packager/SOAP::Packager::DIME> - Provides DIME support to SOAP::Lite
+
 =item F<lib/SOAP/Transport/HTTP.pm>
 
 L<SOAP::Transport::HTTP::Client|SOAP::Transport/SOAP::Transport::HTTP::Client> - Client interface to HTTP transport
@@ -3456,7 +3464,9 @@ Provides access to the C<SOAP::Serializer> object that the client uses to transf
 
     $packager = $client->packager( )
 
-Provides access to the C<SOAP::Packager> object that the client uses to manage the use of attachments.
+Provides access to the C<SOAP::Packager> object that the client uses to manage the use of attachments. The default packager is a MIME packager, but unless you specify parts to send, no MIME formatting will be done.
+
+See also: L<SOAP::Packager>.
 
 =item proxy(endpoint, optional extra arguments)
 
@@ -3674,7 +3684,7 @@ This is kept for backwards-compatibility with earlier versions of the toolkit. E
 
 =head1 WRITING A SOAP CLIENT
 
-Foo.
+TODO - soap client example
 
 =head1 WRITING A SOAP SERVER
 
@@ -3684,7 +3694,9 @@ See L<SOAP::Server>, or L<SOAP::Transport>.
 
 =head2 ATTACHMENTS
 
-C<SOAP::Lite> features support for the SOAP with Attachments specification. Currently, SOAP::Lite only supports MIME based attachments. DIME based attachments are yet to be fully functional.
+C<SOAP::Lite> features support for the SOAP with Attachments specification. 
+Currently, SOAP::Lite only supports MIME based attachments. DIME based attachments
+are yet to be fully functional.
 
 =head3 EXAMPLES
 
@@ -3734,7 +3746,7 @@ Servers, like clients, use the S<SOAP::SOM> module to access attachments trasmit
     my $self = shift;
     my $envelope = pop;
     foreach my $part (@{$envelope->parts}) {
-      print "AttachmentService: attachment found! (".ref($$part).")\n";
+      print "AttachmentService: attachment found! (".ref($part).")\n";
     }
     # do something
   }
