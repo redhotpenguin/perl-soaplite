@@ -421,16 +421,25 @@ use vars qw($AUTOLOAD @ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { require HTTP::Daemon; 
+#sub new { require HTTP::Daemon; 
+sub new {
   my $self = shift;
-
   unless (ref $self) {
     my $class = ref($self) || $self;
 
     my(@params, @methods);
     while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
     $self = $class->SUPER::new;
-    $self->{_daemon} = HTTP::Daemon->new(@params) or Carp::croak "Can't create daemon: $!";
+
+    # Added in 0.65 - Thanks to Nils Sowen
+    # use SSL if there is any parameter with SSL_* in the name
+    $self->SSL(1) if !$self->SSL && grep /^SSL_/, @params;
+    my $http_daemon = $self->http_daemon_class;
+    eval "require $http_daemon" or Carp::croak $@ unless
+      UNIVERSAL::can($http_daemon => 'new');
+    $self->{_daemon} = $http_daemon->new(@params) or Carp::croak "Can't create daemon: $!";
+    # End SSL patch
+    # $self->{_daemon} = HTTP::Daemon->new(@params) or Carp::croak "Can't create daemon: $!";
     $self->myuri(URI->new($self->url)->canonical->as_string);
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
@@ -439,6 +448,14 @@ sub new { require HTTP::Daemon;
   }
   return $self;
 }
+
+sub SSL {
+  my $self = shift->new;                                     
+  @_ ? ($self->{_SSL} = shift, return $self) : return
+  $self->{_SSL};        
+}                                                            
+
+sub http_daemon_class { shift->SSL ? 'HTTP::Daemon::SSL' : 'HTTP::Daemon' }
 
 sub AUTOLOAD {
   my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::') + 2);

@@ -90,6 +90,10 @@ THIS RELEASE
   + Added SOAP::Constants::SUPPORTED_ENCODING_STYLES for better tracking
     of the set of encoding styles that the toolkit can [de]serialize
   ! Fixed bug 840172 - "Makefile.PL --noprompt flag broken," now fixed
+  + Updated SOAP 1.2 URIs to the latest (TODO - maintain support for
+    older ones)
+  + Added HTTPS support for HTTP::Server Daemon class - thanks to Nils
+    Sowen for this contribution
 
 -----------------------------------------------------------------------
 PREVIOUS RELEASES
