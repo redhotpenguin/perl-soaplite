@@ -11,16 +11,26 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.65 Mon Dec 15 12:10:27 2003
+0.65 Sun Sep 27 00:01:34 2004
   + Made SOAP::Serializer->readable actually produce readable XML!
-  + Made XML Schema 2001 the default schema
+  ! Fixed bug 747312 - Made XML Schema 2001 the default schema
   + Added support for [almost] all XML Schema 2001 built-in datatypes
   + Added register_ns subroutine to SOAP::Serializer
   + Added find_prefix subroutine to SOAP::Serializer
   + Added use_prefix subroutine to SOAP::Serializer
   + Added necessary subroutinues to support wsdl2perl project
   + Added format_datetime to SOAP::Utils
-  ! 
+  + Documented SOAP::SOM->parts
+  + Added SOAP::SOM->is_multipart
+  + Properly escaped characters to facilitate emacs syntax highlighting
+  + Ran podchecker to validate all POD comments
+  ! Fixed bug 749636 - changed a croak to a warn to enable socket
+    timeouts in SOAP::Transport::TCP::Server
+  + Added support for UDDI 2/3
+  + Majorly revamped product documentation thanks to the kind 
+    contribution made by O'Reilly. Appendix B from "Programming Web
+    Services with Perl" has been completely integrated.
+  + Improved support for the serialization of arrays and complex types
 
 -----------------------------------------------------------------------
 PREVIOUS RELEASES

@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 25 }
+BEGIN { plan tests => 30 }
 
 use SOAP::Lite;
 
@@ -228,4 +228,24 @@ EOBASE64
   print "Test SOAP:: prefix with no +autodispatch option...\n";
   eval { A->SOAP::b };
   ok($@ =~ /^SOAP:: prefix/);
+}
+
+{
+  # check deserialization of an array of multiple elements
+  # nested within a complex type
+  print "Deserialization of doc/lit arrays nested in complex types...\n";
+  my $input =  '<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"><soapenv:Body><getFooResponse xmlns="http://example.com/v1"><getFooReturn><id>100</id><complexFoo><arrayFoo>one</arrayFoo><arrayFoo>two</arrayFoo></complexFoo></getFooReturn></getFooResponse></soapenv:Body></soapenv:Envelope>';
+  my $deserializer = SOAP::Deserializer->new;	
+  my $ret = $deserializer->deserialize($input);
+  my @arr = @{$ret->result->{'complexFoo'}{'arrayFoo'}};
+  ok($#arr == 1);
+  ok("one" eq $arr[0]);
+  ok("two" eq $arr[1]);
+  
+  ok(100 == $ret->result->{"id"});
+  
+  # If only one araryFoo tag is found, it's deserialized as a scalar.
+  $input =  '<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"><soapenv:Body><getFooResponse xmlns="http://example.com/v1"><getFooReturn><id>100</id><complexFoo><arrayFoo>one</arrayFoo></complexFoo></getFooReturn></getFooResponse></soapenv:Body></soapenv:Envelope>';
+  $ret = $deserializer->deserialize($input);
+  ok("one" eq $ret->result->{'complexFoo'}{'arrayFoo'});
 }

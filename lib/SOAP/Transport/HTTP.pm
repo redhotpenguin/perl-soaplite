@@ -27,21 +27,22 @@ $COMPRESS = 'deflate';
 
 my(%redirect, %mpost, %nocompress);
 
-# hack for HTTP conection that returns Keep-Alive 
+# hack for HTTP connection that returns Keep-Alive 
 # miscommunication (?) between LWP::Protocol and LWP::Protocol::http
 # dies after timeout, but seems like we could make it work
 sub patch {
-  local $^W;
+    BEGIN { local ($^W) = 0; }
+    no warnings "redefine";
   { sub LWP::UserAgent::redirect_ok; *LWP::UserAgent::redirect_ok = sub {1} }
   { package LWP::Protocol;
     my $collect = \&collect; # store original
     *collect = sub {
       if (defined $_[2]->header('Connection') && $_[2]->header('Connection') eq 'Keep-Alive') {
         my $data = $_[3]->();
-        my $next = SOAP::Utils::bytelength($$data) == $_[2]->header('Content-Length') ? sub { \'' } : $_[3];
+        my $next = SOAP::Utils::bytelength($$data) == $_[2]->header('Content-Length') ? sub { my $str = ''; \$str; } : $_[3];
         my $done = 0; $_[3] = sub { $done++ ? &$next : $data };
-      }
-      goto &$collect;
+      } 
+      goto &$collect; 
     };
   }
   *patch = sub {};
@@ -141,7 +142,7 @@ sub send_receive {
       }
 
       # allow compress if present and let server know we could handle it
-      $req->header(Accept => ['text/xml', 'multipart/*']);
+      $req->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
 
       $req->header('Accept-Encoding' => 
 		   [$SOAP::Transport::HTTP::Client::COMPRESS])
@@ -151,15 +152,11 @@ sub send_receive {
 
       if(!$req->content_type){
 	$req->content_type(join '; ',
-			   'text/xml',
+			   $SOAP::Constants::DEFAULT_HTTP_CONTENT_TYPE,
 			   !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ?
 			   'charset=' . lc($encoding) : ());
       }elsif (!$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ){
 	my $tmpType=$req->headers->header('Content-type');
-	# MIME:     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	# MIME: This was changed from $req->content_type which was a bug,
-	#       because it does not properly maintain the entire content-type
-	#       header.
 	$req->content_type($tmpType.'; charset=' . lc($encoding));
       }
 
@@ -302,7 +299,7 @@ sub make_response {
   my($code, $response) = @_;
 
   my $encoding = $1
-    if $response =~ /^<\?xml(?: version="1.0"| encoding="([^"]+)")+\?>/;
+    if $response =~ /^<\?xml(?: version="1.0"| encoding="([^\"]+)")+\?>/;
   $response =~ s!(\?>)!$1<?xml-stylesheet type="text/css"?>!
     if $self->request->content_type eq 'multipart/form-data';
 
@@ -441,25 +438,43 @@ use vars qw(@ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { require Apache; require Apache::Constants;
+sub new {
   my $self = shift;
-
   unless (ref $self) {
     my $class = ref($self) || $self;
     $self = $class->SUPER::new(@_);
     SOAP::Trace::objects('()');
+  }
+  die "Could not find or load mod_perl"
+      unless (eval "require mod_perl");
+  die "Could not detect your version of mod_perl"
+      if (!defined($mod_perl::VERSION));
+  if ($mod_perl::VERSION < 2) {
+      require Apache;
+      require Apache::Constants;
+      Apache::Constants->import('OK');
+      $self->{'MOD_PERL_VERSION'} = 1;
+  } elsif ($mod_perl::VERSION < 3) {
+      require Apache::RequestRec;
+      require Apache::RequestIO;
+      require Apache::Const;
+      Apache::Const->import(-compile => 'OK');
+      $self->{'MOD_PERL_VERSION'} = 2;
+  } else {
+      die "Unsupported version of mod_perl";
   }
   return $self;
 }
 
 sub handler { 
   my $self = shift->new; 
-  my $r = shift || Apache->request; 
+  my $r = shift;
+  $r = Apache->request if (!$r && $self->{'MOD_PERL_VERSION'} == 1);
 
   $self->request(HTTP::Request->new( 
-    $r->method => $r->uri,
+    $r->method() => $r->uri,
     HTTP::Headers->new($r->headers_in),
-    do { my $buf; $r->read($buf, $r->header_in('Content-length')); $buf; } 
+    do { my ($c,$buf); while ($r->read($buf,$r->header_in('Content-length'))) { $c.=$buf; } $c; }
   ));
   $self->SUPER::handle;
 
@@ -473,7 +488,7 @@ sub handler {
   $self->response->headers->scan(sub { $r->header_out(@_) });
   $r->send_http_header(join '; ', $self->response->content_type);
   $r->print($self->response->content);
-  &Apache::Constants::OK;
+  return $self->{'MOD_PERL_VERSION'} == 2 ? &Apache::OK : &Apache::Constants::OK;
 }
 
 sub configure {
@@ -916,7 +931,7 @@ CGI scripts may not work under IIS unless scripts are .pl, not .cgi.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000-2001 Paul Kulchenko. All rights reserved.
+Copyright (C) 2000-2004 Paul Kulchenko. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
@@ -924,5 +939,6 @@ it under the same terms as Perl itself.
 =head1 AUTHOR
 
 Paul Kulchenko (paulclinger@yahoo.com)
+Byrne Reese (byrne@majordojo.com)
 
 =cut
