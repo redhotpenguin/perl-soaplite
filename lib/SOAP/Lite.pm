@@ -13,8 +13,9 @@ package SOAP::Lite;
 use 5.004;
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
-  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
+#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
+#  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
+$VERSION = '0.65_3';
 
 # ======================================================================
 
@@ -216,6 +217,7 @@ BEGIN {
                long int short byte nonNegativeInteger unsignedLong
                unsignedInt unsignedShort unsignedByte positiveInteger
                date time string hex base64 boolean
+               QName
   );
   # Add QName to @EXPORT
   # predeclare subs, so ->can check will be positive 
@@ -229,7 +231,7 @@ sub as_long;        *as_long = \&SOAP::XMLSchema1999::Serializer::as_long;
 sub as_float;       *as_float = \&SOAP::XMLSchema1999::Serializer::as_float;
 sub as_string;      *as_string = \&SOAP::XMLSchema1999::Serializer::as_string;
 # TODO - QNames still don't work for 2001 schema!
-#sub as_QName;       *as_QName = \&SOAP::XMLSchema1999::Serializer::as_string;
+sub as_QName;       *as_QName = \&SOAP::XMLSchema1999::Serializer::as_string;
 sub as_hex;         *as_hex = \&as_hexBinary;
 sub as_base64;      *as_base64 = \&as_base64Binary;
 sub as_timeInstant; *as_timeInstant = \&as_dateTime;
@@ -275,6 +277,7 @@ BEGIN {
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger date time dateTime
+    QName
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
   # put QName in @EXPORT
 }
@@ -317,7 +320,7 @@ BEGIN {
               $FAULT_CLIENT $FAULT_SERVER $FAULT_VERSION_MISMATCH
               $HTTP_ON_FAULT_CODE $HTTP_ON_SUCCESS_CODE $FAULT_MUST_UNDERSTAND
               $NS_XSI_ALL $NS_XSI_NILS %XML_SCHEMAS $DEFAULT_XML_SCHEMA
-	          $DEFAULT_HTTP_CONTENT_TYPE
+	      $DEFAULT_HTTP_CONTENT_TYPE
               $SOAP_VERSION %SOAP_VERSIONS $WRONG_VERSION
               $NS_SL_HEADER $NS_SL_PERLTYPE $PREFIX_ENV $PREFIX_ENC
               $DO_NOT_USE_XML_PARSER $DO_NOT_CHECK_MUSTUNDERSTAND 
@@ -325,6 +328,7 @@ BEGIN {
               $DO_NOT_USE_LWP_LENGTH_HACK $DO_NOT_CHECK_CONTENT_TYPE
               $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE $DEFAULT_PACKAGER
               @SUPPORTED_ENCODING_STYLES $OBJS_BY_REF_KEEPALIVE
+              $DEFAULT_CACHE_TTL
   );
 
   $FAULT_CLIENT           = 'Client';
@@ -393,6 +397,7 @@ BEGIN {
   $OBJS_BY_REF_KEEPALIVE = 600; # seconds
   # TODO - use default packager constant somewhere 
   $DEFAULT_PACKAGER = "SOAP::Packager::MIME";
+  $DEFAULT_CACHE_TTL = 0;
 }
   
 # ======================================================================
@@ -2689,7 +2694,6 @@ sub parse {
   my @services = $s->service;
   my $tns = $s->{'_attr'}->{'targetNamespace'};
   # if there is no <service> element we'll provide it
-  #@services = SOAP::Schema::Deserializer->deserialize(<<"FAKE")->root->service unless @services;
   @services = $self->deserializer->deserialize(<<"FAKE")->root->service unless @services;
 <definitions>
   <service name="@{[$service || 'FakeService']}">
@@ -2697,6 +2701,8 @@ sub parse {
   </service>
 </definitions>
 FAKE
+
+  my $has_warned = 0;
   foreach (@services) {
     my $name = $_->name;
     next if $service && $service ne $name;
@@ -2709,12 +2715,14 @@ FAKE
         # is this a SOAP binding?
         next unless grep { $_->uri eq 'http://schemas.xmlsoap.org/wsdl/soap/' } $_->binding;
         next unless $_->name eq $binding;
+	my $default_style = $_->binding->style;
         my $porttype = SOAP::Utils::disqualify($_->type);
         foreach ($_->operation) {
           my $opername = $_->name;
+	  $services{$opername} = {}; # should be initialized in 5.7 and after
           my $soapaction = $_->operation->soapAction;
-          my $invocationStyle = $_->operation->style;
-          my $encodingStyle = $_->input->body->use;
+          my $invocationStyle = $_->operation->style || $default_style || "rpc";
+          my $encodingStyle = $_->input->body->use || "encoded";
           my $namespace = $_->input->body->namespace || $tns;
           my @parts;
           foreach ($s->portType) {
@@ -2724,29 +2732,33 @@ FAKE
               my $inputmessage = SOAP::Utils::disqualify($_->input->message);
               foreach my $msg ($s->message) {
                 next unless $msg->name eq $inputmessage;
-                if ($invocationStyle eq "rpc" && $encodingStyle eq "encoded") {
-                  @parts = $msg->part;
-                } elsif ($invocationStyle eq "document" && $encodingStyle eq "literal") {
-                  warn "document/literal support is EXPERIMENTAL in SOAP::Lite";
+                if ($invocationStyle eq "document" && $encodingStyle eq "literal") {
+                  warn "document/literal support is EXPERIMENTAL in SOAP::Lite"
+		      if !$has_warned && ($has_warned = 1);
                   my ($input_ns,$input_name) = SOAP::Utils::splitqname($msg->part->element);
                   foreach my $schema ($s->types->schema) {
                     foreach my $element ($schema->element) {
                       next unless $element->name eq $input_name;
                       push @parts,parse_schema_element($element);
                     }
+		    $services{$opername}->{parameters} = [ @parts ];
                   }
                 } else {
-                  die "$invocationStyle/$encodingStyle is not supported in this version of SOAP::Lite";
+                  # TODO - support all combinations of doc|rpc/lit|enc.
+                  #warn "$invocationStyle/$encodingStyle is not supported in this version of SOAP::Lite";
+                  @parts = $msg->part;
+		  $services{$opername}->{parameters} = [ @parts ];
                 }
               }
             }
-          }
-          $services{$opername} = {}; # should be initialized in 5.7 and after
-          for ($services{$opername}) {
-            $_->{endpoint} = $endpoint;
-            $_->{soapaction} = $soapaction;
-            $_->{uri} = $namespace;
-            $_->{parameters} = [@parts];
+
+	    for ($services{$opername}) {
+		$_->{endpoint}   = $endpoint;
+		$_->{soapaction} = $soapaction;
+		$_->{uri}        = $namespace;
+#		$_->{parameters} = [@parts];
+	    }
+	    
           }
         }
       }
@@ -2794,7 +2806,7 @@ sub schema {
 
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(deserializer schema_url services useragent stub)) {
+  for my $method (qw(deserializer schema_url services useragent stub cache_dir cache_ttl)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
@@ -2810,13 +2822,42 @@ sub parse {
   $self->services({SOAP::Schema::WSDL->base($self->schema_url)->parse($s, @_)});
 }
 
+sub refresh_cache {
+    my $self = shift;
+    my ($filename,$contents) = @_;
+    open CACHE,">$filename" or Carp::croak "Could not open cache file for writing: $!";
+    print CACHE $contents;
+    close CACHE;
+}
+
 sub load {
-  my $self = shift->new;
-  local $^W; # supress warnings about redefining
-  foreach (keys %{$self->services || Carp::croak 'Nothing to load. Schema is not specified'}) { 
-    eval $self->generate_stub($_) or Carp::croak "Bad stub: $@";
-  }
-  $self;
+    my $self = shift->new;
+    local $^W; # supress warnings about redefining
+    foreach (keys %{$self->services || Carp::croak 'Nothing to load. Schema is not specified'}) { 
+	# TODO - check age of cached file, and delete if older than configured amount
+	if ($self->cache_dir) {
+	    my $cached_file = File::Spec->catfile($self->cache_dir,$_.".pm");
+	    my $ttl = $self->cache_ttl || $SOAP::Constants::DEFAULT_CACHE_TTL;
+	    open (CACHE, "<$cached_file");
+	    my @stat = stat($cached_file) unless eof(CACHE);
+	    close CACHE;
+	    if (@stat) {
+		# Cache exists
+		my $cache_lived = time() - $stat[9];
+		if ($ttl > 0 && $cache_lived > $ttl) {
+		    $self->refresh_cache($cached_file,$self->generate_stub($_));
+		}
+	    } else {
+		# Cache doesn't exist
+		$self->refresh_cache($cached_file,$self->generate_stub($_));
+	    }
+	    push @INC,$self->cache_dir;
+	    eval "require $_" or Carp::croak "Could not load cached file: $@";
+	} else {
+	    eval $self->generate_stub($_) or Carp::croak "Bad stub: $@";
+	}
+    }
+    $self;
 }
 
 sub access { 
@@ -2896,11 +2937,18 @@ sub _call {
       push(@parameters, $param);
     }
   }
-  my $som = $self
-    ->endpoint($method{endpoint})
-    ->uri($method{uri})
-    ->on_action(sub{qq!"$method{soapaction}"!})
-    ->SUPER::call($method => @parameters); 
+  $self->endpoint($method{endpoint})
+       ->uri($method{uri})
+       ->on_action(sub{qq!"$method{soapaction}"!});
+EOP
+  my $namespaces = $self->deserializer->ids->[1];
+  foreach my $key (keys %{$namespaces}) {
+      my ($ns,$prefix) = SOAP::Utils::splitqname($key);
+      $self->{'_stub'} .= '$self->serializer->register_ns("'.$namespaces->{$key}.'","'.$prefix.'");'."\n"
+	  if ($ns eq "xmlns");
+  }
+  $self->{'_stub'} .= <<'EOP';
+  my $som = $self->SUPER::call($method => @parameters); 
   UNIVERSAL::isa($som => 'SOAP::SOM') ? wantarray ? $som->paramsall : $som->result : $som;
 }
 
@@ -2927,9 +2975,6 @@ sub AUTOLOAD {
 
 1;
 EOP
-  open STUBFILE,">$package.pm";
-  print STUBFILE $self->stub;
-  close STUBFILE;
   return $self->stub;
 }
 
@@ -3166,6 +3211,13 @@ sub BEGIN {
     *$method = sub { 
       my $self = shift->new;
       @_ ? ($self->serializer->$method(@_), return $self) : return $self->serializer->$method();
+    }
+  }                                                
+  # SOAP::Schema Shortcuts
+  for my $method (qw(cache_dir cache_ttl)) {
+    *$method = sub { 
+      my $self = shift->new;
+      @_ ? ($self->schema->$method(@_), return $self) : return $self->schema->$method();
     }
   }                                                
 }

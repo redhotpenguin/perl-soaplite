@@ -12,7 +12,8 @@ package XMLRPC::Transport::POP3;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+$VERSION = $XMLRPC::Lite::VERSION;
 
 use XMLRPC::Lite;
 use SOAP::Transport::POP3;

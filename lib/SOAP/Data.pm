@@ -180,16 +180,25 @@ Will produce the following XML:
       </SOAP-ENV:Body>
     </SOAP-ENV:Envelope>
 
-In the code above, the @array variable can be an array of anything. If you pass in an array of numbers, then SOAP::Lite will properly serialize that into such. If however you need to encode an array of complex types, then simply pass in an array of other SOAP::Data objects and you are all set.
+In the code above, the @array variable can be an array of anything. If you pass
+in an array of numbers, then SOAP::Lite will properly serialize that into such. 
+If however you need to encode an array of complex types, then simply pass in an 
+array of other SOAP::Data objects and you are all set.
 
 =head2 COMPOSING MESSAGES USING RAW XML
 
-In some circumstances you may need to encode a message using raw unserialized XML text. To instantiate a SOAP::Data object using raw XML, do the following:
+In some circumstances you may need to encode a message using raw unserialized 
+XML text. To instantiate a SOAP::Data object using raw XML, do the following:
 
     $xml_content = "<foo><bar>123</bar></foo>";
     $elem = SOAP::Data->type('xml' => $xml_content);
 
-SOAP::Lite's serializer simple takes whatever text is passed to it, and inserts into the encoded SOAP::Data element I<verbatim>. The text input is validated to ensure it is valid XML, nor is the resulting SOAP::Data element validated to ensure that it will produce valide XML. Therefore, it is incumbant upon the developer to ensure that any XML data used in this fashion is valid and will result in a valid XML document.
+SOAP::Lite's serializer simple takes whatever text is passed to it, and inserts 
+into the encoded SOAP::Data element I<verbatim>. The text input is NOT validated to 
+ensure it is valid XML, nor is the resulting SOAP::Data element validated to 
+ensure that it will produce valid XML. Therefore, it is incumbent upon the 
+developer to ensure that any XML data used in this fashion is valid and will 
+result in a valid XML document.
 
 =head2 MULTIPLE NAMESPACES
 

@@ -13,7 +13,8 @@ package UDDI::Lite;
 use 5.004;
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+$VERSION = $SOAP::Lite::VERSION;
 
 use SOAP::Lite;
 
@@ -531,6 +532,10 @@ nothing. Use +trace/+debug option for UDDI::Lite instead.
 
 =back
 
+To change to UDDI Version 2, use the following pragma:
+
+  use UDDI::Lite uddiversion => 2;
+
 =head2 UDDI::Data
 
 You can use this class if you want to specify value and name for UDDI 
@@ -708,7 +713,7 @@ L<UDDI> ( http://search.cpan.org/search?dist=UDDI )
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000-2001 Paul Kulchenko. All rights reserved.
+Copyright (C) 2000-2004 Paul Kulchenko. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

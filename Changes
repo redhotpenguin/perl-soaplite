@@ -11,7 +11,25 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.65-beta2 Mon Oct 18 15:55:00 2004
+0.65-beta3 Mon Oct 25 2004
+
+  + SOAP::Lite will only warn you once when you call a doc/literal
+    service
+  + Added SOAP::Schema->cache_dir() and SOAP::Schema->cache_ttl(),
+    which control how code stubs generated from WSDLs are cached to
+    prevent constant reparsing of WSDL files.
+  ! Tested SOAP::Lite against Google, Salesforce, and FedEx. So far,
+    clients can successfully call these service providers (at least
+    some of their operations) - testing does not provide 100% coverage
+    of their APIs.
+
+0.65-beta2.1 Mon Oct 25 2004
+
+  + Fixed bug in unit tests in which MIME::Tools was not properly detected
+    resulting in failed unit tests for some users.
+  + Fixed some documentation issues (speling, etc).
+
+0.65-beta2 Mon Oct 25 2004
   ** WARNING ** substantial changes have been made to SOAP::Lite in
   this release in regards to how it manages attachments. The changes
   may introduce instabilities into your software that relies on this

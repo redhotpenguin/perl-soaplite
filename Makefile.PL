@@ -20,7 +20,7 @@ my @PREREQS = (
   ["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => 0},1],
   ["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => 0},0],
   ["MIME messages","SOAP::Packager::MIME",{"MIME::Parser" => 0},1],
-  ["DIME messages","SOAP::Packager::DIME",{"IO-stringy" => "2.109", "DIME::Tools" => 0.03, "Data::UUID" => "0.11"},0],
+  ["DIME messages","SOAP::Packager::DIME",{"IO::Scalar" => "2.105", "DIME::Tools" => 0.03, "Data::UUID" => "0.11"},0],
   ["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => 0},0],
   ["Compression support for HTTP","SOAP::Transport::HTTP",{"Compress::Zlib" => 0},0],
   ["MIME interoperability w/ Axis","SOAP::Lite",{"MIME::Parser" => "6.106"},0],
@@ -139,7 +139,7 @@ sub has_module {
   # use "require Foo; Exporter::require_version('Foo' => 1)" instead of
   # obvious "use Foo 1". The later doesn't work with MIME::Parser
   # wonder why? --PK
-  return ($has_module_cache{"$mod$version"} ||= eval("require $mod; Exporter::require_version('$mod', $version); 1"));
+  return ($has_module_cache{"$mod$version"} ||= eval("require $mod; Exporter::require_version('$mod', $version) if ($version); 1"));
 }
 
 # Return 1 if all modules contained in the inputed array

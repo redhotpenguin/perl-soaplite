@@ -1,23 +1,24 @@
-Changes
-MANIFEST
-Makefile.PL
-README
 bin/SOAPsh.pl			SOAP shell
-bin/XMLRPCsh.pl			XMLRPC shell
 bin/stubmaker.pl		Script for creating stubs from schema description
-examples/COM/README		Examples and description for COM interface
-examples/COM/SOAP-Lite-COM-minimal.ctrl
-examples/COM/SOAP-Lite-COM-standalone.ctrl
+bin/XMLRPCsh.pl			XMLRPC shell
+Changes
+examples/allclients.pl		Different client implementations
+examples/authentication.pl	Example for Basic/Digest server authentication
+examples/autoexamples.pl	Script for My::Examples with autodispatching
+examples/chat.pl		Client side for Chat implementation 
 examples/COM/hash.vbs		Example in VBScript, hash manipulation
 examples/COM/hashecho.vbs
 examples/COM/local.vbs		Example in VBScript, client for local service
 examples/COM/make-com-minimal.bat
 examples/COM/make-com-standalone.bat
+examples/COM/README		Examples and description for COM interface
 examples/COM/remote.cs		Example in C#, client for remote service
 examples/COM/remote.vba
 examples/COM/remote.vbs		Example in VB, client for remote service
 examples/COM/remote.xls
 examples/COM/service.vbs	Example in VB, client with WSDL
+examples/COM/SOAP-Lite-COM-minimal.ctrl
+examples/COM/SOAP-Lite-COM-standalone.ctrl
 examples/COM/soap.asp		SOAP server, ASP/VBScript implementation
 examples/COM/soap.vbs		SOAP server, VB/Daemon implementation
 examples/COM/soap_perl.asp	SOAP server, ASP/PerlScript implementation
@@ -28,44 +29,6 @@ examples/COM/states.vbs		Example in VBScript, client for local service
 examples/COM/states.xls		Example in Excel/VBA, client for local service
 examples/COM/temper.vbs		Example in VB, client for remote service
 examples/COM/xmlrpc.vbs
-examples/JABBER/jabclient.pl
-examples/JABBER/jabserver.pl
-examples/MQ/mqclient.pl
-examples/MQ/mqserver.pl
-examples/My/Chat.pm		Module with Chat server implementation 
-examples/My/Examples.pm		Module with Examples backend
-examples/My/Parameters.pm	Module with Paramaters backend
-examples/My/PersistentIterator.pm	Module with Persistent Iterator backend
-examples/My/PingPong.pm		Module with PingPong backend
-examples/My/SessionIterator.pm	Module with Session Iterator backend
-examples/SOAP/Transport/HTTP/Daemon/ForkAfterProcessing.pm
-examples/SOAP/Transport/HTTP/Daemon/ForkOnAccept.pm
-examples/SOAP/simple1.pl	Example for SOAP interface
-examples/SOAP/simple2.pl	Example for SOAP interface
-examples/SOAP/simple3.pl	Example for SOAP interface
-examples/UDDI/inquire1.pl	Example for UDDI inquire interface
-examples/UDDI/publish1.pl	Example for UDDI publishing interface
-examples/UDDI/simple1.pl	Example for UDDI interface
-examples/UDDI/simple2.pl	Example for UDDI interface
-examples/UDDI/syntax1.pl	Example for UDDI publishing interface
-examples/UDDI/syntax2.pl	Example for UDDI publishing interface
-examples/UDDI/syntax3.pl	Example for UDDI publishing interface
-examples/WSDL/dynamic1.pl	Example for WSDL dynamic interface
-examples/WSDL/dynamic2.pl	Example for WSDL dynamic interface
-examples/WSDL/dynamic3.pl	Example for WSDL dynamic interface
-examples/WSDL/dynamic4.pl
-examples/WSDL/stub1.pl		Example for WSDL stub interface
-examples/WSDL/stub2.pl		Example for WSDL stub interface
-examples/WSDL/stub3.pl		Example for WSDL stub interface
-examples/XML/customxml.pl	Example for XML processing (SOAP::Custom::XML)
-examples/XMLRPC/mod_xmlrpc.htaccess
-examples/XMLRPC/simple1.pl
-examples/XMLRPC/xmlrpc.cgi
-examples/XMLRPC/xmlrpc.daemon
-examples/allclients.pl		Different client implementations
-examples/authentication.pl	Example for Basic/Digest server authentication
-examples/autoexamples.pl	Script for My::Examples with autodispatching
-examples/chat.pl		Client side for Chat implementation 
 examples/compress.pl		Example for compression options
 examples/cookie.pl		Fortune cookie for you
 examples/cookieauth.pl		Example for cookie-based authentication
@@ -74,10 +37,20 @@ examples/forms/style.cgi	Example for form-data parsing, server side
 examples/forms/style.html	Example for form-data parsing, client side
 examples/fullsearch.pl
 examples/getdom.pl
-examples/google.pl              Example for Google Web API
+examples/google.pl		Example for Google Web API
 examples/inline.daemon
 examples/iterator.pl		Example for Session/Persistent iterators
+examples/JABBER/jabclient.pl
+examples/JABBER/jabserver.pl
 examples/joke.pl
+examples/MQ/mqclient.pl
+examples/MQ/mqserver.pl
+examples/My/Chat.pm		Module with Chat server implementation 
+examples/My/Examples.pm		Module with Examples backend
+examples/My/Parameters.pm	Module with Paramaters backend
+examples/My/PersistentIterator.pm	Module with Persistent Iterator backend
+examples/My/PingPong.pm		Module with PingPong backend
+examples/My/SessionIterator.pm	Module with Session Iterator backend
 examples/oneliners		Couple of one-line SOAP calls
 examples/oo-apache.pl		Example of object interoperability
 examples/parametersbyname.pl	Example for passing parameters-by-name 
@@ -98,17 +71,64 @@ examples/server/soap.pop3	SOAP server, POP3 implementation
 examples/server/soap.tcp	SOAP server, TCP implementation
 examples/server/soap.vbs	SOAP server, VB/Daemon implementation
 examples/server/soap_perl.asp	SOAP server, ASP/PerlScript implementation
+examples/SOAP/simple1.pl	Example for SOAP interface
+examples/SOAP/simple2.pl	Example for SOAP interface
+examples/SOAP/simple3.pl	Example for SOAP interface
+examples/SOAP/Transport/HTTP/Daemon/ForkAfterProcessing.pm
+examples/SOAP/Transport/HTTP/Daemon/ForkOnAccept.pm
 examples/soapmark.pl		Simple test for different implementations
 examples/soapsmtp.pl		Example for SMTP/sendmail message sending
 examples/tcpclient.pl		Simple test for local TCP client
 examples/terraserver.pl
+examples/UDDI/inquire1.pl	Example for UDDI inquire interface
+examples/UDDI/publish1.pl	Example for UDDI publishing interface
+examples/UDDI/simple1.pl	Example for UDDI interface
+examples/UDDI/simple2.pl	Example for UDDI interface
+examples/UDDI/syntax1.pl	Example for UDDI publishing interface
+examples/UDDI/syntax2.pl	Example for UDDI publishing interface
+examples/UDDI/syntax3.pl	Example for UDDI publishing interface
 examples/weblog.pl
+examples/WSDL/dynamic1.pl	Example for WSDL dynamic interface
+examples/WSDL/dynamic2.pl	Example for WSDL dynamic interface
+examples/WSDL/dynamic3.pl	Example for WSDL dynamic interface
+examples/WSDL/dynamic4.pl
+examples/WSDL/stub1.pl		Example for WSDL stub interface
+examples/WSDL/stub2.pl		Example for WSDL stub interface
+examples/WSDL/stub3.pl		Example for WSDL stub interface
+examples/XML/customxml.pl	Example for XML processing (SOAP::Custom::XML)
+examples/XMLRPC/mod_xmlrpc.htaccess
+examples/XMLRPC/simple1.pl
+examples/XMLRPC/xmlrpc.cgi
+examples/XMLRPC/xmlrpc.daemon
 lib/Apache/SOAP.pm		mod_soap module
 lib/Apache/XMLRPC/Lite.pm
 lib/IO/SessionData.pm
 lib/IO/SessionSet.pm
+lib/OldDocs/SOAP/Lite.pm
+lib/OldDocs/SOAP/Transport/FTP.pm
+lib/OldDocs/SOAP/Transport/HTTP.pm
+lib/OldDocs/SOAP/Transport/IO.pm
+lib/OldDocs/SOAP/Transport/JABBER.pm
+lib/OldDocs/SOAP/Transport/LOCAL.pm
+lib/OldDocs/SOAP/Transport/MAILTO.pm
+lib/OldDocs/SOAP/Transport/MQ.pm
+lib/OldDocs/SOAP/Transport/POP3.pm
+lib/OldDocs/SOAP/Transport/TCP.pm
+lib/SOAP/Client.pm
+lib/SOAP/Constants.pm
+lib/SOAP/Data.pm
+lib/SOAP/Deserializer.pm
+lib/SOAP/Fault.pm
+lib/SOAP/Header.pm
 lib/SOAP/Lite.pm		Main SOAP::Lite module
+lib/SOAP/Packager.pm
+lib/SOAP/Schema.pm
+lib/SOAP/Serializer.pm
+lib/SOAP/Server.pm
+lib/SOAP/SOM.pm
 lib/SOAP/Test.pm		Simple test framework
+lib/SOAP/Trace.pm
+lib/SOAP/Transport.pm
 lib/SOAP/Transport/FTP.pm	FTP transport, client 
 lib/SOAP/Transport/HTTP.pm	HTTP transport, client and server
 lib/SOAP/Transport/IO.pm	IO transport, client
@@ -118,6 +138,7 @@ lib/SOAP/Transport/MAILTO.pm	SMTP/sendmail transport, client
 lib/SOAP/Transport/MQ.pm
 lib/SOAP/Transport/POP3.pm	POP3 transport, server
 lib/SOAP/Transport/TCP.pm	TCP transport, client and server
+lib/SOAP/Utils.pm
 lib/UDDI/Lite.pm		Main UDDI::Lite module
 lib/XML/Parser/Lite.pm
 lib/XMLRPC/Lite.pm
@@ -125,6 +146,67 @@ lib/XMLRPC/Test.pm
 lib/XMLRPC/Transport/HTTP.pm
 lib/XMLRPC/Transport/POP3.pm
 lib/XMLRPC/Transport/TCP.pm
+Makefile.PL
+MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
+README
+ReleaseNotes.txt
+SOAP-Lite-0./bin/stubmaker.pl
+SOAP-Lite-0./bin/XMLRPCsh.pl
+SOAP-Lite-0./Changes
+SOAP-Lite-0./examples/chat.pl
+SOAP-Lite-0./examples/COM/local.vbs
+SOAP-Lite-0./examples/COM/remote.cs
+SOAP-Lite-0./examples/COM/remote.vba
+SOAP-Lite-0./examples/COM/SOAP-Lite-COM-minimal.ctrl
+SOAP-Lite-0./examples/COM/SOAP-Lite-COM-standalone.ctrl
+SOAP-Lite-0./examples/COM/soap.asp
+SOAP-Lite-0./examples/COM/soap.vbs
+SOAP-Lite-0./examples/COM/states.vbs
+SOAP-Lite-0./examples/COM/xmlrpc.vbs
+SOAP-Lite-0./examples/compress.pl
+SOAP-Lite-0./examples/customschema.pl
+SOAP-Lite-0./examples/forms/style.html
+SOAP-Lite-0./examples/inline.daemon
+SOAP-Lite-0./examples/iterator.pl
+SOAP-Lite-0./examples/JABBER/jabclient.pl
+SOAP-Lite-0./examples/joke.pl
+SOAP-Lite-0./examples/My/PingPong.pm
+SOAP-Lite-0./examples/My/SessionIterator.pm
+SOAP-Lite-0./examples/oneliners
+SOAP-Lite-0./examples/pingpong.pl
+SOAP-Lite-0./examples/server/soap.cgi
+SOAP-Lite-0./examples/server/soap.daemon.forkafterprocessing
+SOAP-Lite-0./examples/server/soap.mod_cgi
+SOAP-Lite-0./examples/SOAP/simple2.pl
+SOAP-Lite-0./examples/soapmark.pl
+SOAP-Lite-0./examples/UDDI/syntax2.pl
+SOAP-Lite-0./examples/WSDL/dynamic3.pl
+SOAP-Lite-0./examples/XMLRPC/simple1.pl
+SOAP-Lite-0./examples/XMLRPC/xmlrpc.cgi
+SOAP-Lite-0./lib/Apache/SOAP.pm
+SOAP-Lite-0./lib/IO/SessionSet.pm
+SOAP-Lite-0./lib/OldDocs/SOAP/Transport/FTP.pm
+SOAP-Lite-0./lib/OldDocs/SOAP/Transport/HTTP.pm
+SOAP-Lite-0./lib/OldDocs/SOAP/Transport/JABBER.pm
+SOAP-Lite-0./lib/SOAP/Data.pm
+SOAP-Lite-0./lib/SOAP/Lite.pm
+SOAP-Lite-0./lib/SOAP/Test.pm
+SOAP-Lite-0./lib/SOAP/Transport/HTTP.pm
+SOAP-Lite-0./lib/SOAP/Transport/JABBER.pm
+SOAP-Lite-0./lib/SOAP/Transport/LOCAL.pm
+SOAP-Lite-0./lib/SOAP/Transport/MAILTO.pm
+SOAP-Lite-0./lib/XML/Parser/Lite.pm
+SOAP-Lite-0./lib/XMLRPC/Transport/TCP.pm
+SOAP-Lite-0./README
+SOAP-Lite-0./ReleaseNotes.txt
+SOAP-Lite-0./t/04-attach.t
+SOAP-Lite-0./t/06-modules.t
+SOAP-Lite-0./t/08-schema.t
+SOAP-Lite-0./t/15-daemon.t
+SOAP-Lite-0./t/22-interop_apache.t
+SOAP-Lite-0./t/28-uddi_search.t
+SOAP-Lite-0./t/38-packager.t
 t/01-core.t
 t/02-payload.t
 t/03-server.t
@@ -152,4 +234,5 @@ t/28-uddi_search.t
 t/29-uddi_publishing.t
 t/36-leaks.t
 t/37-mod_xmlrpc.t
+t/38-packager.t
 t/TEST.pl
