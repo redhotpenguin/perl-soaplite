@@ -1344,7 +1344,13 @@ sub new {
   local $^W; 
   require MIME::Parser;
   require MIME::Entity;
-  Exporter::require_version('MIME::Parser' => 6.106);
+
+# removed requirement for MIME::Parser 6.106
+# even though it fixes interoperability problem with Axis, this version
+# is still marked as "experimantal" on CPAN and is not available for
+# auto-install (as of 08/08/03) --PK
+#  Exporter::require_version('MIME::Parser' => 6.106);
+
   my $self = shift;
 
   unless (ref $self) {
@@ -1357,6 +1363,11 @@ sub new {
   while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
   return $self;
+}
+
+sub parts {
+  my $self = shift;
+  @_ ? ($self->{_parts} = \@_, return $self) : return $self->{_parts};
 }
 
 sub get_multipart_id {
@@ -1381,12 +1392,17 @@ sub decode {
   my $self = shift;
   my $entity = eval { $self->parse_data(shift) }
     or die "Something wrong with MIME message: @{[$@ || $self->last_error]}\n";
+
+  # initialize with empty array; autovivification doesn't work in this case --PK
+  $self->parts([]) if $entity->parts; 
+
   # Changed to better populate the array with references
   # to the MIME::Entity to prevent memory bloat
   for (my $i=1;$i<=$entity->parts;$i++) {
-    push(@{$self->{_parts}},\$entity->parts($i))
+    push(@{$self->parts},\$entity->parts($i))
       if ref($entity->parts($i)) eq "MIME::Entity";
   }
+
   my @result = ();
 #  print STDERR "Decoding ".$entity->head->mime_type."\n";
   if ($entity->head->mime_type eq 'multipart/form-data') {
@@ -1434,7 +1450,7 @@ sub decode_related {
     'thismessage:/';
   my @result;
   foreach my $part ($entity->parts) {
-    # Weird, the following use of head->get(SCALER[,INDEX]) doesn't work as
+    # Weird, the following use of head->get(SCALAR[,INDEX]) doesn't work as
     # expected. Work around is to eliminate the INDEX.
     my $pid = get_multipart_id($part->head->mime_attr('content-id'));
     # If Content-ID is not supplied, then generate a random one (HACK - because
@@ -1752,7 +1768,7 @@ sub deserialize {
   # TBD: find better way to signal parsing errors
   # This is returning a parsed body, however, if the message was mime
   # formatted, then the self->ids hash should be populated with mime parts
-  # as will the self->mimeparser->{_parts} array
+  # as will the self->mimeparser->parts array
   my $parsed = $self->decode($_[0]); # TBD: die on possible errors in Parser?
   # Thought - decode should return an ARRAY which may contain MIME::Entities
   # then the SOM object that is created and returned from this will know how
@@ -1769,10 +1785,13 @@ sub deserialize {
   }
   $self->decode_object($parsed);
   my $som = SOAP::SOM->new($parsed);
-  if ($self->mimeparser->{'_parts'}) {
+  # first check if MIME parser has been initialized 
+  # simple $self->mimeparser() call doesn't work because of
+  # "lazy initialization" --PK
+  if (defined $self->{'_mimeparser'} && $self->mimeparser->parts) {
     # This seems like an unnecessary copy... does SOAP::SOM have a handle on
     # the SOAP::Lite->mimeparser instance so that I can skip this?
-    $som->{'_parts'} = $self->mimeparser->{'_parts'};
+    $som->{'_parts'} = $self->mimeparser->parts; 
   }
   # Having this code here makes mime messages work, but multirefs do not.
   #if ($self->mimeparser->{'_parts'}) {
@@ -2966,6 +2985,7 @@ sub call {
   #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   # This needs to be moved to HTTP transport layer - what is this doing here?!
   if ($self->parts) {
+    require MIME::Entity;
     local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
     $top = MIME::Entity->build('Type' => "Multipart/Related");
     my @args = @_;
@@ -2985,12 +3005,13 @@ sub call {
     endpoint => $self->endpoint,
     action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
                 # leave only parameters so we can later update them if required
-    envelope => (length($self->parts()) > 0 ? $top->stringify_body : $serializer->envelope(method => shift, @_)),
+    envelope => (defined $top ? $top->stringify_body : $serializer->envelope(method => shift, @_)),
     encoding => $serializer->encoding,
     headers  => $headers,
   );
 
-  $self->parts(undef); # I need to reset this.
+  @{$self->parts || []} = (); # need to reset this --BR
+                        # ->parts(undef) doesn't do it, because it stores one empty value --PK
 
   return $response if $self->outputxml;
 
