@@ -1259,8 +1259,7 @@ sub DESTROY { SOAP::Trace::objects('()') }
 sub xmlparser {
   my $self = shift;
   return eval { $SOAP::Constants::DO_NOT_USE_XML_PARSER ? undef : do {
-    require XML::Parser; 
-    new XML::Parser(Handlers => { ExternEnt => undef } ) }} ||
+    require XML::Parser; XML::Parser->new }} ||
       eval { require XML::Parser::Lite; XML::Parser::Lite->new } ||
 	die "XML::Parser is not @{[$SOAP::Constants::DO_NOT_USE_XML_PARSER ? 'used' : 'available']} and ", $@;
 }
@@ -1289,6 +1288,7 @@ sub decode { SOAP::Trace::trace('()');
     Start => sub { shift; $self->start(@_) },
     End   => sub { shift; $self->end(@_)   },
     Char  => sub { shift; $self->char(@_)  },
+    ExternEnt => sub { shift; die "External entity (pointing to '$_[1]') is not allowed" },
   );
   my $parsed = $self->parser->parse($_[0]);
   return $parsed;
@@ -1305,7 +1305,7 @@ sub final {
 
   undef $self->{_values};
   $self->parser->setHandlers(
-    Final => undef, Start => undef, End   => undef, Char  => undef,
+    Final => undef, Start => undef, End => undef, Char => undef, ExternEnt => undef,
   );
   $self->{_done};
 }

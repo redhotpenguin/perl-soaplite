@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 23 }
+BEGIN { plan tests => 24 }
 
 use SOAP::Lite;
 
@@ -219,6 +219,7 @@ EOBASE64
 
 {
   print "Test of XML::Parser External Entity vulnerability...\n";
-  print STDERR SOAP::Deserializer->deserialize('<?xml version="1.0"?><!DOCTYPE foo [ <!ENTITY ll system "http://localhost/foo.txt"> ]><root>&ll</root>')->root;
-  #ok(SOAP::Deserializer->deserialize('<?xml version="1.0"?><!DOCTYPE ENTITY ll system "http://somehost:8000"><root>&ll</root>')->root);
+  UNIVERSAL::isa(SOAP::Deserializer->parser->parser => 'XML::Parser::Lite') ?
+    skip(q!External entity references are not supported in XML::Parser::Lite! => undef) :
+    ok(!eval { SOAP::Deserializer->deserialize('<?xml version="1.0"?><!DOCTYPE foo [ <!ENTITY ll SYSTEM "foo.txt"> ]><root>&ll;</root>')->root } and $@ =~ /^External entity/);
 }
