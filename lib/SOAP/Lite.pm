@@ -204,12 +204,12 @@ use vars qw(@EXPORT);
 
 BEGIN {
   @EXPORT = qw(anyType anySimpleType float double decimal dateTime
-	       timePeriod gMonth gYearMonth gYear century 
-	       gMonthDay gDay duration recurringDuration anyURI
-	       language integer nonPositiveInteger negativeInteger
-	       long int short byte nonNegativeInteger unsignedLong
-	       unsignedInt unsignedShort unsignedByte positiveInteger
-	       date time string hex base64 boolean
+               timePeriod gMonth gYearMonth gYear century 
+               gMonthDay gDay duration recurringDuration anyURI
+               language integer nonPositiveInteger negativeInteger
+               long int short byte nonNegativeInteger unsignedLong
+               unsignedInt unsignedShort unsignedByte positiveInteger
+               date time string hex base64 boolean
   );
   # Add QName to @EXPORT
   # predeclare subs, so ->can check will be positive 
@@ -278,46 +278,58 @@ package SOAP::Constants;
 
 BEGIN {
 
+  use constant URI_LITERAL_ENC       => "";
+  use constant URI_SOAP11_ENC        => "http://schemas.xmlsoap.org/soap/encoding/";
+  use constant URI_SOAP11_ENV        => "http://schemas.xmlsoap.org/soap/envelope/";
+  use constant URI_SOAP11_NEXT_ACTOR => "http://schemas.xmlsoap.org/soap/actor/next";
+  use constant URI_SOAP12_ENC        => "http://www.w3.org/2002/12/soap-encoding";
+  use constant URI_SOAP12_ENV        => "http://www.w3.org/2002/12/soap-envelope";
+  use constant URI_SOAP12_NOENC      => "http://www.w3.org/2002/12/soap-envelope/encoding/none";
+  use constant URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2002/12/soap-envelope/role/next";
+
   use vars qw($NSMASK $ELMASK);
 
   $NSMASK = '[a-zA-Z_:][\w.\-:]*'; 
-  $ELMASK = '^(?![xX][mM][lL])[a-zA-Z_][\w.\-]*\$';
+  $ELMASK = '^(?![xX][mM][lL])[a-zA-Z_][\w.\-]*$';
 
   use vars qw($NEXT_ACTOR $NS_ENV $NS_ENC $NS_APS
               $FAULT_CLIENT $FAULT_SERVER $FAULT_VERSION_MISMATCH
               $HTTP_ON_FAULT_CODE $HTTP_ON_SUCCESS_CODE $FAULT_MUST_UNDERSTAND
               $NS_XSI_ALL $NS_XSI_NILS %XML_SCHEMAS $DEFAULT_XML_SCHEMA
-	      $DEFAULT_HTTP_CONTENT_TYPE
+	          $DEFAULT_HTTP_CONTENT_TYPE
               $SOAP_VERSION %SOAP_VERSIONS $WRONG_VERSION
               $NS_SL_HEADER $NS_SL_PERLTYPE $PREFIX_ENV $PREFIX_ENC
               $DO_NOT_USE_XML_PARSER $DO_NOT_CHECK_MUSTUNDERSTAND 
               $DO_NOT_USE_CHARSET $DO_NOT_PROCESS_XML_IN_MIME
               $DO_NOT_USE_LWP_LENGTH_HACK $DO_NOT_CHECK_CONTENT_TYPE
-              $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE
+              $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE $DEFAULT_PACKAGER
+              @SUPPORTED_ENCODING_STYLES
   );
 
-  $FAULT_CLIENT = 'Client';
-  $FAULT_SERVER = 'Server';
+  $FAULT_CLIENT           = 'Client';
+  $FAULT_SERVER           = 'Server';
   $FAULT_VERSION_MISMATCH = 'VersionMismatch';
-  $FAULT_MUST_UNDERSTAND = 'MustUnderstand';
+  $FAULT_MUST_UNDERSTAND  = 'MustUnderstand';
 
   $HTTP_ON_SUCCESS_CODE = 200; # OK
   $HTTP_ON_FAULT_CODE   = 500; # INTERNAL_SERVER_ERROR
+
+  @SUPPORTED_ENCODING_STYLES = ( URI_LITERAL_ENC,URI_SOAP11_ENC,URI_SOAP12_ENC,URI_SOAP12_NOENC );
 
   $WRONG_VERSION = 'Wrong SOAP version specified.';
 
   %SOAP_VERSIONS = (
     ($SOAP_VERSION = 1.1) => {
-      NEXT_ACTOR => 'http://schemas.xmlsoap.org/soap/actor/next',
-      NS_ENV => 'http://schemas.xmlsoap.org/soap/envelope/',
-      NS_ENC => 'http://schemas.xmlsoap.org/soap/encoding/',
+      NEXT_ACTOR => URI_SOAP11_NEXT_ACTOR,
+      NS_ENV => URI_SOAP11_ENV,
+      NS_ENC => URI_SOAP11_ENC,
       DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
       DEFAULT_HTTP_CONTENT_TYPE => 'text/xml',
     },
     1.2 => {
-      NEXT_ACTOR => 'http://www.w3.org/2001/06/soap-envelope/actor/next',
-      NS_ENV => 'http://www.w3.org/2001/06/soap-envelope',
-      NS_ENC => 'http://www.w3.org/2001/06/soap-encoding',
+      NEXT_ACTOR => URI_SOAP12_NEXT_ACTOR,
+      NS_ENV => URI_SOAP12_ENV,
+      NS_ENC => URI_SOAP12_ENC,
       DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
       DEFAULT_HTTP_CONTENT_TYPE => 'application/soap',
     },
@@ -357,6 +369,9 @@ BEGIN {
   $DO_NOT_USE_LWP_LENGTH_HACK = 0;
   $DO_NOT_CHECK_CONTENT_TYPE = 0;
   $PATCH_HTTP_KEEPALIVE = 1;
+
+  # TODO - use default packager constant somewhere 
+  $DEFAULT_PACKAGER = "SOAP::Packager::MIME";
 }
   
 # ======================================================================
@@ -449,7 +464,6 @@ sub new {
   my $self = shift;
   return $self if ref $self;
   my $class = ref($self) || $self;
-  return $self if ref $self;
 
   SOAP::Trace::objects('()');
   return bless {} => $class;
@@ -459,7 +473,6 @@ sub proxy {
   my $self = shift->new;
 #  my $self = shift;
   my $class = ref $self;
-
   return $self->{_proxy} unless @_;
   $_[0] =~ /^(\w+):/ or die "proxy: transport protocol not specified\n";
   my $protocol = uc "$1"; # untainted now
@@ -692,6 +705,27 @@ BEGIN {
   sub prefix { $prefix =~ s/^[^\-]+-/$_[1]-/; $_[0]; }
 }
 
+sub BEGIN {
+  no strict 'refs';
+  for my $method (qw(readable level seen autotype typelookup attr maptype
+                     namespaces multirefinplace encoding signature
+                     on_nonserialized use_prefix context)) {
+    my $field = '_' . $method;
+    *$method = sub {
+      my $self = shift->new;
+      @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
+    }
+  }
+  for my $method (qw(method fault freeform)) { # aliases for envelope
+    *$method = sub { shift->envelope($method => @_) }
+  }
+  # Is this necessary? Seems like work for nothing when a user could just use
+  # SOAP::Utils directly.
+#  for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
+#    *$method = \&{'SOAP::Utils::'.$method};
+#  }
+}
+
 sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
@@ -707,15 +741,15 @@ sub new {
       _multirefinplace => 0,
       _seen => {},
       _typelookup => {
-	  'base64Binary' => 
+          'base64Binary' => 
 	      [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/}, 'as_base64Binary'],
           'int'  => 
 	      [20, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 2147483648 && $1 >= -2147483648; }, 'as_int'],
           'long' => 
 	      [25, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
-	  'float'  => 
+          'float'  => 
 	      [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
-	  'gMonth' => 
+          'gMonth' => 
 	      [35, sub { $_[0] =~ /^--\d\d--(-\d\d:\d\d)?$/; }, 'as_gMonth'],
           'gDay' => 
 	      [40, sub { $_[0] =~ /^---\d\d(-\d\d:\d\d)?$/; }, 'as_gDay'],
@@ -745,6 +779,7 @@ sub new {
       _signature => [],
       _maptype => {},
       _on_nonserialized => sub {Carp::carp "Cannot marshall @{[ref shift]} reference" if $^W; return},
+      _encodingStyle => $SOAP::Constants::NS_ENC,
       _attr => {
         "{$SOAP::Constants::NS_ENV}encodingStyle" => $SOAP::Constants::NS_ENC,
       },
@@ -754,9 +789,7 @@ sub new {
       },
       _soapversion => SOAP::Lite->soapversion,
     } => $class;
-
     $self->xmlschema($SOAP::Constants::DEFAULT_XML_SCHEMA);
-
     SOAP::Trace::objects('()');
   }
 
@@ -766,6 +799,21 @@ sub new {
   return $self;
 }
 
+sub encodingStyle {
+  my $self = shift;
+  return $self->{'_encodingStyle'} unless @_;
+  my $cur_style = $self->{'_encodingStyle'};
+  delete($self->{'_namespaces'}->{$cur_style});
+  my $new_style = shift;
+  if ($new_style eq "") {
+    delete($self->{'_attr'}->{"{$SOAP::Constants::NS_ENV}encodingStyle"});
+  } else {
+    $self->{'_attr'}->{"{$SOAP::Constants::NS_ENV}encodingStyle"} = $new_style;
+    $self->{'_namespaces'}->{$new_style} = $SOAP::Constants::PREFIX_ENC;
+  }
+}
+
+# TODO - changing SOAP version can affect previously set encodingStyle
 sub soapversion {
   my $self = shift;
   return $self->{_soapversion} unless @_;
@@ -786,7 +834,6 @@ sub soapversion {
 
 sub xmlschema {
   my $self = shift->new;
-#  my $self = shift;
   return $self->{_xmlschema} unless @_;
 
   my @schema;
@@ -822,19 +869,8 @@ sub xmlschema {
   return $self;
 }
 
-sub namespace {
-  Carp::carp "'SOAP::Serializer->namespace' method is deprecated. Instead use '->envprefix'" if $^W;
-  shift->envprefix(@_);
-}
-
-sub encodingspace {
-  Carp::carp "'SOAP::Serializer->encodingspace' method is deprecated. Instead use '->encprefix'" if $^W;
-  shift->encprefix(@_);
-}
-
 sub envprefix {
   my $self = shift->new;
-#  my $self = shift;
   return $self->namespaces->{$SOAP::Constants::NS_ENV} unless @_;
   $self->namespaces->{$SOAP::Constants::NS_ENV} = shift;
   return $self;
@@ -842,41 +878,17 @@ sub envprefix {
 
 sub encprefix {
   my $self = shift->new;
-#  my $self = shift;
   return $self->namespaces->{$SOAP::Constants::NS_ENC} unless @_;
   $self->namespaces->{$SOAP::Constants::NS_ENC} = shift;
   return $self;
 }
 
-sub BEGIN {
-  no strict 'refs';
-  for my $method (qw(readable level seen autotype typelookup attr maptype
-                     namespaces multirefinplace encoding signature
-                     on_nonserialized use_prefix context)) {
-    my $field = '_' . $method;
-    *$method = sub {
-      my $self = shift->new;
-#      my $self = shift;
-      @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
-    }
-  }
-  for my $method (qw(method fault freeform)) { # aliases for envelope
-    *$method = sub { shift->envelope($method => @_) }
-  }
-  # Is this necessary? Seems like work for nothing when a user could just use
-  # SOAP::Utils directly.
-  for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
-    *$method = \&{'SOAP::Utils::'.$method};
-  }
-}
-
 sub uri {
     my $self = shift->new;
-#    my $self = shift;
     if (@_) {
-	$self->{'_uri'} = shift;
-	$self->register_ns($self->{'_uri'}) if (!$self->use_prefix);
-	return $self;
+      $self->{'_uri'} = shift;
+      $self->register_ns($self->{'_uri'}) if (!$self->use_prefix);
+      return $self;
     }
     return $self->{'_uri'};
 }
@@ -925,8 +937,6 @@ sub encode_multirefs {
             } grep { $seen->{$_}->{multiref} && !$seen->{$_}->{recursive}
                    } keys %$seen;
 }
-
-# ----------------------------------------------------------------------
 
 sub maptypetouri {
   my($self, $type, $simple) = @_;
@@ -1006,12 +1016,17 @@ sub encode_object {
     }
   }
 
-  return 
-    UNIVERSAL::isa($object => 'REF') ||
-    UNIVERSAL::isa($object => 'SCALAR') ? $self->encode_scalar($object, $name, $type, $attr) :
-    UNIVERSAL::isa($object => 'ARRAY')  ? $self->encode_array($object, $name, $type, $attr) :
-    UNIVERSAL::isa($object => 'HASH')   ? $self->encode_hash($object, $name, $type, $attr) :
-                                          $self->on_nonserialized->($object); 
+  if (UNIVERSAL::isa($object => 'REF') || UNIVERSAL::isa($object => 'SCALAR')) {
+    return $self->encode_scalar($object, $name, $type, $attr);
+  } elsif (UNIVERSAL::isa($object => 'ARRAY')) {
+    return $self->encodingStyle eq "" ? 
+      $self->encode_array($object, $name, $type, $attr) :
+      $self->encode_literal_array($object, $name, $type, $attr);
+  } elsif (UNIVERSAL::isa($object => 'HASH')) {
+    return $self->encode_hash($object, $name, $type, $attr);
+  } else {
+    return $self->on_nonserialized->($object);
+  }
 }
 
 sub encode_scalar {
@@ -1043,21 +1058,9 @@ sub encode_scalar {
 
 sub encode_array {
   my($self, $array, $name, $type, $attr) = @_;
-
-
-# lexi patch begin
-#  # If typing is disabled, just serialize each of the array items
-#  # with no type information, each using the specified name,
-#  # and do not crete a wrapper array tag.
-#  if (!$self->autotype) {
-#      $name ||= gen_name;
-#      return map {$self->encode_object($_, $name)} @$array;
-#  }
-# lexi patch end
-
   my $items = 'item'; 
 
-# TD: add support for multidimensional, partially transmitted and sparse arrays
+  # TODO: add support for multidimensional, partially transmitted and sparse arrays
   my @items = map {$self->encode_object($_, $items)} @$array;
   my $num = @items;
   my($arraytype, %types) = '-';
@@ -1065,10 +1068,6 @@ sub encode_array {
   $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
 
   $type = qualify($self->encprefix => 'Array') if $self->autotype && !defined $type;
-# lexi patch begin
-#  $type = qualify($self->encprefix => 'Array') if !defined $type;
-# lexi patch end
-
 
   return [$name || qualify($self->encprefix => 'Array'), 
           {qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
@@ -1077,6 +1076,53 @@ sub encode_array {
   ];
 }
 
+# Will encode arrays using doc-literal style
+sub encode_literal_array {
+  my($self, $array, $name, $type, $attr) = @_;
+
+  # If typing is disabled, just serialize each of the array items
+  # with no type information, each using the specified name,
+  # and do not crete a wrapper array tag.
+  if (!$self->autotype) {
+      $name ||= gen_name;
+      return map {$self->encode_object($_, $name)} @$array;
+  }
+
+  my $items = 'item'; 
+
+  # TODO: add support for multidimensional, partially transmitted and sparse arrays
+  my @items = map {$self->encode_object($_, $items)} @$array;
+  my $num = @items;
+  my($arraytype, %types) = '-';
+  for (@items) { $arraytype = $_->[1]->{'xsi:type'} || '-'; $types{$arraytype}++ }
+  $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
+  $type = qualify($self->encprefix => 'Array') if !defined $type;
+  return [$name || qualify($self->encprefix => 'Array'), 
+          {qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
+          [@items], 
+          $self->gen_id($array)
+  ];
+}
+
+sub encode_hash_old {
+#sub encode_hash {
+  my($self, $hash, $name, $type, $attr) = @_;
+
+  if ($self->autotype && grep {!/$SOAP::Constants::ELMASK/o} keys %$hash) {
+    warn qq!Cannot encode @{[$name ? "'$name'" : 'unnamed']} element as 'hash'. Will be encoded as 'map' instead\n! if $^W;
+    return $self->as_map($hash, $name || gen_name, $type, $attr);
+  }
+
+  $type = 'SOAPStruct' 
+    if $self->autotype && !defined($type) && exists $self->maptype->{SOAPStruct};
+  return [$name || gen_name, 
+          {'xsi:type' => $self->maptypetouri($type), %$attr},
+          [map {$self->encode_object($hash->{$_}, $_)} keys %$hash], 
+          $self->gen_id($hash)
+  ];
+}
+
+#sub encode_hash_lexi_patch {
 sub encode_hash {
   my($self, $hash, $name, $type, $attr) = @_;
 
@@ -1085,37 +1131,31 @@ sub encode_hash {
     return $self->as_map($hash, $name || gen_name, $type, $attr);
   }
 
-  $type = 'SOAPStruct' if $self->autotype && !defined($type) && exists $self->maptype->{SOAPStruct};
+  $type = 'SOAPStruct'
+    if $self->autotype && !defined($type) && exists $self->maptype->{SOAPStruct};
   return [$name || gen_name, 
-# lexi patch begin
-          {'xsi:type' => $self->maptypetouri($type), %$attr},
-#	  $self->autotype ? {'xsi:type' => $self->maptypetouri($type), %$attr} : { %$attr },
-# lexi patch end
-         [map {$self->encode_object($hash->{$_}, $_)} keys %$hash], 
+          $self->autotype ? {'xsi:type' => $self->maptypetouri($type), %$attr} : { %$attr },
+          [map {$self->encode_object($hash->{$_}, $_)} keys %$hash], 
           $self->gen_id($hash)
   ];
 }
-
-# ----------------------------------------------------------------------
 
 sub as_ordered_hash {
   my $self = shift;
   my ($value, $name, $type, $attr) = @_;
   die "Not an ARRAY reference for 'ordered_hash' type" unless UNIVERSAL::isa($value => 'ARRAY');
   return [ $name, $attr, 
-    [ map { $self->encode_object(@{$value}[2*$_+1,2*$_]) } 0..$#$value/2 ], 
+    [map{$self->encode_object(@{$value}[2*$_+1,2*$_])} 0..$#$value/2 ], 
     $self->gen_id($value)
   ];
 }
 
 sub as_map {
   my $self = shift;
-  my ($value, $name, $type, $attr) = @_;
+  my($value, $name, $type, $attr) = @_;
   die "Not a HASH reference for 'map' type" unless UNIVERSAL::isa($value => 'HASH');
   my $prefix = ($self->namespaces->{$SOAP::Constants::NS_APS} ||= 'apachens');
-
-  my @items = map { $self->encode_object(SOAP::Data->type(ordered_hash => [ key => $_, value => $value->{$_}]), 'item', '')} keys %$value;
-
+  my @items = map {$self->encode_object(SOAP::Data->type(ordered_hash => [key => $_, value => $value->{$_}]), 'item', '')} keys %$value;
   return [$name, {'xsi:type' => "$prefix:Map", %$attr}, [@items], $self->gen_id($value)];
 }
 
@@ -1135,8 +1175,6 @@ sub typecast {
           $value
   ];
 }
-
-# ----------------------------------------------------------------------
 
 sub register_ns {
 #    my $self = shift->new;
@@ -1204,7 +1242,7 @@ sub tag {
   # check for special attribute
   return "$indent$value" if exists $attrs->{_xml} && delete $attrs->{_xml}; 
 
-  die "Element '$tag' can't be allowed in valid XML message. Died\n"
+  die "Element '$tag' can't be allowed in valid XML message. Died."
     if $tag !~ /^(?![xX][mM][lL])$SOAP::Constants::NSMASK$/o;
 
   my $prolog = $self->readable ? "\n" : "";
@@ -1283,11 +1321,7 @@ sub uriformethod {
 }
 
 sub serialize { SOAP::Trace::trace('()');
-  my $self = shift->new; # stop reinitializing!
-# TODO - this will break a lot of unit tests, as the SOAP::Serializer is often
-#        invoked "statically". Fix unit tests. It is silly to have so many
-#        static calls.
-#  my $self = shift;
+  my $self = shift->new;
   @_ == 1 or Carp::croak "serialize() method accepts one parameter";
 
   $self->seen({}); # reinitialize multiref table
@@ -1302,17 +1336,13 @@ sub serialize { SOAP::Trace::trace('()');
 sub envelope {
   SOAP::Trace::trace('()');
   my $self = shift->new; # stop reinitializing!!!
-#  my $self = shift;
   my $type = shift;
   my(@parameters, @header);
-#  $self->context->packager->parts([]);
   for (@_) { 
     if (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'SOAP::Header')) {
       push(@header, $_); 
-    # TODO - there may be more than just MIME::Entities - parts come in other
-    #        flavors!
-    #        Perhaps a $self->packager->is_part($_); ?!
-    } elsif (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'MIME::Entity')) {
+    #} elsif (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'MIME::Entity')) {
+    } elsif (defined($_) && ref($_) && $self->context->packager->is_supported_part($_)) {
       $self->context->packager->push_part($_);
     } else {
       push(@parameters, $_);
@@ -1337,13 +1367,13 @@ sub envelope {
   } elsif ($type eq 'fault') {
     SOAP::Trace::fault(@parameters);
     $body = SOAP::Data
-      -> name(SOAP::Serializer::qualify($self->envprefix => 'Fault'))
+      -> name(SOAP::Utils::qualify($self->envprefix => 'Fault'))
     # parameters[1] needs to be escaped - thanks to aka_hct at gmx dot de
     # commented on 2001/03/28 because of failing in ApacheSOAP
     # need to find out more about it
     # -> attr({'xmlns' => ''})
       -> value(\SOAP::Data->set_value(
-        SOAP::Data->name(faultcode => SOAP::Serializer::qualify($self->envprefix => $parameters[0]))->type(""),
+        SOAP::Data->name(faultcode => SOAP::Utils::qualify($self->envprefix => $parameters[0]))->type(""),
         SOAP::Data->name(faultstring => SOAP::Utils::encode_data($parameters[1]))->type(""),
         defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
         defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3])->type("") : (),
@@ -1357,9 +1387,9 @@ sub envelope {
 
   $self->seen({}); # reinitialize multiref table
   my($encoded) = $self->encode_object(
-    SOAP::Data->name(SOAP::Serializer::qualify($self->envprefix => 'Envelope') => \SOAP::Data->value(
-      ($header ? SOAP::Data->name(SOAP::Serializer::qualify($self->envprefix => 'Header') => \$header) : ()),
-      SOAP::Data->name(SOAP::Serializer::qualify($self->envprefix => 'Body')   => \$body)
+    SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Envelope') => \SOAP::Data->value(
+      ($header ? SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Header') => \$header) : ()),
+      SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Body')   => \$body)
     ))->attr($self->attr)
   );
   $self->signature($parameters->signature) if ref $parameters;
@@ -1372,28 +1402,13 @@ sub envelope {
   #                            v --- subelements
   push(@{$encoded->[2]->[-1]->[2]}, $self->encode_multirefs) if ref $encoded->[2]->[-1]->[2];
 
-  if ($self->context->packager->parts) {
-# TODO - this needs to be called! Calling it though wraps the payload twice!
-#    return $self->context->packager->package($self->xmlize($encoded));
+  # Sometimes SOAP::Serializer is invoked statically when there is no context.
+  # So first check to see if a context exists.
+  # TODO - a context needs to be initialized by a constructor?
+  if ($self->context && $self->context->packager->parts) {
+  # TODO - this needs to be called! Calling it though wraps the payload twice!
+  #  return $self->context->packager->package($self->xmlize($encoded));
   }
-#  if (@parts) {
-#    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
-#    my $top = MIME::Entity->build('Type' => "Multipart/Related");
-#    $top->attach('Type'             => 'text/xml',
-#		 'Content-Transfer-Encoding' => '8bit',
-#		 'Content-Location' => '/main_envelope',
-#		 'Content-ID'       => '<main_envelope>',
-#		 'Data'             => $self->xmlize($encoded) );
-#    foreach my $a (@parts) {
-#      $top->add_part($a);
-#    }
-#    @parts = undef; # clear up a little memory
-#    # Each Transport layer is responsible for setting the proper top level 
-#    # MIME type with a start="<main_envelope>" mime attribute.
-#    # my ($boundary) = $top->head->multipart_boundary;
-#    # $headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$boundary.'"');
-#    return $top->stringify;
-#  }
   return $self->xmlize($encoded);
 }
 
@@ -1421,11 +1436,7 @@ sub new {
   my $self = shift;
   return $self if ref $self;
   my $class = ref($self) || $self;
-
-  return $self if ref $self;
-
   SOAP::Trace::objects('()');
-
   return bless {_parser => shift} => $class;
 }
 
@@ -1483,158 +1494,6 @@ sub end {
   undef $done->[3]; 
   @{$self->{_values}} ? (push @{$self->{_values}->[-1]->[2]}, $done)
                       : ($self->{_done} = $done);
-}
-
-# ======================================================================
-
-package SOAP::MIMEParser;
-
-use vars qw(@ISA);
-
-@ISA = qw(MIME::Parser);
-
-sub DESTROY {
-  SOAP::Trace::objects('()');
-  my $self = shift;
-  $self->{_parts} = undef;
-}
-
-sub new { 
-  local $^W; 
-  require MIME::Parser;
-  require MIME::Entity;
-
-# removed requirement for MIME::Parser 6.106
-# even though it fixes interoperability problem with Axis, this version
-# is still marked as "experimantal" on CPAN and is not available for
-# auto-install (as of 08/08/03) --PK
-#  Exporter::require_version('MIME::Parser' => 6.106);
-
-  my $self = shift;
-  return $self if ref $self;
-  unless (ref $self) {
-    my $class = ref($self) || $self;
-    $self = $class->SUPER::new();
-    unshift(@_, output_to_core => 'ALL', tmp_to_core => 1, ignore_errors => 1);
-    SOAP::Trace::objects('()');
-  }
-
-  while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
-
-  return $self;
-}
-
-sub parts {
-  my $self = shift;
-  @_ ? ($self->{_parts} = \@_, return $self) : return $self->{_parts};
-}
-
-sub get_multipart_id {
-  my ($id) = shift;
-  ($id || '') =~ /^<?([^>]+)>?$/; $1 || '';
-}
-
-sub generate_random_string {
-  my ($self,$len) = @_;
-  my @chars=('a'..'z','A'..'Z','0'..'9','_');
-  my $random_string;
-  foreach (1..$len) {
-    $random_string .= $chars[rand @chars];
-  }
-  return $random_string;
-}
-
-# It seems to me that this need to return an array of parts, and
-# not just the SOAP Body - which is what it does.
-sub decode {
-  my $self = shift;
-  my $entity = eval { $self->parse_data(shift) }
-    or die "Something wrong with MIME message: @{[$@ || $self->last_error]}\n";
-
-  # initialize with empty array; autovivification doesn't work in this case --PK
-  $self->{'_parts'} = [] if $entity->parts; 
-
-  # Changed to better populate the array with references
-  # to the MIME::Entity to prevent memory bloat
-  for (my $i=1;$i<=$entity->parts;$i++) {
-    push(@{$self->parts},\$entity->parts($i))
-      if ref($entity->parts($i)) eq "MIME::Entity";
-  }
-
-  my @result = ();
-  if ($entity->head->mime_type eq 'multipart/form-data') {
-    # In this case @result will contain all parts where the first
-    # element is the main payload or body - i believe this case is
-    # rare
-    @result = $self->decode_form_data($entity);
-  } elsif ($entity->head->mime_type eq 'multipart/related') {
-    # In this case @result will contain
-    @result = $self->decode_related($entity);
-  } elsif ($entity->head->mime_type eq 'text/xml') {
-    @result = ();
-  } else {
-    die "Can't handle MIME messsage with specified type (@{[$entity->head->mime_type]})\n";
-  }
-  if (@result) {
-    return @result;
-  } elsif ($entity->bodyhandle->as_string) {
-    return [undef, '', undef, $entity->bodyhandle->as_string];
-  } else {
-    die "No content in MIME message\n";
-  }
-}
-
-sub decode_form_data { 
-  my($self, $entity) = @_;
-
-  my @result;
-  foreach my $part ($entity->parts) {
-    my $name = $part->head->mime_attr('content-disposition.name');
-    my $type = $part->head->mime_type || '';
-    $name eq 'payload'
-      ? unshift(@result, [$name, '', $type, $part->bodyhandle->as_string])
-	: push(@result, [$name, '', $type, $part->bodyhandle->as_string]);
-  }
-  @result;
-}
-
-sub decode_related {
-  my($self, $entity) = @_;
-  die "Multipart MIME messages MUST declare Multipart/Related content-type"
-    if ($entity->head->mime_attr('content-type') !~ /^multipart\/related/i);
-  my $start = get_multipart_id($entity->head->mime_attr('content-type.start'))
-    || get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
-  my $location = $entity->head->mime_attr('content-location') ||
-    'thismessage:/';
-  my @result;
-  foreach my $part ($entity->parts) {
-    # Weird, the following use of head->get(SCALAR[,INDEX]) doesn't work as
-    # expected. Work around is to eliminate the INDEX.
-    my $pid = get_multipart_id($part->head->mime_attr('content-id'));
-
-    # If Content-ID is not supplied, then generate a random one (HACK - because
-    # MIME::Entity does not do this as it should... content-id is required
-    # according to MIME specification)
-    $pid = $self->generate_random_string(10) if $pid eq '';
-    my $type = $part->head->mime_type;
-
-    # If a Content-Location header cannot be found, this will look for an
-    # alternative in the following MIME Header attributes
-    my $plocation = $part->head->get('content-location') ||
-      $part->head->mime_attr('Content-Disposition.filename') ||
-	$part->head->mime_attr('Content-Type.name');
-    if ($start && $pid eq $start) {
-      # this puts the body as the first element of @result
-      unshift(@result, [$start,$location,$type,$part->bodyhandle->as_string]);
-    } else {
-      # this puts the current attachment at the end of @result
-      push(@result, [$pid,$plocation,$type,$part->bodyhandle->as_string])
-        if (defined($part->bodyhandle));
-    }
-  }
-  die "Can't find 'start' parameter in multipart MIME message\n"
-    if @result > 1 && !$start;
-  @result;
 }
 
 # ======================================================================
@@ -1847,9 +1706,10 @@ sub BEGIN {
   for my $method (qw(ids hrefs parts parser base xmlschemas xmlschema context)) {
     my $field = '_' . $method;
     *$method = sub {
-      my $self = shift->new;
+      my $self = shift->new; # this makes things work, but all this lazy initing has got to go. IMHO
 #      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
+
     }
   }
 }
@@ -1858,27 +1718,18 @@ sub new {
   my $self = shift;
   return $self if ref $self;
   my $class = ref($self) || $self;
-
   SOAP::Trace::objects('()');
   return bless {
-    _ids => {},
-    _hrefs => {},
-    _parser => SOAP::Parser->new,
-    _xmlschemas => {
-      $SOAP::Constants::NS_APS => 'SOAP::XMLSchemaApacheSOAP::Deserializer',
-      map { $_ => $SOAP::Constants::XML_SCHEMAS{$_} . '::Deserializer'
-          } keys %SOAP::Constants::XML_SCHEMAS
-    },
+       '_ids'        => {},
+       '_hrefs'      => {},
+       '_parser'     => SOAP::Parser->new,
+       '_xmlschemas' => {
+          $SOAP::Constants::NS_APS => 'SOAP::XMLSchemaApacheSOAP::Deserializer',
+          map { $_ => $SOAP::Constants::XML_SCHEMAS{$_} . '::Deserializer'
+              } keys %SOAP::Constants::XML_SCHEMAS
+       },
   } => $class;
 }
-
-# TODO - Deprecate this
-#sub mimeparser {
-# my $field = '_mimeparser';
-#  my $self = shift->new;
-#  @_ ? ($self->{$field} = shift, return $self) 
-#     : return $self->{$field} ||= new SOAP::MIMEParser;
-#}
 
 sub is_xml {
   # Added check for envelope delivery. Fairly standard with MMDF and sendmail
@@ -1897,49 +1748,27 @@ sub baselocation {
   $location;
 }
 
-# Deprecate this in favor of SOAP::Packager::MIME::unpackage
-sub decode_mime {
-#  my $self = shift->new;
-  my $self = shift;
-  my $body;
-  foreach ($self->mimeparser->decode($_[0])) {
-    my($id, $location, $type, $value) = @$_;
-    unless ($body) { # we are here for the first time, so it's a MAIN part
-      $body = $self->parser->decode($value);
-      $self->base($location); # store the base location
-    } else {
-      $location = $self->baselocation($location);
-      my $part = $type eq 'text/xml' &&
-	!$SOAP::Constants::DO_NOT_PROCESS_XML_IN_MIME ?
-	  $self->parser->decode($value) : ['mimepart', {}, $value];
-      # ********WARNING********
-      # This below looks like unnecessary bloat!!!
-      # I should probably dereference the mimepart
-      $self->ids->{$id} = $part if $id;
-      $self->ids->{$location} = $part if $location;
-    }
-  }
-  return $body;
-}
-
 # Returns the envelope and populates SOAP::Packager with parts
 sub decode_parts {
 #  my $self = shift->new; # stop this!!! no reinitialization all the time!
   my $self = shift;
   my $env = $self->context->packager->unpackage($_[0]);
   my $body = $self->parser->decode($env);
+  # TODO - This shouldn't be here! This is packager specific!
+  #        However this does need to pull out all the cid's
+  #        to populate ids hash with.
   foreach (@{$self->context->packager->parts}) {
     my $data     = $_->bodyhandle->as_string;
     my $type     = $_->head->mime_attr('Content-Type');
     my $location = $_->head->mime_attr('Content-Location');
     my $id       = $_->head->mime_attr('Content-Id');
     $location = $self->baselocation($location);
-    my $part = lc($type) eq 'text/xml' &&
-      !$SOAP::Constants::DO_NOT_PROCESS_XML_IN_MIME ?
-        $self->parser->decode($data) 
-          : ['mimepart', {}, $data];
+    my $part = lc($type) eq 'text/xml' && !$SOAP::Constants::DO_NOT_PROCESS_XML_IN_MIME ?
+      $self->parser->decode($data)
+        : ['mimepart', {}, $data];
     # This below looks like unnecessary bloat!!!
-    # I should probably dereference the mimepart
+    # I should probably dereference the mimepart, provide a callback to get the string data
+    $id =~ s/^<([^>]*)>$/$1/; # string any leading and trailing brackets
     $self->ids->{$id} = $part if $id;
     $self->ids->{$location} = $part if $location;
   }
@@ -1949,8 +1778,7 @@ sub decode_parts {
 # decode returns a parsed body in the form of an ARRAY
 # each element of the ARRAY is a HASH, ARRAY or SCALAR
 sub decode {
-#  my $self = shift->new; # why are we reinitializing all the time!?
-  my $self = shift;
+  my $self = shift->new; # this actually is important
   return $self->is_xml($_[0])
     ? $self->parser->decode($_[0])
       : $self->decode_parts($_[0]);
@@ -1960,36 +1788,30 @@ sub decode {
 # text as input
 sub deserialize {
   SOAP::Trace::trace('()');
-  #my $self = shift->new; # This seems a bit fubar'ed. why are we reinitializing?
+  my $self = shift->new; # This seems a bit fubar'ed. why are we reinitializing?
                          # Deserializer should already by instantiated!
-  my $self = shift;
+  #my $self = shift;
 
   # initialize
   $self->hrefs({});
   $self->ids({});
 
-  # TBD: find better way to signal parsing errors
-  # This is returning a parsed body, however, if the message was mime
-  # formatted, then the self->ids hash should be populated with mime parts
-  # as will the self->mimeparser->parts array
-  my $parsed = $self->decode($_[0]); # TBD: die on possible errors in Parser?
+  # If the document is XML, then ids will be empty
+  # If the document is MIME, then ids will hold a list of cids
+  my $parsed = $self->decode($_[0]);
 
   # Having this code here makes multirefs in the Body work, but multirefs
   # that reference XML fragments in a MIME part do not work.
   if (keys %{$self->ids()}) {
     $self->traverse_ids($parsed);
   } else {
+    # delay - set ids to be traversed later in decode_object, they only get
+    # traversed if an href is found that is referencing an id.
     $self->ids($parsed);
   }
   $self->decode_object($parsed);
   my $som = SOAP::SOM->new($parsed);
-  # first check if MIME parser has been initialized 
-  # simple $self->mimeparser() call doesn't work because of
-  # "lazy initialization" --PK
-  #if (defined $self->{'_mimeparser'} && $self->mimeparser->parts) {
-  #  $som->{'_parts'} = $self->mimeparser->parts; 
-  #}
-  $som->context($self->context); # TODO - try this and see if it works!
+  $som->context($self->context); # TODO - try removing this and see if it works!
   return $som;
 }
 
@@ -1998,7 +1820,7 @@ sub traverse_ids {
   my $ref = shift;
   my($undef, $attrs, $children) = @$ref;
   #  ^^^^^^ to fix nasty error on Mac platform (Carl K. Cunningham)
-  $self->ids->{$attrs->{id}} = $ref if exists $attrs->{id};
+  $self->ids->{$attrs->{'id'}} = $ref if exists $attrs->{'id'};
   return unless ref $children;
   for (@$children) {$self->traverse_ids($_)};
 }
@@ -2065,25 +1887,27 @@ sub decode_value {
   # check encodingStyle
   # future versions may bind deserializer to encodingStyle
   my $encodingStyle = $attrs->{"{$SOAP::Constants::NS_ENV}encodingStyle"};
-  die "Unrecognized/unsupported value of encodingStyle attribute '$encodingStyle'\n"
-    if defined $encodingStyle &&
-       length($encodingStyle) != 0 && # encodingStyle=""
-       $encodingStyle !~ /(?:^|\b)$SOAP::Constants::NS_ENC/;
-                        # ^^^^^^^^ \b causing problems (!?) on some systems
-                        # as reported by David Dyck <dcd@tc.fluke.com>
-                        # so use (?:^|\b) instead
+  die "Unrecognized/unsupported value of encodingStyle attribute '$encodingStyle'"
+    if defined($encodingStyle) &&
+       length($encodingStyle) > 0 &&
+       !grep {/$encodingStyle/} @SOAP::Constants::SUPPORTED_ENCODING_STYLES;
+
+       # removed to provide literal support in 0.65
+       #$encodingStyle !~ /(?:^|\b)$SOAP::Constants::NS_ENC/;
+       #                 # ^^^^^^^^ \b causing problems (!?) on some systems
+       #                 # as reported by David Dyck <dcd@tc.fluke.com>
+       #                 # so use (?:^|\b) instead
 
   use vars '$arraytype'; # type of Array element specified on Array itself
   # either specified with xsi:type, or <enc:name/> or array element
-  my($type) = grep {defined}
-                map($attrs->{$_}, sort grep {/^\{$SOAP::Constants::NS_XSI_ALL\}type$/o} keys %$attrs),
-                $name =~ /^\{$SOAP::Constants::NS_ENC\}/ ? $name : $arraytype;
+  my ($type) = grep {defined}
+                    map($attrs->{$_}, sort grep {/^\{$SOAP::Constants::NS_XSI_ALL\}type$/o} keys %$attrs),
+                    $name =~ /^\{$SOAP::Constants::NS_ENC\}/ ? $name : $arraytype;
   local $arraytype; # it's used only for one level, we don't need it anymore
 
   # $name is not used here since type should be encoded as type, not as name
-  my($schema, $class) = SOAP::Utils::splitlongname($type) if $type;
-
-  my $schemaclass = $schema && $self->xmlschemas->{$schema}
+  my ($schema, $class) = SOAP::Utils::splitlongname($type) if $type;
+  my $schemaclass = defined($schema) && $self->xmlschemas->{$schema}
                             || $self;
   # store schema that is used in parsed message 
   $self->xmlschema($schema) if $schema && $schema =~ /XMLSchema/;
@@ -2095,23 +1919,24 @@ sub decode_value {
   $class =~ s/__|\./::/g if $class;
 
   my $id = $attrs->{id};
-
   if (defined $id && exists $self->hrefs->{$id}) {
     return $self->hrefs->{$id};
   } elsif (exists $attrs->{href}) {
-    (my $id = delete $attrs->{href}) =~ s/^(#|cid:)?//;
+    (my $id = delete $attrs->{href}) =~ s/^(#|cid:|uuid:)?//;
     # convert to absolute if not internal '#' or 'cid:'
     $id = $self->baselocation($id) unless $1;
     return $self->hrefs->{$id} if exists $self->hrefs->{$id};
+    # First time optimization. we don't traverse IDs unless asked for it.
+    # This is where traversing id's is delayed from before
+    #   - the first time through - ids should contain a copy of the parsed XML
+    #     structure! seems silly to make so many copies
     my $ids = $self->ids;
-    # first time optimization. we don't traverse IDs unless asked for it
-    if (ref $ids ne 'HASH') {
+    if (ref($ids) ne 'HASH') {
       $self->ids({});            # reset list of ids first time through
       $self->traverse_ids($ids);
-      $ids = $self->ids;
     }
-    if (exists $ids->{$id}) {
-      my $obj = ($self->decode_object(delete $ids->{$id}))[1];
+    if (exists($self->ids->{$id})) {
+      my $obj = ($self->decode_object(delete($self->ids->{$id})))[1];
       return $self->hrefs->{$id} = $obj;
     } else {
       die "Unresolved (wrong?) href ($id) in element '$name'\n";
@@ -2122,7 +1947,6 @@ sub decode_value {
     /^$SOAP::Constants::NS_XSI_NILS$/ && 
     $self->xmlschemas->{$1 || $2}->as_undef($attrs->{$_})
   } keys %$attrs;
-
   # try to handle with typecasting
   my $res = $self->typecast($value, $name, $attrs, $children, $type);
   return $res if defined $res;
@@ -2181,9 +2005,13 @@ sub decode_value {
 
     return defined $class && $class ne 'Array' ? bless($res => $class) : $res;
 
-  } elsif ($name =~ /^\{$SOAP::Constants::NS_ENC\}Struct$/ || !$schemaclass->can($method) && (ref $children || defined $class && $value =~ /^\s*$/)) {
+  } elsif ($name =~ /^\{$SOAP::Constants::NS_ENC\}Struct$/ || 
+           !$schemaclass->can($method) && 
+           (ref $children || defined $class && $value =~ /^\s*$/)) {
     my $res = {};
     $self->hrefs->{$id} = $res if defined $id;
+    # Patch code introduced in 0.65 - deserializes array properly
+    # %$res = map {$self->decode_object($_)} @{$children || []}; # removed in patch
     # Decode each element of the struct.
     foreach my $child (@{$children || []}) {
       my ($child_name, $child_value) = $self->decode_object($child);
@@ -2192,16 +2020,17 @@ sub decode_value {
       # containing both values.
       my $prev = $res->{$child_name};
       if (not defined $prev) {
-	# first time to see this value: use scalar
-	$res->{$child_name} = $child_value;
+        # first time to see this value: use scalar
+        $res->{$child_name} = $child_value;
       } elsif (ref $prev ne "ARRAY") {
-	# second time to see this value: convert scalar to array
-	$res->{$child_name} = [ $prev, $child_value ];
+        # second time to see this value: convert scalar to array
+        $res->{$child_name} = [ $prev, $child_value ];
       } else {
-	# already have an array: append to it
-	push @{$res->{$child_name}}, $child_value;
+        # already have an array: append to it
+        push @{$res->{$child_name}}, $child_value;
       }
     }
+    # End patch code
     return defined $class && $class ne 'SOAPStruct' ? bless($res => $class) : $res;
   } else {
     my $res;
@@ -2364,7 +2193,8 @@ sub new {
       _action        => '',
       _options       => {},
     } => $class;
-    $self->{'_deserializer'}->{'_context'} = $self->{'_serializer'}->{'_context'} = $self;
+    # TODO - problematic as this creates a recursive data structure
+    #$self->init_context();
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
     }
@@ -2380,6 +2210,18 @@ sub new {
 
   return $self;
 }
+
+sub init_context {
+  my $self = shift;
+  $self->{'_deserializer'}->{'_context'} = $self;
+  $self->{'_serializer'}->{'_context'} = $self;
+}       
+
+sub destroy_context {
+  my $self = shift;
+  delete($self->{'_deserializer'}->{'_context'});
+  delete($self->{'_serializer'}->{'_context'})
+}       
 
 sub BEGIN {
   no strict 'refs';
@@ -2496,10 +2338,14 @@ sub find_target {
   }
 
   no strict 'refs';
+
+# SOAP::Lite 0.60:
 #  unless (defined %{"${class}::"}) {   
-# the following patch does not work for packages defined within a BEGIN block
+# Patch to SOAP::Lite 0.60:
+# The following patch does not work for packages defined within a BEGIN block
 #  unless (exists($INC{join '/', split /::/, $class.'.pm'})) {
-  unless (exists($INC{join '/', split /::/, $class.'.pm'}) || defined(%{"${class}::"})) {
+# Combination of 0.60 and patch:
+  unless (defined(%{"${class}::"}) || exists($INC{join '/', split /::/, $class.'.pm'})) {
     # allow all for static and only specified path for dynamic bindings
     local @INC = (($static ? @INC : ()), grep {!ref && m![/\\.]!} $self->dispatch_to);
     eval 'local $^W; ' . "require $class";
@@ -2516,6 +2362,8 @@ sub find_target {
 sub handle {
   SOAP::Trace::trace('()');
   my $self = shift;
+  $self = $self->new if !ref $self; # This initializes the server when called in a static context
+  $self->init_context();
   # we want to restore it when we are done
   local $SOAP::Constants::DEFAULT_XML_SCHEMA
     = $SOAP::Constants::DEFAULT_XML_SCHEMA;
@@ -2530,7 +2378,7 @@ sub handle {
     my $request = eval { $self->deserializer->deserialize($_[0]) };
     die SOAP::Fault
       ->faultcode($SOAP::Constants::FAULT_VERSION_MISMATCH)
-	->faultstring($@)
+        ->faultstring($@)
 	  if $@ && $@ =~ /^$SOAP::Constants::WRONG_VERSION/;
     die "Application failed during request deserialization: $@" if $@;
     my $som = ref $request;
@@ -2585,12 +2433,15 @@ sub handle {
 	  SOAP::Fault->faultcode($SOAP::Constants::FAULT_SERVER)->faultstring($@)
 	      if $@;
 
-    return $self->serializer
+    my $result = $self->serializer
       ->prefix('s') # distinguish generated element names between client and server
-	->uri($method_uri)
+      ->uri($method_uri)
 	  ->envelope(response => $method_name . 'Response', @results);
+    $self->destroy_context();
+    return $result;
   };
 
+  $self->destroy_context();
   # void context
   return unless defined wantarray;
 
@@ -2627,7 +2478,7 @@ my @list = qw(transport dispatch result parameters headers objects method fault 
 { no strict 'refs'; for (@list) { *$_ = sub {} } }
 
 sub defaultlog { 
-  my $caller = (caller(1))[3];
+  my $caller = (caller(1))[3]; # the 4th element returned by caller is the subroutine namea
   $caller = (caller(2))[3] if $caller =~ /eval/;
   chomp(my $msg = join ' ', @_); 
   printf STDERR "%s: %s\n", $caller, $msg;
@@ -2697,7 +2548,6 @@ sub decode_value {
   my $self = shift;
   my $ref = shift;
   my($name, $attrs, $children, $value) = @$ref;
-
   # base class knows what to do with it
   return $self->SUPER::decode_value($ref) if exists $attrs->{href};
 
@@ -3112,7 +2962,10 @@ sub new {
     };
     bless $self => $class;
     $self->on_nonserialized($self->on_nonserialized || $self->serializer->on_nonserialized);
-    $self->{'_deserializer'}->{'_context'} = $self->{'_serializer'}->{'_context'} = $self;
+    # This can be problematic because I am creating a recursive data structure,
+    # which Perl's garbage collector has a hard time cleaning up. So, I can
+    # manually delete these references, or I can use a non-rec. structure. :(
+    #$self->init_context();
     SOAP::Trace::objects('()');
   }
 
@@ -3125,6 +2978,18 @@ sub new {
 
   return $self;
 }
+
+sub init_context {
+  my $self = shift;
+  $self->{'_deserializer'}->{'_context'} = $self;
+  $self->{'_serializer'}->{'_context'} = $self;
+}       
+
+sub destroy_context {
+  my $self = shift;
+  delete($self->{'_deserializer'}->{'_context'});
+  delete($self->{'_serializer'}->{'_context'})
+}       
 
 sub BEGIN {
   no strict 'refs';
@@ -3146,7 +3011,6 @@ sub BEGIN {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
-#      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
@@ -3154,7 +3018,6 @@ sub BEGIN {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
-#      my $self = shift;
       return $self->{$field} unless @_;
       local $@;
       # commented out because that 'eval' was unsecure
@@ -3167,26 +3030,24 @@ sub BEGIN {
       return $self;
     }
   }
+  # SOAP::Transport Shortcuts
   for my $method (qw(proxy)) {
     *$method = sub { 
       my $self = shift->new;
-#      my $self = shift;
       @_ ? ($self->transport->$method(@_), return $self) : return $self->transport->$method();
     }
   }
-  for my $method (qw(autotype readable namespace encodingspace envprefix 
-		     encprefix multirefinplace encoding typelookup uri
-		     header maptype xmlschema use_prefix)) {
+  # SOAP::Seriailizer Shortcuts
+  for my $method (qw(autotype readable envprefix encodingStyle
+                     encprefix multirefinplace encoding typelookup uri
+                     header maptype xmlschema use_prefix)) {
     *$method = sub { 
       my $self = shift->new;
-#      my $self = shift;
       @_ ? ($self->serializer->$method(@_), return $self) : return $self->serializer->$method();
     }
   }                                                
 }
 
-# TODO - deprecate
-# This is a shortcurt to Packager->parts
 sub parts {
   my $self = shift;
   $self->packager->parts(@_);
@@ -3239,10 +3100,11 @@ sub call {
   SOAP::Trace::trace('()');
   my $self = shift;
   return $self->{_call} unless @_;
-  my $serializer = $self->serializer;
   die "Transport is not specified (using proxy() method or service description)\n"
     unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
 
+  $self->init_context();
+  my $serializer = $self->serializer;
   $serializer->on_nonserialized($self->on_nonserialized);
   my $response = $self->transport->send_receive(
     context  => $self, # this is provided for context
@@ -3251,7 +3113,7 @@ sub call {
                 # leave only parameters so we can later update them if required
     envelope => $serializer->envelope(method => shift, @_),
     encoding => $serializer->encoding,
-    parts    => $self->packager->parts ? $self->packager->parts : undef,
+    parts    => @{$self->packager->parts} ? $self->packager->parts : undef,
   );
 
   # SOAP::Packager has much better memory management, so this is no longer
@@ -3292,6 +3154,7 @@ sub call {
 						     }
     }
   }
+  $self->destroy_context();
   return $result;
 } # end of call()
 
@@ -4396,7 +4259,16 @@ with your comments, suggestions, bug reports and complaints.
 
 =head1 ACKNOWLEDGEMENTS
 
-Special thanks to O'Reilly publishing which has graciously allowed SOAP::Lite to republish and redistribute the SOAP::Lite reference manual found in Appendix B of I<Programming Web Services with Perl>/.
+Special thanks to Randy J. Ray, author of I<Programming Web Services with Perl>,
+who has contributed greatly to the documentation effort of SOAP::Lite.
+
+Special thanks to O'Reilly publishing which has graciously allowed SOAP::Lite 
+to republish and redistribute the SOAP::Lite reference manual found in Appendix B 
+of I<Programming Web Services with Perl>.
+
+And special gratitude to all the developers who have contributed patches, ideas,
+time, energy, and help in a million different forms to the development of this
+software.
 
 =head1 COPYRIGHT
 
@@ -4404,6 +4276,10 @@ Copyright (C) 2000-2004 Paul Kulchenko. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+This text and all associated documentation for this library is made available 
+under the Creative Commons Attribution-NoDerivs 2.0 license.
+http://creativecommons.org/licenses/by-nd/2.0/
 
 =head1 AUTHORS
 

@@ -11,14 +11,10 @@
 package SOAP::Packager;
 
 use strict;
-use vars qw($REGISTERED_TYPES);
 use vars;
 
-# TODO - this is not used yet:
-$REGISTERED_TYPES = { 
-   "multipart/related" => 'SOAP::MIME::Packager',
-   "application/dime" => 'SOAP::DIME::Packager',
-};
+use vars qw($SUPPORTED_TYPES);
+$SUPPORTED_TYPES = { };
 
 sub BEGIN {
   no strict 'refs';
@@ -40,6 +36,11 @@ sub new {
         "_parser"        => undef,
         "_persist_parts" => 0,
     }, $class;
+}
+
+sub is_supported_part {
+  my $self = shift;
+  return $SUPPORTED_TYPES->{ref $_[0]};
 }
 
 sub parts {
@@ -72,7 +73,7 @@ sub package {
 
 sub unpackage {
    my $self = shift;
-   $self->{'_parts'} = [] if $self->persist_parts; # experimental
+   $self->{'_parts'} = [] if !$self->persist_parts; # experimental
 }
 
 # ======================================================================
@@ -82,6 +83,7 @@ package SOAP::Packager::MIME;
 use strict;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Packager);
+
 
 sub BEGIN {
   no strict 'refs';
@@ -104,13 +106,19 @@ sub new {
     $self->{'_env_type'}         = 'text/xml';
     # TODO - env_type could be application/soap etc - this needs to get its
     #        value from somewhere else!
-    require MIME::Parser;
-    $self->{'_parser'} = MIME::Parser->new;
-    $self->{'_parser'}->output_to_core('ALL');
-    $self->{'_parser'}->tmp_to_core(1);
-    $self->{'_parser'}->ignore_errors(1);
     bless $self, $classname;
+    $SOAP::Packager::SUPPORTED_TYPES->{"MIME::Entity"} = 1;
     return $self;
+}
+
+sub initialize_parser {
+  my $self = shift;
+  eval "require MIME::Parser;";
+  die "Could not find MIME::Parser - is MIME::Tools installed? Aborting." if $@;
+  $self->{'_parser'} = MIME::Parser->new;
+  $self->{'_parser'}->output_to_core('ALL');
+  $self->{'_parser'}->tmp_to_core(1);
+  $self->{'_parser'}->ignore_errors(1);
 }
 
 sub generate_random_string {
@@ -139,13 +147,11 @@ sub package {
    $top->attach('Type'                      => $self->env_type(),
                 'Content-Transfer-Encoding' => $self->transfer_encoding(),
                 'Content-Location'          => $self->env_location(),
-		'Content-ID'                => $self->env_id(),
-		'Data'                      => $envelope );
+                'Content-ID'                => $self->env_id(),
+                'Data'                      => $envelope );
    # consume the attachments that come in as input by 'shift'ing
    no strict 'refs';
-   print STDERR "Adding parts\n";
    while (my $part = shift(@{$self->parts})) {
-      print STDERR "Adding part: ".ref($part)."\n";
       $top->add_part($part);
    }
    # determine MIME boundary
@@ -161,6 +167,7 @@ sub unpackage {
 
   # Parse the raw input into a MIME::Entity structure.
   #   - fail if the raw_input is not MIME formatted
+  $self->initialize_parser() if !defined($self->parser);
   my $entity = eval { $self->parser->parse_data($raw_input) }
     or die "Something wrong with MIME message: @{[$@ || $self->last_error]}\n";
 
@@ -172,7 +179,8 @@ sub unpackage {
     $env = $self->process_related($entity);
   } elsif (lc($entity->head->mime_type) eq 'text/xml') {
     # I don't think this ever gets called.
-    $env = "";
+    # warn "I am somewhere in the SOAP::Packager::MIME code I didn't know I would be in!";
+    $env = $entity->bodyhandle->as_string;
   } else {
     die "Can't handle MIME messsage with specified type (@{[$entity->head->mime_type]})\n";
   }
@@ -228,7 +236,6 @@ sub process_related {
       $part->head->mime_attr('Content-Disposition.filename') ||
 	$part->head->mime_attr('Content-Type.name');
     if ($start && $pid eq $start) {
-      # this puts the body as the first element of @result
       $env = $part->bodyhandle->as_string;
     } else {
       $self->push_part($part) if (defined($part->bodyhandle));

@@ -55,24 +55,3 @@ sub send_receive {
 1;
 
 __END__
-
-=head1 NAME
-
-SOAP::Transport::LOCAL - Client side no-transport support for SOAP::Lite
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=head1 COPYRIGHT
-
-Copyright (C) 2000-2001 Paul Kulchenko. All rights reserved.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=head1 AUTHOR
-
-Paul Kulchenko (paulclinger@yahoo.com)
-
-=cut

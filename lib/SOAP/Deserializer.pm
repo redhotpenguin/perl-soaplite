@@ -1,6 +1,6 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2003 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2004 Paul Kulchenko (paulclinger@yahoo.com)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -20,9 +20,9 @@ SOAP::Deserializer - the means by which the toolkit manages the conversion of XM
 
 =over
 
-=item 
+=item context
 
-=item 
+This provides access to the calling context of C<SOAP::Deserializer>. In a client side context the often means a reference to an instance of SOAP::Lite. In a server side context this means a reference to a SOAP::Server instance.
 
 =back
 

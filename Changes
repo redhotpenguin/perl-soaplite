@@ -12,20 +12,22 @@ THIS RELEASE
 -----------------------------------------------------------------------
 
 0.65 Sun Sep 27 00:01:34 2004
-  ** WARNING ** substantial changes have been made to SOAP::Lite in this
-  release in regards to how it manages attachments. The changes may
-  introduce instabilities into your software that relies on this
+  ** WARNING ** substantial changes have been made to SOAP::Lite in
+  this release in regards to how it manages attachments. The changes
+  may introduce instabilities into your software that relies on this
   functionality. Please test your software with 0.65 prior to moving it
   to a production environment.
 
   + Made SOAP::Serializer->readable actually produce readable XML!
   ! Fixed bug 747312 - Made XML Schema 2001 the default schema
-  + Changed typelookup of base64 to base64Binary to conform with 2001 schema
+  + Changed typelookup of base64 to base64Binary to conform with 2001
+    schema
   + Added support for [almost] all XML Schema 2001 built-in datatypes
   + Added register_ns subroutine to SOAP::Serializer
   + Added find_prefix subroutine to SOAP::Serializer
   + Added use_prefix subroutine to SOAP::Serializer
-  + Added a necessary set of initial subroutinues to support wsdl2perl project
+  + Added a necessary set of initial subroutinues to support wsdl2perl
+    project
   + Added format_datetime to SOAP::Utils
   + Documented SOAP::SOM->parts
   + Added SOAP::SOM->is_multipart
@@ -37,9 +39,13 @@ THIS RELEASE
   + Majorly revamped product documentation thanks to the kind 
     contribution made by O'Reilly. Appendix B from "Programming Web
     Services with Perl" has been completely integrated.
-  + To better segment SOAP::Lite documentation, many modules have been added
-    that contain documentation only.
-  + Improved support for the serialization of arrays and complex types
+  + To better segment SOAP::Lite documentation, many modules have been
+    added that contain documentation only. For those who loved the old
+    documentation, it can be found in lib/OldDocs/SOAP/*.pm and 
+    lib/OldDocs/SOAP/Transport/*.pm
+  ! Fix a bug in which doclit style arrays were not being deserialized
+    properly. IOW, Repeated elements were not made into an array, only
+    the last occurring value was recorded.
   + Added the ability for a SOAP Client to gain direct access to the
     HTTP::Request and HTTP::Response objects.
   + Changed default envelope namespace prefix from SOAP-ENV to soap
@@ -57,12 +63,33 @@ THIS RELEASE
       SOAP::Packager instance
     - deprecated many function calls and packages having to do with
       attachment support
-    - eliminated several "$self = shift->new" calls, they were creating many
-      redundant calls and were destroying precious context information!
+    - fixed several of the SOAP::*::new() methods so that they don't
+      inadvertantly reinitialize themselves and destroy precious context
+      information in the process
   + Gave developers direct access to MIME::Parser object so that they
     can optimize its use. See the following URL to optimize it for
     memory consumption, parsing speed, disk utilization, etc:
     http://search.cpan.org/dist/MIME-tools/lib/MIME/Parser.pm#OPTIMIZING_YOUR_PARSER
+  + Added a context variable to SOAP::Serializer and SOAP::Deserializer
+    so that they have mechanisms for getting instance data from the
+    calling context. The value of context is either SOAP::Lite or
+    SOAP::Server depending upon the role the service is playing in the
+    transaction. Contexts are initialized when a call is made, and
+    destroyed when a call is completed.
+  + Greater than character '>' has been added to list of characters
+    that will be automatically escaped. This is not a requirement by
+    the XML spec, it is a MAY, but I am doing it after seeing a minority
+    of people report a compatibility problem.
+  - Removed deprecated methods: SOAP::Serializer::namespace and
+    encodingspace
+  + Added SOAP::Serializer::encodingStyle method which allows users to
+    set the URI for default encodingStyle.
+  + Added initial support for literal encoding style. EXPERIMENTAL
+  + Added some true constant values representing various SOAP namespace
+    URIs
+  + Added SOAP::Constants::SUPPORTED_ENCODING_STYLES for better tracking
+    of the set of encoding styles that the toolkit can [de]serialize
+  ! Fixed bug 840172 - "Makefile.PL --noprompt flag broken," now fixed
 
 -----------------------------------------------------------------------
 PREVIOUS RELEASES

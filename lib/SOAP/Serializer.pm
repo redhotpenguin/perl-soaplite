@@ -1,6 +1,6 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2003 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2004 Paul Kulchenko (paulclinger@yahoo.com)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -33,6 +33,12 @@ This is the constructor method for the class. In addition to creating a basic ob
     $serialize->envelope(fault => $fault_obj);
 
 Provides the core purpose for the SOAP::Serializer class. It creates the full SOAP envelope based on the input passed in to it. The data arguments passed in the list of parameters to the method are divided into two sublists: any parameters that are L<SOAP::Header> objects or derivatives of go into one list, while the remainder go into the other. The nonheader objects are used as the content for the message body, with the body itself being largely dependent on the value of the first argument in the list. This argument is expected to be a string and should be one of the following:
+
+=item context
+
+    $serialize->context->packager();
+
+This provides access to the calling context of C<SOAP::Serializer>. In a client side context the often means a reference to an instance of SOAP::Lite. In a server side context this means a reference to a SOAP::Server instance.
 
 =over
 
