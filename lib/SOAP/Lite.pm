@@ -33,7 +33,7 @@ BEGIN {
     integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language
+    recurringDate recurringDay language QName
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
@@ -54,7 +54,7 @@ BEGIN {
     gMonthDay gDay duration recurringDuration anyURI
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger date time dateTime
+    positiveInteger date time dateTime QName
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
@@ -113,7 +113,7 @@ BEGIN {
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger timeInstant time timePeriod date month year century 
     recurringDate recurringDay language
-    base64 hex string boolean
+    base64 hex string boolean QName
   );
   # predeclare subs, so ->can check will be positive 
   foreach (@EXPORT) { eval "sub as_$_" } 
@@ -163,6 +163,7 @@ package SOAP::XMLSchema1999::Deserializer;
 sub anyTypeValue { 'ur-type' }
 
 sub as_string; *as_string = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_string;
+sub as_QName; *as_QName = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_string;
 sub as_boolean; *as_boolean = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_boolean;
 sub as_hex { shift; my $value = shift; $value =~ s/([a-zA-Z0-9]{2})/chr oct '0x'.$1/ge; $value }
 sub as_ur_type { $_[1] }
@@ -175,7 +176,7 @@ BEGIN {
     integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language
+    recurringDate recurringDay language QName
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
@@ -197,7 +198,7 @@ BEGIN {
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger date time
-    string hex base64 boolean
+    string hex base64 boolean QName
   );
   # predeclare subs, so ->can check will be positive 
   foreach (@EXPORT) { eval "sub as_$_" } 

@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 128 }
+BEGIN { plan tests => 125 }
 
 use SOAP::Lite;
 
@@ -189,14 +189,16 @@ my($a, $s, $r, $serialized, $deserialized);
 
   $a = { a => 1 };
 
-  ok(SOAP::Serializer->serialize($a) =~ m!SOAPStruct!);
-  ok(SOAP::Serializer->autotype(0)->serialize($a) !~ m!SOAPStruct!);
-
-  $serialized = SOAP::Serializer->namespaces({})->maptype({SOAPStruct => ""})->serialize({a => 1});
+  # Eliminated in 0.60
+  #ok(SOAP::Serializer->serialize($a) =~ m!SOAPStruct!);
+  #ok(SOAP::Serializer->autotype(0)->serialize($a) !~ m!SOAPStruct!);
+  #$serialized = SOAP::Serializer->namespaces({})->maptype({SOAPStruct => ""})->serialize({a => 1});
+  #ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:int">1</a></c-gensym\1>!);
+  #$serialized = SOAP::Serializer->namespaces({})->maptype({SOAPStruct => undef})->serialize({a => 1});
+  #ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:int">1</a></c-gensym\1>!);
+  $serialized = SOAP::Serializer->namespaces({})->serialize($a);
   ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:int">1</a></c-gensym\1>!);
 
-  $serialized = SOAP::Serializer->namespaces({})->maptype({SOAPStruct => undef})->serialize({a => 1});
-  ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:int">1</a></c-gensym\1>!);
 }
 
 { # check header/envelope serialization/deserialization   

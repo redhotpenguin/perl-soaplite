@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 25 }
+BEGIN { plan tests => 23 }
 
 use SOAP::Lite;
 
@@ -31,7 +31,7 @@ my($a, $s, $r, $serialized, $deserialized);
     SOAP::Data->name(test => \SOAP::Data->value(1, [1,2], {a=>3}, \4))
   );
 
-  ok($serialized =~ m!<test(?: xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"| xmlns:namesp\d+="http://xml.apache.org/xml-soap"){5}><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\1><SOAP-ENC:Array(?: xsi:type="SOAP-ENC:Array"| SOAP-ENC:arrayType="xsd:int\[2\]"){2}><item xsi:type="xsd:int">1</item><item xsi:type="xsd:int">2</item></SOAP-ENC:Array><c-gensym(\d+) xsi:type="namesp\d+:SOAPStruct"><a xsi:type="xsd:int">3</a></c-gensym\2><c-gensym(\d+)><c-gensym(\d+) xsi:type="xsd:int">4</c-gensym\4></c-gensym\3></test>!);
+  ok($serialized =~ m!<test(?: xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){4}><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\1><SOAP-ENC:Array(?: xsi:type="SOAP-ENC:Array"| SOAP-ENC:arrayType="xsd:int\[2\]"){2}><item xsi:type="xsd:int">1</item><item xsi:type="xsd:int">2</item></SOAP-ENC:Array><c-gensym(\d+)><a xsi:type="xsd:int">3</a></c-gensym\2><c-gensym(\d+)><c-gensym(\d+) xsi:type="xsd:int">4</c-gensym\4></c-gensym\3></test>!);
 }  
 
 { # check simple circular references
@@ -116,16 +116,17 @@ EOX
   ok($serialized =~ m!<namesp(\d+):c-gensym(\d+)(:? xsi:type="namesp\d+:ObjectType"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:namesp\1="some_urn"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){7}><a xsi:type="xsd:int">1</a></namesp\1:c-gensym\2>!);
 }
 
-{ # check for serialization with SOAPStruct (for interoperability with ApacheSOAP)
-  print "Serialization w/out SOAPStruct test(s)...\n";
+#{
+   # These tests were eliminated for release 0.60 when SOAPStructs were removed
+   # check for serialization with SOAPStruct (for interoperability
+   # with ApacheSOAP)
+   #print "Serialization w/out SOAPStruct test(s)...\n";
+   #$a = { a => 1 };
+   #ok(SOAP::Serializer->serialize($a) =~ m!SOAPStruct!); 
+   #ok(SOAP::Serializer->autotype(0)->serialize($a) !~ m!SOAPStruct!);
+#}
 
-  $a = { a => 1 };
-
-  ok(SOAP::Serializer->serialize($a) =~ m!SOAPStruct!); 
-  ok(SOAP::Serializer->autotype(0)->serialize($a) !~ m!SOAPStruct!); 
-}
-
-{ # check serialization/deserialization of simple types  
+{ # check serialization/deserialization of simple types
   print "Serialization/deserialization of simple types test(s)...\n";
 
   $a = 'abc234xyz';
