@@ -6,20 +6,21 @@ from your COM applications. Examples in Visual Basic, Excel/VBA, Perl,
 JavaScript and ASP are provided. 
 
 Interface comes in two versions: standalone and minimal.
-Both versions DOES NOT require ROPE.dll, MSXML.dll or listener.asp (for ASP).
 Both versions were tested on Windows 98 and 2K, but should work on 
 Windows 9x/Me/NT/2K.
-Minimal version requires Perl installation, but comes with minimal size (32k).
+Minimal version requires Perl installation, but comes in a small size.
 Standalone version doesn't require ANYTHING (including Perl), but comes
-as one big dll (2.5M).
+as one big dll. Both libraries are compiled using the latest version of
+ActivePerl available (5.8.6 build 811).
 
 Standalone:              http://www.soaplite.com/download/SOAP-Lite-COM-standalone-latest.zip
 Minimal (Perl required): http://www.soaplite.com/download/SOAP-Lite-COM-minimal-latest.zip
 
 You may create your own version (all source code and batch files are provided),
 but it'll require PerlCtrl utility that comes as part of Perl Development Kit
-from ActiveState (http://activestate.com/). Interface could be create ONLY on
-Windows NT or 2K, but will work on any Windows. 
+from ActiveState (http://activestate.com/). Batch files are written for the 
+latest PDK version (v6). The library can ONLY be created on Windows NT, 2K, or 
+XP, but will work on any Windows platform.
 
 INSTALLATION
 
