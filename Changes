@@ -12,6 +12,12 @@ THIS RELEASE
 -----------------------------------------------------------------------
 
 0.65 Sun Sep 27 00:01:34 2004
+  ** WARNING ** substantial changes have been made to SOAP::Lite in this
+  release in regards to how it manages attachments. The changes may
+  introduce instabilities into your software that relies on this
+  functionality. Please test your software with 0.65 prior to moving it
+  to a production environment.
+
   + Made SOAP::Serializer->readable actually produce readable XML!
   ! Fixed bug 747312 - Made XML Schema 2001 the default schema
   + Changed typelookup of base64 to base64Binary to conform with 2001 schema
@@ -19,7 +25,7 @@ THIS RELEASE
   + Added register_ns subroutine to SOAP::Serializer
   + Added find_prefix subroutine to SOAP::Serializer
   + Added use_prefix subroutine to SOAP::Serializer
-  + Added necessary subroutinues to support wsdl2perl project
+  + Added a necessary set of initial subroutinues to support wsdl2perl project
   + Added format_datetime to SOAP::Utils
   + Documented SOAP::SOM->parts
   + Added SOAP::SOM->is_multipart
@@ -31,6 +37,8 @@ THIS RELEASE
   + Majorly revamped product documentation thanks to the kind 
     contribution made by O'Reilly. Appendix B from "Programming Web
     Services with Perl" has been completely integrated.
+  + To better segment SOAP::Lite documentation, many modules have been added
+    that contain documentation only.
   + Improved support for the serialization of arrays and complex types
   + Added the ability for a SOAP Client to gain direct access to the
     HTTP::Request and HTTP::Response objects.
