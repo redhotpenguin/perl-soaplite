@@ -1788,9 +1788,7 @@ sub decode {
 # text as input
 sub deserialize {
   SOAP::Trace::trace('()');
-  my $self = shift->new; # This seems a bit fubar'ed. why are we reinitializing?
-                         # Deserializer should already by instantiated!
-  #my $self = shift;
+  my $self = shift->new; 
 
   # initialize
   $self->hrefs({});
@@ -3635,7 +3633,7 @@ Servers wishing to return an attachment to the calling client need only return C
 
 =head2 DEFAULT SETTINGS
 
-Though this feature looks similar to L<autodispatch|/"AUTODISPATCHING AND SOAP:: PREFIX"> they have (almost) nothing in common. This capability allows you specify default settings so that all objects created after that will be initialized with the proper default settings. 
+Though this feature looks similar to L<autodispatch|/"IN/OUT, OUT PARAMETERS AND AUTOBINDING"> they have (almost) nothing in common. This capability allows you specify default settings so that all objects created after that will be initialized with the proper default settings. 
 
 If you wish to provide common C<proxy()> or C<uri()> settings for all C<SOAP::Lite> objects in your application you may do:
 

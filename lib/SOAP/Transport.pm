@@ -171,7 +171,7 @@ To get certificate authentication working you need to set three environment vari
 These settings are referrenced by C<Crypt::SSLeay>, the module SOAP::Lite used for HTTPS support. Other options (e.g. CA peer verification) can be specified in a similar way. See L<Crypt::SSLeay> documentation for more information.
 
 Those who would like to use encrypted keys may find the following thread in the SOAP::Lite newsgroup helpful:
- 
+
 http://groups.yahoo.com/group/soaplite/message/729
 
 =head3 COMPRESSION
@@ -248,6 +248,7 @@ This method gives you acess to the HTTP Response object that will be, or was tra
 Inherits from: L<SOAP::Server>. 
 
 This is the most basic of the HTTP server implementations. It provides the basic methods, new and handle. The handle method's behavior is defined here, along with other methods specific to this class. The role of this class is primarily to act as a superclass for the other HTTP-based server classes. 
+
 =over
 
 =item handle
@@ -301,13 +302,11 @@ The following code sample is a CGI based Web Service that converts celcius to fa
     SOAP::Transport::HTTP::CGI
       ->dispatch_to('C2FService')
       ->handle;
-      
     BEGIN {
       package C2FService;
       use vars qw(@ISA);
       @ISA = qw(Exporter SOAP::Server::Parameters);
       use SOAP::Lite;
-      
       sub c2f {
         my $self = shift;
         my $envelope = pop;
@@ -364,9 +363,7 @@ Often when implementing an HTTP daemon, sockets will get tied up when you try to
 =head4 EXAMPLE DAEMON SERVER
 
   use SOAP::Transport::HTTP;
-
   # change LocalPort to 81 if you want to test it with soapmark.pl
-
   my $daemon = SOAP::Transport::HTTP::Daemon
     -> new (LocalAddr => 'localhost', LocalPort => 80)
     # specify list of objects-by-reference here 
@@ -424,14 +421,10 @@ B<httpd.conf>
 B<SOAP::Apache.pm>
 
   package SOAP::Apache;
-
   use SOAP::Transport::HTTP;
-
   my $server = SOAP::Transport::HTTP::Apache
     ->dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method'); 
-
   sub handler { $server->handler(@_) }
-
   1;
 
 See also L<Apache::SOAP>.

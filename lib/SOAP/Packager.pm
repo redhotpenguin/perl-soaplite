@@ -333,7 +333,7 @@ C<SOAP::Packager::MIME> utilizes L<MIME::Tools> to provides the ability to send
 and receive Multipart/Related and Multipart/Form-Data formatted requests and
 responses.
 
-=head3 METHODS
+=head3 MIME METHODS
 
 The following methods are used when composing a MIME formatted message.
 
@@ -416,7 +416,7 @@ the client.
     ->packager(SOAP::Packager::MIME->new)
     ->dispatch_with({'urn:Majordojo:TemperatureService' => 'TemperatureService'})
     ->handle;
-                                                                                                         
+
   BEGIN {
     package TemperatureService;
     use vars qw(@ISA);

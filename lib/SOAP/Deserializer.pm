@@ -16,6 +16,8 @@ SOAP::Deserializer - the means by which the toolkit manages the conversion of XM
 
 =head1 DESCRIPTION
 
+SOAP::Deserializer provides the means by which incoming XML is decoded into a Perl data structure.
+
 =head1 METHODS
 
 =over

@@ -142,7 +142,7 @@ The following code:
         ->readable(1)
         ->uri($NS)
         ->proxy($HOST);
- 
+
     $temp_elements = SOAP::Data
         ->name("CallDetails" => \SOAP::Data->value(
               SOAP::Data->name("elem1" => 'foo'), 
@@ -153,7 +153,7 @@ The following code:
                        )->type("ArrayOf_SomeObject") ))
 
 	->type("SomeObject"); 
- 
+
     $response = $client->someMethod($temp_elements);
 
 Will produce the following XML:

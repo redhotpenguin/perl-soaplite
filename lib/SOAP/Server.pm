@@ -211,13 +211,11 @@ The following is an example CGI based Web Service that utilizes a Perl module th
     SOAP::Transport::HTTP::CGI
       ->dispatch_to('C2FService')
       ->handle;
-      
     BEGIN {
       package C2FService;
       use vars qw(@ISA);
       @ISA = qw(Exporter SOAP::Server::Parameters);
       use SOAP::Lite;
-      
       sub c2f {
         my $self = shift;
         my $envelope = pop;
