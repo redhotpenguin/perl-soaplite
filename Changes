@@ -31,6 +31,11 @@ THIS RELEASE
     contribution made by O'Reilly. Appendix B from "Programming Web
     Services with Perl" has been completely integrated.
   + Improved support for the serialization of arrays and complex types
+  + Reachitected MIME support to decouple MIME layer from transport
+    layer. This only impacts the HTTP layer since that is the only
+    transport in SOAP::Lite that supports attachments.
+  + Added the ability for a SOAP Client to gain direct access to the
+    HTTP::Request and HTTP::Response objects.
 
 -----------------------------------------------------------------------
 PREVIOUS RELEASES

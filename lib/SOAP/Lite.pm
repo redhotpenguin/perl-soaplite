@@ -2405,8 +2405,7 @@ sub find_target {
 #  unless (defined %{"${class}::"}) {   
 # the following patch does not work for packages defined within a BEGIN block
 #  unless (exists($INC{join '/', split /::/, $class.'.pm'})) {
-  unless (exists($INC{join '/', split /::/, $class.'.pm'}) || 
-          defined(%{"${class}::"})) {
+  unless (exists($INC{join '/', split /::/, $class.'.pm'}) || defined(%{"${class}::"})) {
     # allow all for static and only specified path for dynamic bindings
     local @INC = (($static ? @INC : ()), grep {!ref && m![/\\.]!} $self->dispatch_to);
     eval 'local $^W; ' . "require $class";
@@ -3123,42 +3122,43 @@ sub call {
   die "Transport is not specified (using proxy() method or service description)\n"
     unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
 
-  require HTTP::Headers; 
-  my $headers=new HTTP::Headers();
-  #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  # Note to self: this needs to be moved to HTTP transport layer - what is 
-  # this doing here?! -byrne
+#  require HTTP::Headers; 
+#  my $headers=new HTTP::Headers();
+#  #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#  # Note to self: this needs to be moved to HTTP transport layer - what is 
+#  # this doing here?! -byrne
+#
+#  my $top;
+#  if ($self->parts) {
+#    require MIME::Entity;
+#    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
+#    $top = MIME::Entity->build('Type' => "Multipart/Related");
+#    my @args = @_;
+#    $top->attach('Type'             => 'text/xml',
+#		 'Content-Transfer-Encoding' => '8bit',
+#		 'Content-Location' => '/main_envelope',
+#		 'Content-ID'       => '<main_envelope>',
+#		 'Data'             => $serializer->envelope(method => shift(@args), @args) );
+#    foreach my $a (@{$self->parts}) {
+#      $top->add_part($a);
+#    }
+#    $headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$top->head->multipart_boundary.'"');
+#  }
+#
+#  local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
 
-  my $top;
-  if ($self->parts) {
-    require MIME::Entity;
-    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
-    $top = MIME::Entity->build('Type' => "Multipart/Related");
-    my @args = @_;
-    $top->attach('Type'             => 'text/xml',
-		 'Content-Transfer-Encoding' => '8bit',
-		 'Content-Location' => '/main_envelope',
-		 'Content-ID'       => '<main_envelope>',
-		 'Data'             => $serializer->envelope(method => shift(@args), @args) );
-    foreach my $a (@{$self->parts}) {
-      $top->add_part($a);
-    }
-    $headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$top->head->multipart_boundary.'"');
-  }
-
-  local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
   $serializer->on_nonserialized($self->on_nonserialized);
   my $response = $self->transport->send_receive(
     endpoint => $self->endpoint,
     action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
                 # leave only parameters so we can later update them if required
-    envelope => (defined $top ? $top->stringify_body : $serializer->envelope(method => shift, @_)),
+    envelope => $serializer->envelope(method => shift, @_),
     encoding => $serializer->encoding,
-    headers  => $headers,
+    parts => $self->parts ? @{$self->parts} : undef,
   );
 
   @{$self->parts || []} = (); # need to reset this --BR
-                        # ->parts(undef) doesn't do it, because it stores one empty value --PK
+                              # ->parts(undef) doesn't do it, because it stores one empty value --PK
 
   return $response if $self->outputxml;
 
