@@ -117,10 +117,10 @@ sub send_receive {
 
       my $req =
 	HTTP::Request->new($method => $endpoint,
-			   (defined $headers ? $headers : $HTTP::Headers->new),
+			   (defined $headers ? $headers : HTTP::Headers->new),
       # MIME:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       # MIME: This is done so that the HTTP Headers instance is properly
-      #       created.
+      #       created --BR
 			   $envelope);
       $req->protocol('HTTP/1.1');
 
