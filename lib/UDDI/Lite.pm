@@ -30,14 +30,14 @@ BEGIN {
       ATTRIBUTES => {get_serviceDetail=>{generic=>2},find_tModel=>{maxRows=>2,generic=>2},tModelInstanceInfo=>{tModelKey=>2},address=>{sortCode=>2,useType=>2},email=>{useType=>2},save_binding=>{generic=>2},businessEntity=>{authorizedName=>2,operator=>2,businessKey=>2},discoveryURL=>{useType=>2},find_business=>{maxRows=>2,generic=>2},get_bindingDetail=>{generic=>2},get_businessDetailExt=>{generic=>2},tModelInfo=>{tModelKey=>2},find_service=>{maxRows=>2,businessKey=>2,generic=>2},dispositionReport=>{truncated=>2,operator=>2,generic=>2},authToken=>{operator=>2,generic=>2},get_tModelDetail=>{generic=>2},bindingTemplate=>{serviceKey=>2,bindingKey=>2},delete_tModel=>{generic=>2},tModelDetail=>{truncated=>2,operator=>2,generic=>2},businessInfo=>{businessKey=>2},get_registeredInfo=>{generic=>2},registeredInfo=>{truncated=>2,operator=>2,generic=>2},phone=>{useType=>2},find_binding=>{maxRows=>2,serviceKey=>2,generic=>2},serviceInfo=>{serviceKey=>2,businessKey=>2},get_businessDetail=>{generic=>2},delete_business=>{generic=>2},businessDetail=>{truncated=>2,operator=>2,generic=>2},keyedReference=>{keyName=>2,keyValue=>2,tModelKey=>2},tModelList=>{truncated=>2,operator=>2,generic=>2},delete_service=>{generic=>2},serviceDetail=>{truncated=>2,operator=>2,generic=>2},tModel=>{authorizedName=>2,operator=>2,tModelKey=>2},businessList=>{truncated=>2,operator=>2,generic=>2},validate_categorization=>{generic=>2},contact=>{useType=>2},discard_authToken=>{generic=>2},delete_binding=>{generic=>2},serviceList=>{truncated=>2,operator=>2,generic=>2},bindingDetail=>{truncated=>2,operator=>2,generic=>2},hostingRedirector=>{bindingKey=>2},businessDetailExt=>{truncated=>2,operator=>2,generic=>2},get_authToken=>{userID=>2,generic=>2,cred=>2},save_tModel=>{generic=>2},errInfo=>{errCode=>2},save_business=>{generic=>2},accessPoint=>{URLType=>2},businessService=>{serviceKey=>2,businessKey=>2},save_service=>{generic=>2},result=>{keyType=>2,errno=>2}},
       WITHNAMES => [qw/accessPoint address addressLine authInfo authToken bindingDetail bindingKey bindingTemplate bindingTemplates businessDetail businessDetailExt businessEntity businessEntityExt businessInfo businessInfos businessKey businessList businessService businessServices categoryBag contact contacts description discoveryURL discoveryURLs dispositionReport email errInfo findQualifier findQualifiers hostingRedirector identifierBag instanceDetails instanceParms keyValue keyedReference name overviewDoc overviewURL personName phone registeredInfo result serviceDetail serviceInfo serviceInfos serviceKey serviceList tModel tModelBag tModelDetail tModelInfo tModelInfos tModelInstanceDetails tModelInstanceInfo tModelKey tModelList uploadRegister/],
       NAMESPACE => 'urn:uddi-org:api',
-      GENERIC => 1.0,
+      GENERIC => '1.0', # string, not number; '.0' matters
     },
     2 => {
       ELEMENTS => {},
       ATTRIBUTES => {},
       WITHNAMES => [],
       NAMESPACE => 'urn:uddi-org:api_v2',
-      GENERIC => 2.0,
+      GENERIC => '2.0',
     },
   );
 }
@@ -323,7 +323,9 @@ sub call { SOAP::Trace::trace('()');
   }
   my $message = SOAP::Data
     -> name($method => \SOAP::Data->value(@parameters))
-    -> attr({xmlns=>'urn:uddi-org:api', generic => '1.0', %$attr});
+    -> attr({xmlns => $UDDI::Constants::NAMESPACE, 
+             (defined $UDDI::Constants::GENERIC ? (generic => $UDDI::Constants::GENERIC) : ()), 
+             %$attr});
 
   my $serializer = $self->serializer;
   $serializer->on_nonserialized($self->on_nonserialized);
