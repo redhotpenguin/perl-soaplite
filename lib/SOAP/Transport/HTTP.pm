@@ -1,6 +1,6 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2001 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2004 Paul Kulchenko (paulclinger@yahoo.com)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -15,6 +15,7 @@ use vars qw($VERSION);
 $VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 
 use SOAP::Lite;
+use SOAP::Packager;
 
 # ======================================================================
 
@@ -78,6 +79,7 @@ sub new {
     $self->options({});
     $self->http_request(HTTP::Request->new);
     $self->http_request->headers(HTTP::Headers->new);
+    # TODO - add application/dime
     $self->http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
 
     while (@methods) { my($method, $params) = splice(@methods,0,2);
@@ -89,9 +91,9 @@ sub new {
 }
 
 sub send_receive {
-  my($self, %parameters) = @_;
-  my($envelope, $endpoint, $action, $encoding, $parts) =
-    @parameters{qw(envelope endpoint action encoding parts)};
+  my ($self, %parameters) = @_;
+  my ($context, $envelope, $endpoint, $action, $encoding, $parts) =
+    @parameters{qw(context envelope endpoint action encoding parts)};
   $endpoint ||= $self->endpoint;
 
   my $method = 'POST';
@@ -105,31 +107,17 @@ sub send_receive {
   $self->http_request->method($method);
   $self->http_request->url($endpoint);
 
-  # This code is executed if the client has added any parts that need
-  # to be attached. This code was originally in SOAP::Lite, but I moved
-  # it out because it was transport specific.
-  local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
+  no strict 'refs';
   if ($parts) {
-      require MIME::Entity;
-      my $top = MIME::Entity->build('Type' => "Multipart/Related");
-      $top->attach('Type'             => 'text/xml',
-		   'Content-Transfer-Encoding' => '8bit',
-		   'Content-Location' => '/main_envelope',
-		   'Content-ID'       => '<main_envelope>',
-		   'Data'             => $envelope );
-      # warning - this looks like possible memory bloat
-      use Data::Dumper;
-      foreach my $a (@{$parts}) {
-	  $top->add_part($a);
-      }
-      # The setting of this header could be problematic if the stream is compressed.
-      $self->http_request->headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$top->head->multipart_boundary.'"');
-      $envelope = $top->stringify_body;
+    my $packager = $context->packager;
+    $envelope = $packager->package($envelope);    
+    foreach my $hname (keys %{$packager->headers_http}) {
+      $self->http_request->headers->header($hname => $packager->headers_http->{$hname});
+    }
+    # TODO - DIME support
   }
-  # END new code
-  
- COMPRESS: {
 
+ COMPRESS: {
     my $compressed
       = !exists $nocompress{$endpoint} &&
 	$self->options->{is_compress} &&
@@ -237,8 +225,9 @@ sub send_receive {
 	      : ($self->http_response->content_encoding || '') =~ /\S/
 		? die "Can't understand returned Content-Encoding (@{[$self->http_response->content_encoding]})\n"
 		  : $self->http_response->content;
-  $self->http_response->content_type =~ m!^multipart/!
-    ? join("\n", $self->http_response->headers_as_string, $content) : $content;
+  $self->http_response->content_type =~ m!^multipart/!i ?
+    join("\n", $self->http_response->headers_as_string, $content) 
+      : $content;
 }
 
 # ======================================================================
@@ -260,13 +249,13 @@ sub new { require LWP::UserAgent;
   unless (ref $self) {
     my $class = ref($self) || $self;
     $self = $class->SUPER::new(@_);
-    $self->on_action(sub {
-      (my $action = shift || '') =~ s/^("?)(.*)\1$/$2/;
+    $self->{'_on_action'} = sub {
+      (my $action = shift || '') =~ s/^(\"?)(.*)\1$/$2/;
       die "SOAPAction shall match 'uri#method' if present (got '$action', expected '@{[join('#', @_)]}'\n"
         if $action && $action ne join('#', @_) 
                    && $action ne join('/', @_)
                    && (substr($_[0], -1, 1) ne '/' || $action ne join('', @_));
-    });
+    };
     SOAP::Trace::objects('()');
   }
   return $self;
@@ -315,10 +304,13 @@ sub handle {
        $content_type ne 'text/xml' && 
        $content_type !~ m!^multipart/!;
 
-  my $content = $compressed ? Compress::Zlib::uncompress($self->request->content) : $self->request->content;
+  my $content = $compressed ? 
+    Compress::Zlib::uncompress($self->request->content) 
+      : $self->request->content;
   my $response = $self->SUPER::handle(
-    $self->request->content_type =~ m!^multipart/! 
-      ? join("\n", $self->request->headers_as_string, $content) : $content
+    $self->request->content_type =~ m!^multipart/! ?
+      join("\n", $self->request->headers_as_string, $content) 
+        : $content
   ) or return;
 
   $self->make_response($SOAP::Constants::HTTP_ON_SUCCESS_CODE, $response);
@@ -346,6 +338,8 @@ sub make_response {
     grep(/\b($COMPRESS|\*)\b/, $self->request->header('Accept-Encoding')) &&
       ($self->options->{compress_threshold} || 0) < SOAP::Utils::bytelength $response;
   $response = Compress::Zlib::compress($response) if $compressed;
+  # this next line does not look like a good test to see if something is multipart
+  # perhaps a /content-type:.*multipart\//gi is a better regex?
   my ($is_multipart) = ($response =~ /content-type:.* boundary="([^\"]*)"/im);
   $self->response(HTTP::Response->new(
      $code => undef,
@@ -374,13 +368,17 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
   my $self = shift;
-
   unless (ref $self) {
     my $class = ref($self) || $self;
     $self = $class->SUPER::new(@_);
     SOAP::Trace::objects('()');
   }
   return $self;
+}
+
+sub make_response {
+  my $self = shift;
+  $self->SUPER::make_response(@_);
 }
 
 sub handle {
@@ -411,6 +409,7 @@ sub handle {
     "\015\012", $self->response->headers_as_string, 
     "\015\012", $self->response->content;
 }
+
 
 # ======================================================================
 
@@ -485,7 +484,7 @@ sub new {
       unless (eval "require mod_perl");
   die "Could not detect your version of mod_perl"
       if (!defined($mod_perl::VERSION));
-  if ($mod_perl::VERSION < 2) {
+  if ($mod_perl::VERSION < 1.99) {
       require Apache;
       require Apache::Constants;
       Apache::Constants->import('OK');

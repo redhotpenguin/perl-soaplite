@@ -20,6 +20,7 @@ my @PREREQS = (
   ["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => 0},1],
   ["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => 0},0],
   ["MIME messages","SOAP::MIMEParser",{"MIME::Parser" => 0},1],
+  ["DIME messages","SOAP::Packager",{"DIME::Tools" => 0.03},1],
   ["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => 0},0],
   ["Compression support for HTTP","SOAP::Transport::HTTP",{"Compress::Zlib" => 0},0],
   ["MIME interoperability w/ Axis","SOAP::Lite",{"MIME::Parser" => "6.106"},0],

@@ -14,6 +14,7 @@ THIS RELEASE
 0.65 Sun Sep 27 00:01:34 2004
   + Made SOAP::Serializer->readable actually produce readable XML!
   ! Fixed bug 747312 - Made XML Schema 2001 the default schema
+  + Changed typelookup of base64 to base64Binary to conform with 2001 schema
   + Added support for [almost] all XML Schema 2001 built-in datatypes
   + Added register_ns subroutine to SOAP::Serializer
   + Added find_prefix subroutine to SOAP::Serializer
@@ -31,11 +32,29 @@ THIS RELEASE
     contribution made by O'Reilly. Appendix B from "Programming Web
     Services with Perl" has been completely integrated.
   + Improved support for the serialization of arrays and complex types
+  + Added the ability for a SOAP Client to gain direct access to the
+    HTTP::Request and HTTP::Response objects.
+  + Changed default envelope namespace prefix from SOAP-ENV to soap
+  + Changed default encoding namespace prefix from SOAP-ENC to soapenc
   + Reachitected MIME support to decouple MIME layer from transport
     layer. This only impacts the HTTP layer since that is the only
     transport in SOAP::Lite that supports attachments.
-  + Added the ability for a SOAP Client to gain direct access to the
-    HTTP::Request and HTTP::Response objects.
+  + Creation of SOAP::Packager - decoupled in an extensible way the
+    packaging of parts (a.k.a. attachments). This is used for encoding
+    and decoding. This enables a more seemless addition of DIME
+    support. Changes were made throughout SOAP::Lite to accomodate this
+    functionality.
+    - a call "context" was added to SOAP::Server and SOAP::Deserializer
+      so that those classes could have access to the global
+      SOAP::Packager instance
+    - deprecated many function calls and packages having to do with
+      attachment support
+    - eliminated several "$self = shift->new" calls, they were creating many
+      redundant calls and were destroying precious context information!
+  + Gave developers direct access to MIME::Parser object so that they
+    can optimize its use. See the following URL to optimize it for
+    memory consumption, parsing speed, disk utilization, etc:
+    http://search.cpan.org/dist/MIME-tools/lib/MIME/Parser.pm#OPTIMIZING_YOUR_PARSER
 
 -----------------------------------------------------------------------
 PREVIOUS RELEASES

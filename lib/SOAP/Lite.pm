@@ -1,6 +1,6 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2003 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2004 Paul Kulchenko (paulclinger@yahoo.com)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -210,8 +210,8 @@ BEGIN {
 	       long int short byte nonNegativeInteger unsignedLong
 	       unsignedInt unsignedShort unsignedByte positiveInteger
 	       date time string hex base64 boolean
-#	       QName
   );
+  # Add QName to @EXPORT
   # predeclare subs, so ->can check will be positive 
   foreach (@EXPORT) { eval "sub as_$_" } 
 }
@@ -268,8 +268,8 @@ BEGIN {
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger date time dateTime
-#    QName
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
+  # put QName in @EXPORT
 }
 
 # ======================================================================
@@ -344,8 +344,10 @@ BEGIN {
   $NS_SL_PERLTYPE = 'http://namespaces.soaplite.com/perl';
 
   # default prefixes
-  $PREFIX_ENV = 'SOAP-ENV';
-  $PREFIX_ENC = 'SOAP-ENC';
+  # $PREFIX_ENV = 'SOAP-ENV';
+  # $PREFIX_ENC = 'SOAP-ENC';
+  $PREFIX_ENV = 'soap';
+  $PREFIX_ENC = 'soapenc';
   
   # others
   $DO_NOT_USE_XML_PARSER = 0;
@@ -386,7 +388,7 @@ sub splitlongname { local($1,$2); $_[0] =~ /^(?:\{(.*)\})?(.+)$/; return ($1,$2)
 # CDATA section.
 
 my %encode_attribute = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;');
-sub encode_attribute { (my $e = $_[0]) =~ s/([&<\"])/$encode_attribute{$1}/g; $e }
+sub encode_attribute { (my $e = $_[0]) =~ s/([&<>\"])/$encode_attribute{$1}/g; $e }
 
 my %encode_data = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', "\xd" => '&#xd;');
 sub encode_data { (my $e = $_[0]) =~ s/([&<>\015])/$encode_data{$1}/g; $e =~ s/\]\]>/\]\]&gt;/g; $e }
@@ -445,6 +447,7 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
   my $self = shift;
+  return $self if ref $self;
   my $class = ref($self) || $self;
   return $self if ref $self;
 
@@ -454,6 +457,7 @@ sub new {
 
 sub proxy {
   my $self = shift->new;
+#  my $self = shift;
   my $class = ref $self;
 
   return $self->{_proxy} unless @_;
@@ -692,7 +696,8 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
   my $self = shift;
-
+  return $self if ref $self;
+  print STDERR "Calling SOAP::Serializer::new()\n";
   unless (ref $self) {
     my $class = ref($self) || $self;
     $self = bless {
@@ -703,8 +708,8 @@ sub new {
       _multirefinplace => 0,
       _seen => {},
       _typelookup => {
-	  'base64' => 
-	      [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/}, 'as_base64'],
+	  'base64Binary' => 
+	      [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/}, 'as_base64Binary'],
           'int'  => 
 	      [20, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 2147483648 && $1 >= -2147483648; }, 'as_int'],
           'long' => 
@@ -782,6 +787,7 @@ sub soapversion {
 
 sub xmlschema {
   my $self = shift->new;
+#  my $self = shift;
   return $self->{_xmlschema} unless @_;
 
   my @schema;
@@ -829,6 +835,7 @@ sub encodingspace {
 
 sub envprefix {
   my $self = shift->new;
+#  my $self = shift;
   return $self->namespaces->{$SOAP::Constants::NS_ENV} unless @_;
   $self->namespaces->{$SOAP::Constants::NS_ENV} = shift;
   return $self;
@@ -836,6 +843,7 @@ sub envprefix {
 
 sub encprefix {
   my $self = shift->new;
+#  my $self = shift;
   return $self->namespaces->{$SOAP::Constants::NS_ENC} unless @_;
   $self->namespaces->{$SOAP::Constants::NS_ENC} = shift;
   return $self;
@@ -845,16 +853,19 @@ sub BEGIN {
   no strict 'refs';
   for my $method (qw(readable level seen autotype typelookup attr maptype
                      namespaces multirefinplace encoding signature
-                     on_nonserialized use_prefix)) {
+                     on_nonserialized use_prefix context)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
   for my $method (qw(method fault freeform)) { # aliases for envelope
     *$method = sub { shift->envelope($method => @_) }
   }
+  # Is this necessary? Seems like work for nothing when a user could just use
+  # SOAP::Utils directly.
   for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
     *$method = \&{'SOAP::Utils::'.$method};
   }
@@ -862,6 +873,7 @@ sub BEGIN {
 
 sub uri {
     my $self = shift->new;
+#    my $self = shift;
     if (@_) {
 	$self->{'_uri'} = shift;
 	$self->register_ns($self->{'_uri'}) if (!$self->use_prefix);
@@ -952,7 +964,6 @@ sub encode_object {
   # return if we already saw it twice. It should be already properly serialized
   return if $objectstack{$id} > 2;
 
-  use Data::Dumper;
   if (UNIVERSAL::isa($object => 'SOAP::Data')) { 
     # use $object->SOAP::Data:: to enable overriding name() and others in inherited classes
     $object->SOAP::Data::name($name) unless defined $object->SOAP::Data::name;
@@ -1033,6 +1044,18 @@ sub encode_scalar {
 
 sub encode_array {
   my($self, $array, $name, $type, $attr) = @_;
+
+
+# lexi patch begin
+#  # If typing is disabled, just serialize each of the array items
+#  # with no type information, each using the specified name,
+#  # and do not crete a wrapper array tag.
+#  if (!$self->autotype) {
+#      $name ||= gen_name;
+#      return map {$self->encode_object($_, $name)} @$array;
+#  }
+# lexi patch end
+
   my $items = 'item'; 
 
 # TD: add support for multidimensional, partially transmitted and sparse arrays
@@ -1043,6 +1066,10 @@ sub encode_array {
   $arraytype = sprintf "%s\[$num]", keys %types > 1 || $arraytype eq '-' ? qualify(xsd => $self->xmlschemaclass->anyTypeValue) : $arraytype;
 
   $type = qualify($self->encprefix => 'Array') if $self->autotype && !defined $type;
+# lexi patch begin
+#  $type = qualify($self->encprefix => 'Array') if !defined $type;
+# lexi patch end
+
 
   return [$name || qualify($self->encprefix => 'Array'), 
           {qualify($self->encprefix => 'arrayType') => $arraytype, 'xsi:type' => $self->maptypetouri($type), %$attr},
@@ -1061,8 +1088,11 @@ sub encode_hash {
 
   $type = 'SOAPStruct' if $self->autotype && !defined($type) && exists $self->maptype->{SOAPStruct};
   return [$name || gen_name, 
+# lexi patch begin
           {'xsi:type' => $self->maptypetouri($type), %$attr},
-          [map {$self->encode_object($hash->{$_}, $_)} keys %$hash], 
+#	  $self->autotype ? {'xsi:type' => $self->maptypetouri($type), %$attr} : { %$attr },
+# lexi patch end
+         [map {$self->encode_object($hash->{$_}, $_)} keys %$hash], 
           $self->gen_id($hash)
   ];
 }
@@ -1110,8 +1140,8 @@ sub typecast {
 # ----------------------------------------------------------------------
 
 sub register_ns {
-    my $self = shift->new;
-    #my $self = shift;
+#    my $self = shift->new;
+    my $self = shift;
     my ($ns,$prefix) = @_;
     $prefix = gen_ns if !$prefix;
     $self->{'_namespaces'}->{$ns} = $prefix if $ns;
@@ -1254,7 +1284,11 @@ sub uriformethod {
 }
 
 sub serialize { SOAP::Trace::trace('()');
-  my $self = shift->new;
+  my $self = shift->new; # stop reinitializing!
+# TODO - this will break a lot of unit tests, as the SOAP::Serializer is often
+#        invoked "statically". Fix unit tests. It is silly to have so many
+#        static calls.
+#  my $self = shift;
   @_ == 1 or Carp::croak "serialize() method accepts one parameter";
 
   $self->seen({}); # reinitialize multiref table
@@ -1268,19 +1302,23 @@ sub serialize { SOAP::Trace::trace('()');
 
 sub envelope {
   SOAP::Trace::trace('()');
-  my $self = shift->new;
+  my $self = shift->new; # stop reinitializing!!!
+#  my $self = shift;
   my $type = shift;
-
-  # SOAP::MIME added the attachments bit here
-  # This could be source of memory bloat. I should push a reference to the attachment,
-  #   not the value... right?
-  my(@parameters, @header, @attachments);
+  my(@parameters, @header);
+  print STDERR "SOAP::Serializer::envelope: context - ".ref($self->context)."\n";
+#  $self->context->packager->parts([]);
   for (@_) { 
-    defined $_ && ref $_ && UNIVERSAL::isa($_ => 'SOAP::Header') ?
-      push(@header, $_) :
-      UNIVERSAL::isa($_ => 'MIME::Entity') ?
-        push(@attachments, $_) :
-	push(@parameters, $_);
+    if (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'SOAP::Header')) {
+      push(@header, $_); 
+    # TODO - there may be more than just MIME::Entities - parts come in other
+    #        flavors!
+    #        Perhaps a $self->packager->is_part($_); ?!
+    } elsif (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'MIME::Entity')) {
+      $self->context->packager->push_part($_);
+    } else {
+      push(@parameters, $_);
+    }
   }
   my $header = @header ? SOAP::Data->set_value(@header) : undef;
   my($body,$parameters);
@@ -1308,7 +1346,6 @@ sub envelope {
     # -> attr({'xmlns' => ''})
       -> value(\SOAP::Data->set_value(
         SOAP::Data->name(faultcode => SOAP::Serializer::qualify($self->envprefix => $parameters[0]))->type(""),
-#        SOAP::Data->name(faultstring => $parameters[1])->type(""),
         SOAP::Data->name(faultstring => SOAP::Utils::encode_data($parameters[1]))->type(""),
         defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
         defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3])->type("") : (),
@@ -1337,26 +1374,28 @@ sub envelope {
   #                            v --- subelements
   push(@{$encoded->[2]->[-1]->[2]}, $self->encode_multirefs) if ref $encoded->[2]->[-1]->[2];
 
-  # SOAP::MIME magic goes here...
-  if (@attachments) {
-    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
-    my $top = MIME::Entity->build('Type' => "Multipart/Related");
-    $top->attach('Type'             => 'text/xml',
-		 'Content-Transfer-Encoding' => '8bit',
-		 'Content-Location' => '/main_envelope',
-		 'Content-ID'       => '<main_envelope>',
-		 'Data'             => $self->xmlize($encoded) );
-    foreach my $a (@attachments) {
-      $top->add_part($a);
-    }
-    @attachments = undef; # clear up a little memory
-
-    # Each Transport layer is responsible for setting the proper top level 
-    # MIME type with a start="<main_envelope>" mime attribute.
-    # my ($boundary) = $top->head->multipart_boundary;
-    # $headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$boundary.'"');
-    return $top->stringify;
+  if ($self->context->packager->parts) {
+# TODO - this needs to be called! Calling it though wraps the payload twice!
+#    return $self->context->packager->package($self->xmlize($encoded));
   }
+#  if (@parts) {
+#    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
+#    my $top = MIME::Entity->build('Type' => "Multipart/Related");
+#    $top->attach('Type'             => 'text/xml',
+#		 'Content-Transfer-Encoding' => '8bit',
+#		 'Content-Location' => '/main_envelope',
+#		 'Content-ID'       => '<main_envelope>',
+#		 'Data'             => $self->xmlize($encoded) );
+#    foreach my $a (@parts) {
+#      $top->add_part($a);
+#    }
+#    @parts = undef; # clear up a little memory
+#    # Each Transport layer is responsible for setting the proper top level 
+#    # MIME type with a start="<main_envelope>" mime attribute.
+#    # my ($boundary) = $top->head->multipart_boundary;
+#    # $headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$boundary.'"');
+#    return $top->stringify;
+#  }
   return $self->xmlize($encoded);
 }
 
@@ -1376,11 +1415,13 @@ sub xmlparser {
 
 sub parser {
   my $self = shift->new;
+#  my $self = shift;
   @_ ? ($self->{'_parser'} = shift, return $self) : return ($self->{'_parser'} ||= $self->xmlparser);
 }
 
 sub new { 
   my $self = shift;
+  return $self if ref $self;
   my $class = ref($self) || $self;
 
   return $self if ref $self;
@@ -1472,7 +1513,7 @@ sub new {
 #  Exporter::require_version('MIME::Parser' => 6.106);
 
   my $self = shift;
-
+  return $self if ref $self;
   unless (ref $self) {
     my $class = ref($self) || $self;
     $self = $class->SUPER::new();
@@ -1642,7 +1683,7 @@ sub BEGIN {
       defined $self->fault ? return : return $self->valueof($results{$method});
     };
   }
-  for my $method (qw(parts)) {
+  for my $method (qw(context)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift;
@@ -1666,6 +1707,16 @@ sub new {
   my $content = shift;
   SOAP::Trace::objects('()');
   return bless { _content => $content, _current => [$content] } => $class;
+}
+
+sub parts {
+  my $self = shift;
+  if (@_) {
+    $self->context->packager->parts(@_);
+    return $self;
+  } else {
+    return $self->context->packager->parts;
+  }
 }
 
 sub is_multipart {
@@ -1795,10 +1846,11 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(ids hrefs parts parser base xmlschemas xmlschema)) {
+  for my $method (qw(ids hrefs parts parser base xmlschemas xmlschema context)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
@@ -1806,8 +1858,8 @@ sub BEGIN {
 
 sub new {
   my $self = shift;
-  my $class = ref($self) || $self;
   return $self if ref $self;
+  my $class = ref($self) || $self;
 
   SOAP::Trace::objects('()');
   return bless {
@@ -1822,12 +1874,13 @@ sub new {
   } => $class;
 }
 
-sub mimeparser {
-  my $field = '_mimeparser';
-  my $self = shift->new;
-  @_ ? ($self->{$field} = shift, return $self) 
-     : return $self->{$field} ||= new SOAP::MIMEParser;
-}
+# TODO - Deprecate this
+#sub mimeparser {
+# my $field = '_mimeparser';
+#  my $self = shift->new;
+#  @_ ? ($self->{$field} = shift, return $self) 
+#     : return $self->{$field} ||= new SOAP::MIMEParser;
+#}
 
 sub is_xml {
   # Added check for envelope delivery. Fairly standard with MMDF and sendmail
@@ -1846,8 +1899,10 @@ sub baselocation {
   $location;
 }
 
-sub mimedecode {
-  my $self = shift->new;
+# Deprecate this in favor of SOAP::Packager::MIME::unpackage
+sub decode_mime {
+#  my $self = shift->new;
+  my $self = shift;
   my $body;
   foreach ($self->mimeparser->decode($_[0])) {
     my($id, $location, $type, $value) = @$_;
@@ -1869,20 +1924,47 @@ sub mimedecode {
   return $body;
 }
 
+# Returns the envelope and populates SOAP::Packager with parts
+sub decode_parts {
+#  my $self = shift->new; # stop this!!! no reinitialization all the time!
+  my $self = shift;
+  my $env = $self->context->packager->unpackage($_[0]);
+  my $body = $self->parser->decode($env);
+  foreach (@{$self->context->packager->parts}) {
+    my $data     = $_->bodyhandle->as_string;
+    my $type     = $_->head->mime_attr('Content-Type');
+    my $location = $_->head->mime_attr('Content-Location');
+    my $id       = $_->head->mime_attr('Content-Id');
+    $location = $self->baselocation($location);
+    my $part = lc($type) eq 'text/xml' &&
+      !$SOAP::Constants::DO_NOT_PROCESS_XML_IN_MIME ?
+        $self->parser->decode($data) 
+          : ['mimepart', {}, $data];
+    # This below looks like unnecessary bloat!!!
+    # I should probably dereference the mimepart
+    $self->ids->{$id} = $part if $id;
+    $self->ids->{$location} = $part if $location;
+  }
+  return $body;
+}
+
 # decode returns a parsed body in the form of an ARRAY
 # each element of the ARRAY is a HASH, ARRAY or SCALAR
 sub decode {
-  my $self = shift->new;
+#  my $self = shift->new; # why are we reinitializing all the time!?
+  my $self = shift;
   return $self->is_xml($_[0])
     ? $self->parser->decode($_[0])
-    : $self->mimedecode($_[0]);
+      : $self->decode_parts($_[0]);
 }
 
 # deserialize returns a SOAP::SOM object and parses straight
 # text as input
 sub deserialize {
   SOAP::Trace::trace('()');
-  my $self = shift->new;
+  #my $self = shift->new; # This seems a bit fubar'ed. why are we reinitializing?
+                         # Deserializer should already by instantiated!
+  my $self = shift;
 
   # initialize
   $self->hrefs({});
@@ -1893,9 +1975,6 @@ sub deserialize {
   # formatted, then the self->ids hash should be populated with mime parts
   # as will the self->mimeparser->parts array
   my $parsed = $self->decode($_[0]); # TBD: die on possible errors in Parser?
-  # Thought - decode should return an ARRAY which may contain MIME::Entities
-  # then the SOM object that is created and returned from this will know how
-  # to parse them out
 
   # Having this code here makes multirefs in the Body work, but multirefs
   # that reference XML fragments in a MIME part do not work.
@@ -1909,11 +1988,10 @@ sub deserialize {
   # first check if MIME parser has been initialized 
   # simple $self->mimeparser() call doesn't work because of
   # "lazy initialization" --PK
-  if (defined $self->{'_mimeparser'} && $self->mimeparser->parts) {
-    # This seems like an unnecessary copy... does SOAP::SOM have a handle on
-    # the SOAP::Lite->mimeparser instance so that I can skip this?
-    $som->{'_parts'} = $self->mimeparser->parts; 
-  }
+  #if (defined $self->{'_mimeparser'} && $self->mimeparser->parts) {
+  #  $som->{'_parts'} = $self->mimeparser->parts; 
+  #}
+  $som->context($self->context); # TODO - try this and see if it works!
   return $som;
 }
 
@@ -2167,6 +2245,7 @@ sub BEGIN {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
@@ -2264,6 +2343,7 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
   my $self = shift;
+  return $self if ref $self;
 
   unless (ref $self) {
     my $class = ref($self) || $self;
@@ -2274,13 +2354,19 @@ sub new {
                            : $^W && Carp::carp "Unrecognized parameter '$method' in new()";
     }
     $self = bless {
-      _dispatch_to => [], 
+      _transport     => SOAP::Transport->new,
+      _serializer    => SOAP::Serializer->new,
+      _deserializer  => SOAP::Deserializer->new,
+      _packager      => SOAP::Packager->new,
+      _on_action     => sub { ; },
+      _on_dispatch   => sub { return; }, 
+      _dispatch_to   => [], 
       _dispatch_with => {}, 
-      _dispatched => [],
-      _action => '',
-      _options => {},
+      _dispatched    => [],
+      _action        => '',
+      _options       => {},
     } => $class;
-    unshift(@methods, $self->initialize);
+    $self->{'_deserializer'}->{'_context'} = $self->{'_serializer'}->{'_context'} = $self;
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
     }
@@ -2297,21 +2383,27 @@ sub new {
   return $self;
 }
 
-sub initialize {
-  return (
-    serializer => SOAP::Serializer->new,
-    deserializer => SOAP::Deserializer->new,
-    on_action => sub {},
-    on_dispatch => sub {return},
-  );
-}
-
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(action myuri serializer deserializer options dispatch_with)) {
+  for my $method (qw(serializer deserializer)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+      if (@_) {
+        my $context = $self->{$field}->{'_context'}; # save the old context
+        $self->{$field} = shift;
+        $self->{$field}->{'_context'} = $context;    # restore the old context
+        return $self;
+      } else { 
+        return $self->{$field};
+      }
+    }
+  }
+  for my $method (qw(action myuri options dispatch_with packager)) {
+    my $field = '_' . $method;
+    *$method = sub {
+      my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
@@ -2319,6 +2411,7 @@ sub BEGIN {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+#      my $self = shift;
       return $self->{$field} unless @_;
       local $@;
       # commented out because that 'eval' was unsecure
@@ -2335,6 +2428,7 @@ sub BEGIN {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->{$field} = [@_], return $self) 
          : return @{$self->{$field}};
     }
@@ -2343,12 +2437,14 @@ sub BEGIN {
 
 sub objects_by_reference { 
   my $self = shift->new;
+#  my $self = shift;
   @_ ? (SOAP::Server::Object->objects_by_reference(@_), return $self) 
      : SOAP::Server::Object->objects_by_reference; 
 }
 
 sub dispatched {
   my $self = shift->new;
+#  my $self = shift;
   @_ ? (push(@{$self->{_dispatched}}, @_), return $self) 
      : return @{$self->{_dispatched}};
 }
@@ -2431,6 +2527,7 @@ sub handle {
 
   my $result = eval {
     local $SIG{__DIE__};
+    # why is this here:
     $self->serializer->soapversion(1.1);
     my $request = eval { $self->deserializer->deserialize($_[0]) };
     die SOAP::Fault
@@ -2920,6 +3017,8 @@ package SOAP::Lite;
 use vars qw($AUTOLOAD @ISA);
 use Carp ();
 
+use SOAP::Packager;
+
 @ISA = qw(SOAP::Cloneable);
 
 # provide access to global/autodispatched object
@@ -2998,21 +3097,25 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
   my $self = shift;
-
+  return $self if ref $self;
+#  print STDERR "SOAP::Lite::new() called\n";
   unless (ref $self) {
     my $class = ref($self) || $self;
-    # check whether we can clone. Only the SAME class allowed, no inheritance
+    # TODO - SOAP::Lite deserializer needs to get a hold of a SOAP::Packager
+    #        instance
+    # Check whether we can clone. Only the SAME class allowed, no inheritance
     $self = ref($soap) eq $class ? $soap->clone : {
-      _transport => SOAP::Transport->new,
-      _serializer => SOAP::Serializer->new,
+      _transport    => SOAP::Transport->new,
+      _serializer   => SOAP::Serializer->new,
       _deserializer => SOAP::Deserializer->new,
-      _autoresult => 0,
-      _on_action => sub { sprintf '"%s#%s"', shift || '', shift },
-      _on_fault => sub {ref $_[1] ? return $_[1] : Carp::croak $_[0]->transport->is_success ? $_[1] : $_[0]->transport->status},
+      _packager     => SOAP::Packager->new, # TODO - autodetect packager to use (DIME vs MIME)
+      _autoresult   => 0,
+      _on_action    => sub { sprintf '"%s#%s"', shift || '', shift },
+      _on_fault     => sub {ref $_[1] ? return $_[1] : Carp::croak $_[0]->transport->is_success ? $_[1] : $_[0]->transport->status},
     };
     bless $self => $class;
-   
     $self->on_nonserialized($self->on_nonserialized || $self->serializer->on_nonserialized);
+    $self->{'_deserializer'}->{'_context'} = $self->{'_serializer'}->{'_context'} = $self;
     SOAP::Trace::objects('()');
   }
 
@@ -3028,10 +3131,25 @@ sub new {
 
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(endpoint transport serializer deserializer outputxml autoresult)) {
+  for my $method (qw(serializer deserializer)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+      if (@_) {
+        my $context = $self->{$field}->{'_context'}; # save the old context
+        $self->{$field} = shift;
+        $self->{$field}->{'_context'} = $context;    # restore the old context
+        return $self;
+      } else { 
+        return $self->{$field};
+      }
+    }
+  }
+  for my $method (qw(endpoint transport outputxml autoresult packager)) {
+    my $field = '_' . $method;
+    *$method = sub {
+      my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
   }
@@ -3039,6 +3157,7 @@ sub BEGIN {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
+#      my $self = shift;
       return $self->{$field} unless @_;
       local $@;
       # commented out because that 'eval' was unsecure
@@ -3054,6 +3173,7 @@ sub BEGIN {
   for my $method (qw(proxy)) {
     *$method = sub { 
       my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->transport->$method(@_), return $self) : return $self->transport->$method();
     }
   }
@@ -3062,14 +3182,18 @@ sub BEGIN {
 		     header maptype xmlschema use_prefix)) {
     *$method = sub { 
       my $self = shift->new;
+#      my $self = shift;
       @_ ? ($self->serializer->$method(@_), return $self) : return $self->serializer->$method();
     }
   }                                                
 }
 
+# TODO - deprecate
+# This is a shortcurt to Packager->parts
 sub parts {
   my $self = shift;
-  @_ ? ($self->{_parts} = \@_, return $self) : return $self->{_parts};
+  $self->packager->parts(@_);
+  return $self;
 }
 
 sub service {
@@ -3122,55 +3246,32 @@ sub call {
   die "Transport is not specified (using proxy() method or service description)\n"
     unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
 
-#  require HTTP::Headers; 
-#  my $headers=new HTTP::Headers();
-#  #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#  # Note to self: this needs to be moved to HTTP transport layer - what is 
-#  # this doing here?! -byrne
-#
-#  my $top;
-#  if ($self->parts) {
-#    require MIME::Entity;
-#    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
-#    $top = MIME::Entity->build('Type' => "Multipart/Related");
-#    my @args = @_;
-#    $top->attach('Type'             => 'text/xml',
-#		 'Content-Transfer-Encoding' => '8bit',
-#		 'Content-Location' => '/main_envelope',
-#		 'Content-ID'       => '<main_envelope>',
-#		 'Data'             => $serializer->envelope(method => shift(@args), @args) );
-#    foreach my $a (@{$self->parts}) {
-#      $top->add_part($a);
-#    }
-#    $headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$top->head->multipart_boundary.'"');
-#  }
-#
-#  local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
-
   $serializer->on_nonserialized($self->on_nonserialized);
   my $response = $self->transport->send_receive(
+    context  => $self, # this is provided for context
     endpoint => $self->endpoint,
     action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
                 # leave only parameters so we can later update them if required
     envelope => $serializer->envelope(method => shift, @_),
     encoding => $serializer->encoding,
-    parts => $self->parts ? @{$self->parts} : undef,
+    parts    => $self->packager->parts ? $self->packager->parts : undef,
   );
 
-  @{$self->parts || []} = (); # need to reset this --BR
-                              # ->parts(undef) doesn't do it, because it stores one empty value --PK
+  # SOAP::Packager has much better memory management, so this is no longer
+  # necessary:
+  # @{$self->parts || []} = ();
 
   return $response if $self->outputxml;
 
   # deserialize and store result
-  my $result = $self->{_call} = eval { $self->deserializer->deserialize($response) } if $response;
+  my $result = $self->{'_call'} = eval { $self->deserializer->deserialize($response) } if $response;
 
   if (!$self->transport->is_success || # transport fault
       $@ ||                            # not deserializible
       # fault message even if transport OK
       # or no transport error (for example, fo TCP, POP3, IO implementations)
       UNIVERSAL::isa($result => 'SOAP::SOM') && $result->fault) {
-    return $self->{_call} = ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
+    return $self->{'_call'} = ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
   }
 
   return unless $response; # nothing to do for one-ways
@@ -3350,6 +3451,12 @@ Provides access to the transport object that the client has allocated to manage 
     $serial = $client->serializer( )
 
 Provides access to the C<SOAP::Serializer> object that the client uses to transform the elements and data of a request into an XML document for the sake of transport. As with transport, this may be set by providing a new object reference, but it is generally not needed.
+
+=item packager(optional packager object)
+
+    $packager = $client->packager( )
+
+Provides access to the C<SOAP::Packager> object that the client uses to manage the use of attachments.
 
 =item proxy(endpoint, optional extra arguments)
 
@@ -3700,6 +3807,17 @@ B<Both> SOAP calls will go to C<'http://localhost/cgi-bin/soap.cgi'>. If you wan
 Or alternatively,
 
   SOAP::Lite->self->proxy('http://localhost/cgi-bin/soap.cgi');
+
+=head2 SETTING MAXIMUM MESSAGE SIZE
+
+One feature of C<SOAP::Lite> is the ability to control the maximum size of a message a SOAP::Lite server will be allowed to process. To control this feature simply define C<$SOAP::Constants::MAX_CONTENT_SIZE> in your code like so:
+
+  use SOAP::Transport::HTTP;
+  use MIME::Entity;
+  $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
+  SOAP::Transport::HTTP::CGI
+    ->dispatch_to('TemperatureService')
+    ->handle;
 
 =head2 IN/OUT, OUT PARAMETERS AND AUTOBINDING
 
@@ -4059,8 +4177,6 @@ Example from Yann Christensen <yannc@microsoft.com>:
 
 =back
 
-=back
-
 Special thanks goes to the following people for providing the above description and details on .NET interoperability issues:
 
 Petr Janata <petr.janata@i.cz>, 
@@ -4179,10 +4295,10 @@ fragments, encoded as strings. Providing low-level details, parser will call
 char() callback for every portion of processed stream, but individually for 
 every processed entity or newline. It can lead to lot of calls and additional
 memory manager expenses even for small messages. By contrast, XML messages
-which are encoded as base64, don't have this problem and difference in 
+which are encoded as base64Binary, don't have this problem and difference in 
 processing time can be significant. For XML encoded string that has about 20 
 lines and 30 tags, number of call could be about 100 instead of one for
-the same string encoded as base64.
+the same string encoded as base64Binary.
 
 Since it is parser's feature there is NO fix for this behavior (let me know
 if you find one), especially because you need to parse message you already
@@ -4195,7 +4311,7 @@ If you want to encode specific string as base64, just do
 C<< SOAP::Data->type(base64 => $string) >> either on client or on server
 side. If you want change behavior for specific instance of SOAP::Lite, you 
 may subclass C<SOAP::Serializer>, override C<as_string()> method that is 
-responsible for string encoding (take a look into C<as_base64()>) and 
+responsible for string encoding (take a look into C<as_base64Binary()>) and 
 specify B<new> serializer class for your SOAP::Lite object with:
 
   my $soap = new SOAP::Lite
@@ -4209,10 +4325,10 @@ or on server side:
     ..... other parameters
 
 If you want to change this behavior for B<all> instances of SOAP::Lite, just
-substitute C<as_string()> method with C<as_base64()> somewhere in your 
+substitute C<as_string()> method with C<as_base64Binary()> somewhere in your 
 code B<after> C<use SOAP::Lite> and B<before> actual processing/sending:
 
-  *SOAP::Serializer::as_string = \&SOAP::Serializer::as_base64;
+  *SOAP::Serializer::as_string = \&SOAP::Serializer::as_base64Binary;
 
 Be warned that last two methods will affect B<all> strings and convert them
 into base64 encoded. It doesn't make any difference for SOAP::Lite, but it
