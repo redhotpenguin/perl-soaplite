@@ -806,7 +806,7 @@ sub encprefix {
 
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(readable level seen autotype typelookup uri attr maptype
+  for my $method (qw(readable level seen autotype typelookup attr maptype
                      namespaces multirefinplace encoding signature
                      on_nonserialized use_prefix)) {
     my $field = '_' . $method;
@@ -821,6 +821,16 @@ sub BEGIN {
   for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
     *$method = \&{'SOAP::Utils::'.$method};
   }
+}
+
+sub uri {
+    my $self = shift->new;
+    if (@_) {
+	$self->{'_uri'} = shift;
+	$self->register_ns($self->{'_uri'});
+	return $self;
+    }
+    return $self->{'_uri'};
 }
 
 sub gen_id { sprintf "%U", $_[1] }
@@ -1059,20 +1069,39 @@ sub typecast {
 
 # ----------------------------------------------------------------------
 
+sub register_ns {
+    my $self = shift->new;
+    #my $self = shift;
+    my ($ns,$prefix) = @_;
+    $prefix = gen_ns if !$prefix;
+    $self->{'_namespaces'}->{$ns} = $prefix if $ns;
+}
+
+sub find_prefix {
+    my $self = shift;
+    my ($ns) = @_;
+    foreach my $this_ns (keys %{$self->{'_namespaces'}}) {
+	return $self->{'_namespaces'}->{$this_ns} if ($ns eq $this_ns);
+    }
+}
+
 sub fixattrs {
   my $self = shift;
   my $data = shift;
   my($name, $attr) = ($data->SOAP::Data::name, {%{$data->SOAP::Data::attr}});
   my($xmlns, $prefix) = ($data->uri, $data->prefix);
-  return ($name, $attr) unless defined($xmlns) || defined($prefix);
+  unless (defined($xmlns) || defined($prefix)) {
+      $self->register_ns($xmlns,$prefix);
+      return ($name, $attr);
+  }
   $name ||= gen_name; # local name
   $prefix = gen_ns if !defined $prefix && $xmlns gt '';
   $prefix = '' if defined $xmlns  && $xmlns eq '' || 
                   defined $prefix && $prefix eq '';
 
   $attr->{join ':', xmlns => $prefix || ()} = $xmlns if defined $xmlns; 
-  $name = join ':', $prefix, $name                   if $prefix;
-
+  $name = join ':', $prefix, $name if $prefix;
+  $self->register_ns($xmlns,$prefix);
   return ($name, $attr);
 }
 
