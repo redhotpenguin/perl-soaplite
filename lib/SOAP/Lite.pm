@@ -50,8 +50,8 @@ sub as_anyType { $_[1] }
 BEGIN {
   no strict 'refs';
   for my $method (qw(
-    string float double decimal dateTime timePeriod gMonth gYearMonth gYear century 
-    gMonthDay gDay duration recurringDuration anyURI
+    string float double decimal dateTime timePeriod gMonth gYearMonth gYear
+    century gMonthDay gDay duration recurringDuration anyURI
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger date time dateTime
@@ -139,6 +139,12 @@ sub as_long {
   my $self = shift;
   my($value, $name, $type, $attr) = @_;
   return [$name, {'xsi:type' => 'xsd:long', %$attr}, $value];
+}
+
+sub as_dateTime {
+  my $self = shift;
+  my($value, $name, $type, $attr) = @_;
+  return [$name, {'xsi:type' => 'xsd:dateTime', %$attr}, $value];
 }
 
 sub as_string {
@@ -296,6 +302,7 @@ BEGIN {
       NS_ENV => 'http://schemas.xmlsoap.org/soap/envelope/',
       NS_ENC => 'http://schemas.xmlsoap.org/soap/encoding/',
       DEFAULT_XML_SCHEMA => 'http://www.w3.org/1999/XMLSchema',
+#      DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
     },
     1.2 => {
       NEXT_ACTOR => 'http://www.w3.org/2001/06/soap-envelope/actor/next',
@@ -313,8 +320,7 @@ BEGIN {
     'http://www.w3.org/2001/06/soap-encoding' => 'SOAP::XMLSchemaSOAP1_2',
   );
   
-  $NS_XSI_ALL = join join('|', map {"$_-instance"} grep {/XMLSchema/} keys %XML_SCHEMAS),
-                     '(?:', ')';
+  $NS_XSI_ALL = join join('|', map {"$_-instance"} grep {/XMLSchema/} keys %XML_SCHEMAS), '(?:', ')';
   $NS_XSI_NILS = join join('|', map { my $class = $XML_SCHEMAS{$_} . '::Serializer'; "\{($_)-instance\}" . $class->nilValue
                                     } grep {/XMLSchema/} keys %XML_SCHEMAS),
                       '(?:', ')';
@@ -368,7 +374,7 @@ sub splitlongname { local($1,$2); $_[0] =~ /^(?:\{(.*)\})?(.+)$/; return ($1,$2)
 # string "]]>" in content, when that string is not marking the end of a 
 # CDATA section.
 
-my %encode_attribute = ('&' => '&amp;', '<' => '&lt;', '"' => '&quot;');
+my %encode_attribute = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', '"' => '&quot;');
 sub encode_attribute { (my $e = $_[0]) =~ s/([&<"])/$encode_attribute{$1}/g; $e }
 
 my %encode_data = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', "\xd" => '&#xd;');
@@ -384,6 +390,12 @@ sub o_chars { ref $_[0]->[2] ? undef : $_[0]->[2] }
 sub o_value { $_[0]->[4] }
 sub o_lname { $_[0]->[5] }
 sub o_lattr { $_[0]->[6] }
+
+sub format_datetime {
+    my ($s,$m,$h,$D,$M,$Y) = (@_)[0,1,2,3,4,5];
+    my $time = sprintf("%04d-%02d-%02dT%02d:%02d:%02d",($Y+1900),($M+1),$D,$h,$m,$s);
+    return $time;
+}
 
 # make bytelength that calculates length in bytes regardless of utf/byte settings
 # either we can do 'use bytes' or length will count bytes already      
@@ -443,7 +455,7 @@ sub proxy {
   no strict 'refs';
   unless (defined %{"$protocol_class\::Client::"} && UNIVERSAL::can("$protocol_class\::Client" => 'new')) {
     eval "require $protocol_class";
-    die "Unsupported protocol '$protocol'\n" if $@ =~ m!^Can't locate SOAP/Transport/!;
+    die "Unsupported protocol '$protocol'\n" if $@ =~ m!^Can\'t locate SOAP/Transport/!;
     die if $@;
   }
   $protocol_class .= "::Client";
@@ -676,6 +688,7 @@ sub new {
       _level => 0,
       _autotype => 1,
       _readable => 0,
+      _use_prefix => 1,
       _multirefinplace => 0,
       _seen => {},
       _typelookup => {
@@ -684,6 +697,7 @@ sub new {
         float  => [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
         string => [40, sub {1}, 'as_string'],
         'long' => [25, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
+        'dateTime' => [39, sub { print STDERR "[0]=".$_[0]."\n"; $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/; }, 'as_dateTime'],
       },
       _encoding => 'UTF-8',
       _objectstack => {},
@@ -794,7 +808,7 @@ sub BEGIN {
   no strict 'refs';
   for my $method (qw(readable level seen autotype typelookup uri attr maptype
                      namespaces multirefinplace encoding signature
-                     on_nonserialized)) {
+                     on_nonserialized use_prefix)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
@@ -1111,13 +1125,19 @@ sub tag {
 
 sub xmlize {
   my $self = shift;
-  my($name, $attrs, $values, $id) = @{+shift}; $attrs ||= {};
+  my($name, $attrs, $values, $id) = @{+shift};
+  $attrs ||= {};
 
   local $self->{_level} = $self->{_level} + 1;
-  return $self->tag($name, $attrs) unless defined $values;
-  return $self->tag($name, $attrs, $values) unless UNIVERSAL::isa($values => 'ARRAY');
-  return $self->tag($name, {%$attrs, href => '#' . $self->multiref_anchor($id)}) if $self->is_href($id, delete($attrs->{_id}));
-  return $self->tag($name, {%$attrs, id => $self->multiref_anchor($id)}, map {$self->xmlize($_)} @$values); 
+  return $self->tag($name, $attrs) 
+      unless defined $values;
+  return $self->tag($name, $attrs, $values) 
+      unless UNIVERSAL::isa($values => 'ARRAY');
+  return $self->tag($name, {%$attrs, href => '#'.$self->multiref_anchor($id)})
+      if $self->is_href($id, delete($attrs->{_id}));
+  return $self->tag($name,
+		    {%$attrs, id => $self->multiref_anchor($id)}, 
+		    map {$self->xmlize($_)} @$values); 
 }
 
 sub uriformethod {
@@ -1187,10 +1207,11 @@ sub envelope {
   my($body,$parameters);
   if ($type eq 'method' || $type eq 'response') {
     SOAP::Trace::method(@parameters);
-    my $method = shift(@parameters) or die "Unspecified method for SOAP call\n";
+    my $method = shift(@parameters) 
+	or die "Unspecified method for SOAP call\n";
     $parameters = @parameters ? SOAP::Data->set_value(@parameters) : undef;
     $body = UNIVERSAL::isa($method => 'SOAP::Data') 
-      ? $method : SOAP::Data->name($method)->uri($self->uri);
+      ? $method : ($self->use_prefix ? SOAP::Data->name($method)->uri($self->uri) : SOAP::Data->name($method)->attr( { 'xmlns' => $self->uri } ));
     $body->set_value($parameters ? \$parameters : ());
   } elsif ($type eq 'fault') {
     SOAP::Trace::fault(@parameters);
@@ -2337,7 +2358,7 @@ sub handle {
 
     # let application errors pass through with 'Server' code
     die ref $@ ?
-      $@ : $@ =~ /^Can't locate object method "$method_name"/ ?
+      $@ : $@ =~ /^Can\'t locate object method "$method_name"/ ?
 	"Failed to locate method ($method_name) in class ($class)" :
 	  SOAP::Fault->faultcode($SOAP::Constants::FAULT_SERVER)->faultstring($@)
 	      if $@;
@@ -2901,8 +2922,9 @@ sub BEGIN {
       @_ ? ($self->transport->$method(@_), return $self) : return $self->transport->$method();
     }
   }
-  for my $method (qw(autotype readable namespace encodingspace envprefix encprefix 
-                     multirefinplace encoding typelookup uri header maptype xmlschema)) {
+  for my $method (qw(autotype readable namespace encodingspace envprefix 
+		     encprefix multirefinplace encoding typelookup uri
+		     header maptype xmlschema use_prefix)) {
     *$method = sub { 
       my $self = shift->new;
       @_ ? ($self->serializer->$method(@_), return $self) : return $self->serializer->$method();
@@ -2944,7 +2966,7 @@ sub AUTOLOAD {
   my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::') + 2);
   return if $method eq 'DESTROY';
 
-  ref $_[0] or Carp::croak qq!Can't locate class method "$method" via package "! . __PACKAGE__ .'"';
+  ref $_[0] or Carp::croak qq!Can\'t locate class method "$method" via package \"! . __PACKAGE__ .'\"';
 
   no strict 'refs';
   *$AUTOLOAD = sub { 
@@ -2968,7 +2990,8 @@ sub call {
   require HTTP::Headers; 
   my $headers=new HTTP::Headers();
   #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  # This needs to be moved to HTTP transport layer - what is this doing here?!
+  # Note to self: this needs to be moved to HTTP transport layer - what is 
+  # this doing here?! -byrne
 
   my $top;
   if ($self->parts) {
@@ -3357,6 +3380,7 @@ library.
  -- SOAP::Server         -- Handles requests on server side 
  -- SOAP::Server::Object -- Handles objects-by-reference 
  -- SOAP::Fault          -- Provides support for Faults on server side
+ -- SOAP::Utils          -- A set of private and public utility subroutines
 
  SOAP::Transport::HTTP.pm
  -- SOAP::Transport::HTTP::Client  -- Client interface to HTTP transport
@@ -3479,6 +3503,28 @@ for the generated XML code. Carriage returns <CR> and indentation will be
 added for readability. Useful in the case you want to see the generated code 
 in a debugger. By default, there are no additional characters in generated 
 XML code. 
+
+=item use_prefix()
+
+Shortcut for C<< serializer->use_prefix() >>. This lets you turn on/off the
+use of a namespace prefix for the children of the /Envelope/Body element.
+Default is 'true'. (This was introduced in 0.61 for better .NET compatibility)
+
+When use_prefix is set to 'true', serialized XML will look like this:
+
+  <SOAP-ENV:Envelope ...attributes skipped>
+    <SOAP-ENV:Body>
+      <namesp1:mymethod xmlns:namesp1="urn:MyURI" />
+    </SOAP-ENV:Body>
+  </SOAP-ENV:Envelope>
+
+When use_prefix is set to 'true', serialized XML will look like this:
+
+  <SOAP-ENV:Envelope ...attributes skipped>
+    <SOAP-ENV:Body>
+      <mymethod xmlns="urn:MyURI" />
+    </SOAP-ENV:Body>
+  </SOAP-ENV:Envelope>
 
 =item namespace()
 
@@ -4282,6 +4328,23 @@ object as a parameter:
 faultdetail() and faultactor() methods are optional and since faultcode and
 faultstring are required to represent fault message SOAP::Lite will use
 default values ('Server' and 'Application error') if not specified.
+
+=head2 SOAP::Utils
+
+This class gives you access to a number of subroutines to assist in data
+formating, encoding, etc. Many of the subroutines are private, and are not
+documented here, but a few are made public. They are:
+
+=over 4
+
+=item format_datetime
+
+  Returns a valid xsd:datetime string given a time object returned by
+  Perl's localtime function. Usage:
+
+  print SOAP::Utils::format_datetime(localtime);
+
+=back
 
 =head2 SOAP::Constants
 
