@@ -58,6 +58,19 @@ Gets (or sets) the current schema representation to be used by this object. The 
 
 Gets or sets the services currently stored on the object. The services are kept as a hash reference, whose keys and values are the list of returned values from the WSDL parser. Keys represent the names of the services themselves (names have been normalized into Perl-compatible identifiers), with values that are also hash references to the internal representation of the service itself.
 
+=item useragent(LWP::UserAgent)
+
+    my $client = SOAP::Lite->new;
+    $ua = $client->schema->useragent;
+    $ua->agent("Fubar! 0.1");
+    my $response = $client->service("http://localhost/some.wsdl")
+                          ->someMethod("Foo");
+    
+Gets or sets the classes UserAgent used for retrieving schemas over the web. 
+This allows users to have direct access to the UserAgent so that they may control
+the credentials passed to a remote server, or the specific configuration of their
+HTTP agent.
+
 =back
 
 =head1 SOAP::Schema::WSDL

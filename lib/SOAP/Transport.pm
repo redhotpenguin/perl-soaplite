@@ -209,6 +209,24 @@ Inherits from: L<SOAP::Client>, L<LWP::UserAgent> (from the LWP package).
 
 With this class, clients are able to use HTTP for sending messages. This class provides just the basic new and send_receive methods. Objects of this class understand the compress_threshold option and use it if the server being communicated to also understands it. 
 
+=head4 CHANGING THE DEFAULT USERAGENT CLASS
+
+By default, C<SOAP::Transport::HTTP::Client> extends C<LWP::UserAgent>.
+But under some circumstances, a user may wish to change the default 
+UserAgent class with their in order to better handle persist connections, or
+to C<LWP::UserAgent::ProxyAny>, for example, which has better Win32/Internet
+Explorer interoperability.
+
+One can use the code below as an example of how to change the default UserAgent class.
+
+  use SOAP::Lite;
+  use SOAP::Transport::HTTP;
+  $SOAP::Transport::HTTP::Client::USERAGENT_CLASS = "My::UserAgent";
+  my $client = SOAP::Lite->proxy(..)->uri(..);
+  my $som = $client->myMethod();
+
+There is one caveat, however. The UserAgent class you use, I<MUST> also be a subclass of C<LWP::UserAgent>. If it is not, then C<SOAP::Lite> will issue the following error: "Could not load UserAgent class <USERAGENT CLASS>."
+
 =head4 HTTP-KEEP-ALIVE, TIMEOUTS, AND MORE
 
 Because C<SOAP::Transport::HTTP::Client> extends C<LWP::UserAgent>, all methods available C<LWP::UserAgent> are also available to your SOAP Clients. For example, using C<LWP::UserAgent> HTTP keep alive's are accomplished using the following code:

@@ -104,9 +104,22 @@ The list of values held by the dispatch_to table are compared only after the URI
 
     $server->objects_by_reference(qw(My:: Class));
 
-This also returns a list of values when retrieving the current attribute value, as opposed to a single value.
+This also returns a list of values when retrieving the current attribute value,
+as opposed to a single value.
 
-This method doesn't directly specify classes for request routing so much as it modifies the behavior of the routing for the specified classes. The classes that are given as arguments to this method are marked to be treated as producing persistent objects. The client is given an object representation that contains just a handle on a local object with a default persistence of 600 idle seconds. Each operation on the object resets the idle timer to zero. This facility is considered experimental in the current version of SOAP::Lite.
+This method doesn't directly specify classes for request routing so much as it
+modifies the behavior of the routing for the specified classes. The classes that
+are given as arguments to this method are marked to be treated as producing
+persistent objects. The client is given an object representation that contains
+just a handle on a local object with a default persistence of 600 idle seconds.
+Each operation on the object resets the idle timer to zero. This facility is
+considered experimental in the current version of SOAP::Lite.
+
+A global variable/"constant" allows developers to specify the amount of time
+an object will be persisted. The default value is 600 idle seconds. This value
+can be changed using the following code:
+
+  $SOAP::Constants::OBJS_BY_REF_KEEPALIVE = 1000;
 
 =item on_action(optional new value)
 
