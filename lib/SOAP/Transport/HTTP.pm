@@ -401,7 +401,8 @@ sub handle {
     my $content; binmode(STDIN); read(STDIN,$content,$length);
     $self->request(HTTP::Request->new( 
       $ENV{'REQUEST_METHOD'} || '' => $ENV{'SCRIPT_NAME'},
-      HTTP::Headers->new(map {(/^HTTP_(.+)/i ? $1 : $_) => $ENV{$_}} keys %ENV),
+#      HTTP::Headers->new(map {(/^HTTP_(.+)/i ? $1 : $_) => $ENV{$_}} keys %ENV),
+      HTTP::Headers->new(map {(/^HTTP_(.+)/i ? ($1=~m/SOAPACTION/) ?('SOAPAction'):($1) : $_) => $ENV{$_}} keys %ENV),
       $content,
     ));
     $self->SUPER::handle;
@@ -413,7 +414,7 @@ sub handle {
   my $code = $self->response->code;
   binmode(STDOUT); print STDOUT 
     "$status $code ", HTTP::Status::status_message($code), 
-    "\015\012", $self->response->headers_as_string, 
+    "\015\012", $self->response->headers_as_string("\015\012"), 
     "\015\012", $self->response->content;
 }
 
@@ -484,7 +485,7 @@ sub handle {
     # replaced ->close, thanks to Sean Meisner <Sean.Meisner@VerizonWireless.com>
     # shutdown() doesn't work on AIX. close() is used in this case. Thanks to Jos Clijmans <jos.clijmans@recyfin.be>
     UNIVERSAL::isa($c, 'shutdown') ? $c->shutdown(2) : $c->close(); 
-    undef $c;
+    $c->close;
   }
 }
 

@@ -1,11 +1,11 @@
-#!/bin/env perl 
+#!/usr/bin/env perl 
 #!d:\perl\bin\perl.exe 
 #
 # Filename: stubmaker.pl
 # Authors: Byrne Reese <byrne at majordojo dot com>
 #          Paul Kulchenko
 #
-# Copyright (C) 2001 Paul Kulchenko --
+# Copyright (C) 2005 Byrne Reese
 #
 # Usage:
 #    stubmaker.pl -[vd] <WSDL URL>
@@ -29,6 +29,7 @@ my $WSDL_URL = shift;
 
 print "Writing stub files...\n" if $VERBOSE;
 my %services = %{SOAP::Schema->schema_url($WSDL_URL)
+                             ->cache_ttl(1)
                              ->cache_dir($DIRECTORY)
                              ->parse()
                              ->load
@@ -81,14 +82,57 @@ Outputs the current version of stubmaker.pl.
 
 =cut
 
+=head1 STUB FILES
+
+=head2 STUB SUBROUTINES
+
+The "class" or "package" created by stubmaker.pl is actually a sub-class of
+the core SOAP::Lite object. As a result, all methods one can call upon 
+L<SOAP::Lite> one can also call upon generated stubs.
+
+For example, suppose you wanted to obtain readable output from the generated
+stub, then simply call C<readable(1)> on the stub's instance. See the example
+below.
+
+The following subroutines are unique to generated stub classes, and help the
+user control and configure the stub class.
+
+=over
+
+=item want_som(boolean)
+
+When set to 1, SOAP::Lite will return SOAP::SOM objects to the user upon
+invoking a method on a remote service. This is very helpful when you need
+to check to see if the return value is a SOAP::Fault or not. When set to 0,
+SOAP::Lite will return the return value of the method.
+
+=cut
+
 =head1 EXAMPLES
 
-Try the following:
-> perl stubmaker.pl http://www.xmethods.net/sd/StockQuoteService.wsdl
+=head2 Invoking stubmaker.pl from the command line
 
+> perl stubmaker.pl http://www.xmethods.net/sd/StockQuoteService.wsdl
 Or:
 > perl "-MStockQuoteService qw(:all)" -le "print getQuote('MSFT')" 
 
+=head2 Working with stub classes
+
+Command line:
+> perl stubmaker.pl http://ws1.api.re2.yahoo.com/ws/soap-demo/full.wsdl
+
+File: echo.pl
+> use full;
+> use SOAP::Lite +trace => qw( debug );
+> my $f = new full;
+> $f->use_prefix(0);
+> $f->readable(1);
+> $f->want_som(1);
+> $som = $f->echoViaBase64("foo");
+
 =head1 COPYRIGHT
 
-TODO
+Copyright (C) 2000-2005 Paul Kulchenko. All rights reserved.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
