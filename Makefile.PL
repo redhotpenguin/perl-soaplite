@@ -7,21 +7,22 @@ use strict;
 
 my @PREREQS = (
 # ["<feature>","<installed module>",<dependency hash>,<install by default, 2=always>];
-  ["Core Package","SOAP::Lite",{"XML::Parser" => "2.23","MIME::Base64" => "0", "URI" => "0"},2],
-  ["Client HTTP support","",{"LWP::UserAgent" => "0"},1],
-  ["Client HTTPS support","SOAP::Transport::HTTPS::Client",{"Crypt::SSLeay" => "0"},0],
-  ["Client SMTP/sendmail support","SOAP::Transport::MAILTO::Client",{"MIME::Lite" => "0"},1],
-  ["Client FTP support","SOAP::Transport::FTP::Client",{"Net::FTP" => "0","IO::File" => "0"},0],
-  ["Standalone HTTP server","SOAP::Transport::HTTP::Daemon",{"HTTP::Daemon" => "0"},1],
-  ["Apache/mod_perl server","SOAP::Transport::HTTP::Apache",{"Apache" => "0"},0],
-  ["FastCGI server","SOAP::Transport::HTTP::FCGI",{"FGGI" => "0"},0],
-  ["POP3 server","SOAP::Transport::POP3::Server",{"Net::POP3" => "0","MIME::Parser" => "6.106"},1],
-  ["IO server","SOAP::Transport::IO::Server",{"IO::File" => "0"},0],
-  ["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => "0"},1],
-  ["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => "0"},0],
-  ["MIME messages","SOAP::MIMEParser",{"MIME::Parser" => "6.106"},1],
-  ["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => "0"},0],
-  ["Compression support for HTTP","SOAP::Transport::HTTP",{"Compress::Zlib" => "0"},0],
+  ["Core Package","SOAP::Lite",{"XML::Parser" => "2.23","MIME::Base64" => 0, "URI" => 0},2],
+  ["Client HTTP support","",{"LWP::UserAgent" => 0},1],
+  ["Client HTTPS support","SOAP::Transport::HTTPS::Client",{"Crypt::SSLeay" => 0},0],
+  ["Client SMTP/sendmail support","SOAP::Transport::MAILTO::Client",{"MIME::Lite" => 0},1],
+  ["Client FTP support","SOAP::Transport::FTP::Client",{"Net::FTP" => 0,"IO::File" => 0},0],
+  ["Standalone HTTP server","SOAP::Transport::HTTP::Daemon",{"HTTP::Daemon" => 0},1],
+  ["Apache/mod_perl server","SOAP::Transport::HTTP::Apache",{"Apache" => 0},0],
+  ["FastCGI server","SOAP::Transport::HTTP::FCGI",{"FCGI" => 0},0],
+  ["POP3 server","SOAP::Transport::POP3::Server",{"Net::POP3" => 0,"MIME::Parser" => 0},1],
+  ["IO server","SOAP::Transport::IO::Server",{"IO::File" => 0},0],
+  ["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => 0},1],
+  ["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => 0},0],
+  ["MIME messages","SOAP::MIMEParser",{"MIME::Parser" => 0},1],
+  ["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => 0},0],
+  ["Compression support for HTTP","SOAP::Transport::HTTP",{"Compress::Zlib" => 0},0],
+  ["MIME interoperability w/ Axis","SOAP::Lite",{"MIME::Parser" => "6.106"},0],
 );
 
 use Getopt::Long;
@@ -66,7 +67,7 @@ GetOptions(
 
 $help and print($helptext), exit;
 
-print <<EOI;
+ExtUtils::MakeMaker::prompt(<<EOI . "Press <enter> to see the detailed list.");
 
 We are about to install SOAP::Lite and for your convenience will provide
 you with list of modules and prerequisites, so you'll be able to choose
@@ -129,7 +130,10 @@ WriteMakefile(
 sub has_module {
   my ($mod, $version) = @_;
   $version ||= '';
-  return ($has_module_cache{$mod} ||= eval("require $mod $version"));
+  # use "require Foo; Exporter::require_version('Foo' => 1)" instead of
+  # obvious "use Foo 1". The later doesn't work with MIME::Parser
+  # wonder why? --PK
+  return ($has_module_cache{"$mod$version"} ||= eval("require $mod; Exporter::require_version('$mod', $version); 1"));
 }
 
 # Return 1 if all modules contained in the inputed array
@@ -148,19 +152,19 @@ sub print_prereq {
   my $i = 0;
   foreach my $module (keys %$modules) {
     my $detected = (has_module($module, $modules->{$module}) ? "*" : " ");
-    printf("%-29s [%s] %-16s %-8s\n",($i++ == 0 ? $feature : ""),$detected,$module,($i == 1 ? ($install ? ($install == 2 ? "always" : "[ yes ]") : "[ no ]") : ""));
+    printf("%-29s [%s] %-24s %-8s\n",($i++ ? "" : $feature),$detected,$module . ($modules->{$module} ? " (v$modules->{$module})" : ""),($i == 1 ? ($install ? ($install == 2 ? "always" : "[ yes ]") : "[ no ]") : ""));
   }
 }
 
 # Print the entire prerequisites table
 sub print_prereq_table {
-  printf("%-29s %-20s %-8s\n","Feature","Prerequisites","Install?");
-  printf("%s %s %s\n","-" x 29,"-" x 20,"-" x 8);
+  printf("%-29s %-28s %-8s\n","Feature","Prerequisites","Install?");
+  printf("%s %s %s\n","-" x 29,"-" x 28,"-" x 8);
   foreach my $pre (@PREREQS) {
     my ($feature,$dep,$modules,$default) = @{$pre};
     print_prereq(@{$pre});
   }
-  print "\nAn asterix '[*]' indicates if the module is installed.\n";
+  print "--- An asterix '[*]' indicates if the module is currently installed.\n";
 }
 
 1;
