@@ -118,35 +118,39 @@ my $is_mimeparser = eval { SOAP::MIMEParser->new; 1 };
 (my $reason = $@) =~ s/ at .+// unless $is_mimeparser;
 print "MIME tests will be skipped: $reason" if defined $reason;
 my $package = '
-  package Calculator; 
+  package Calculator;
   sub new { bless {} => ref($_[0]) || $_[0] }
   sub add { $_[1] + $_[2] }
-  sub schema { $SOAP::Constants::DEFAULT_XML_SCHEMA } 
+  sub schema { $SOAP::Constants::DEFAULT_XML_SCHEMA }
 1';
 
-{ 
+{
   print "Server handler test(s)...\n";
 
   my $server = SOAP::Server->dispatch_to('Calculator');
 
   foreach (keys %tests) {
-    print "$_\n";
+#    print STDERR "\ntest=$_\n";
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-    $_ =~ /XML/ || $is_mimeparser ? ok(($result->faultstring || '') =~ /Failed to access class \(Calculator\)/) 
+#    print STDERR "result1=$result\n";
+#    print STDERR "is_mimeparser1=$is_mimeparser\n";
+#    print STDERR "faultstring=".$result->faultstring."\n";
+    $_ =~ /XML/ || $is_mimeparser ? ok(($result->faultstring || '') =~ /Failed to access class \(Calculator\)/)
                                   : skip($reason => undef);
   }
 
   eval $package or die;
 
   foreach (keys %tests) {
-    print "$_\n";
+#    print STDERR "\ntest=$_\n";
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-    $_ =~ /XML/ || $is_mimeparser ? ok(($result->result || 0) == 7) 
+#    print STDERR "result2=$result\n";
+    $_ =~ /XML/ || $is_mimeparser ? ok(($result->result || 0) == 7)
                                   : skip($reason => undef);
   }
 }
 
-{ 
+{
   print "Server handler with complex dispatches test(s)...\n";
 
   for (

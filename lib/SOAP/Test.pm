@@ -62,12 +62,11 @@ sub run_for {
 
   eval q!use SOAP::Lite on_fault => sub{ref $_[1] ? $_[1] : new SOAP::SOM}; 1! or die;
 
-  print "Perl SOAP server test(s)...\n";
+  print STDERR "Perl SOAP server test(s)...\n";
 
   $s = SOAP::Lite
-    -> uri('urn:/My/Examples')                
-    -> proxy($proxy)
-  ;
+    -> uri('urn:/My/Examples')
+      -> proxy($proxy);
 
   ok($s->getStateName(1)->result eq 'Alabama'); 
   ok($s->getStateNames(1,4,6,13)->result =~ /^Alabama\s+Arkansas\s+Colorado\s+Illinois\s*$/); 
@@ -85,7 +84,7 @@ sub run_for {
     $s->autoresult($autoresult);
   }
 
-  print "Autobinding of output parameters test(s)...\n";
+  print STDERR "Autobinding of output parameters test(s)...\n";
 
   $s->uri('urn:/My/Parameters');
   my $param1 = 10;
@@ -93,16 +92,16 @@ sub run_for {
   my $result = $s->autobind($param1, $param2)->result;
   ok($result == $param1 && $param2->value == 24); 
 
-  print "Header manipulation test(s)...\n";
+  print STDERR "Header manipulation test(s)...\n";
   $a = $s->addheader(2, SOAP::Header->name(my => 123)); 
   ok(ref $a->header && $a->header->{my} eq '123123'); 
   ok($a->headers eq '123123'); 
 
-  print "Echo untyped data test(s)...\n";
+  print STDERR "Echo untyped data test(s)...\n";
   $a = $s->echotwo(11, 12);
   ok($a->result == 11); 
 
-  print "mustUnderstand test(s)...\n";
+  print STDERR "mustUnderstand test(s)...\n";
   $s->echo(SOAP::Header->name(somethingelse => 123)
                        ->mustUnderstand(1));
   ok($s->call->faultstring =~ /[Hh]eader has mustUnderstand attribute/);
@@ -118,7 +117,7 @@ sub run_for {
                        ->actor('http://notme/'));
   ok(!defined $s->call->fault);
 
-  print "dispatch_from test(s)...\n";
+  print STDERR "dispatch_from test(s)...\n";
   eval "use SOAP::Lite
     uri => 'http://my.own.site.com/My/Examples',
     dispatch_from => ['A', 'B'],
@@ -140,7 +139,7 @@ sub run_for {
   eval { A->a };
   ok(!$@ && SOAP::Lite->self->call->faultstring =~ /Failed to access class \(A\)/);
 
-  print "Object autobinding and SOAP:: prefix test(s)...\n";
+  print STDERR "Object autobinding and SOAP:: prefix test(s)...\n";
 
   eval "use SOAP::Lite +autodispatch =>
     uri => 'urn:', proxy => '$proxy'; 1" or die;
@@ -169,7 +168,7 @@ sub run_for {
   $p = $s->SOAP::new(10); 
   ok(ref $p && $s->SOAP::next($p)+1 == $p->value);
 
-  print "VersionMismatch test(s)...\n";
+  print STDERR "VersionMismatch test(s)...\n";
 
   {
     local $SOAP::Constants::NS_ENV = 'http://schemas.xmlsoap.org/new/envelope/';
@@ -182,12 +181,12 @@ sub run_for {
     ok(ref $r && $r->faultcode =~ /:VersionMismatch/);
   }
 
-  print "Objects-by-reference test(s)...\n";
+  print STDERR "Objects-by-reference test(s)...\n";
 
   eval "use SOAP::Lite +autodispatch =>
     uri => 'urn:', proxy => '$proxy'; 1" or die;
 
-  print "Session iterator\n";
+  print STDERR "Session iterator\n";
   $r = My::SessionIterator->new(10); 
   if (!ref $r || exists $r->{id}) {
     ok(ref $r && $r->next && $r->next == 11);
@@ -195,7 +194,7 @@ sub run_for {
     skip('No persistent objects (o-b-r) supported on server side' => undef);
   }
 
-  print "Persistent iterator\n";
+  print STDERR "Persistent iterator\n";
   $r = My::PersistentIterator->new(10); 
   if (!ref $r || exists $r->{id}) {
     my $first = ($r->next, $r->next) if ref $r;   
@@ -207,8 +206,8 @@ sub run_for {
   }
 
   { local $^W; # disable warnings about deprecated AUTOLOADing for nonmethods
-    print "Parameters-by-name test(s)...\n";
-    print "You can see warning about AUTOLOAD for non-method...\n" if $^W;
+    print STDERR "Parameters-by-name test(s)...\n";
+    print STDERR "You can see warning about AUTOLOAD for non-method...\n" if $^W;
 
     eval "use SOAP::Lite +autodispatch => 
       uri => 'http://my.own.site.com/My/Parameters', proxy => '$proxy'; 1" or die;
@@ -226,12 +225,12 @@ sub run_for {
 
     ok(main::bynameororder(111, 222, 333) eq "a=111, b=222, c=333");
 
-    print "Function call test(s)...\n";
-    print "You can see warning about AUTOLOAD for non-method...\n" if $^W;
+    print STDERR "Function call test(s)...\n";
+    print STDERR "You can see warning about AUTOLOAD for non-method...\n" if $^W;
     ok(main::echo(11) == 11);
   }
 
-  print "SOAPAction test(s)...\n";
+  print STDERR "SOAPAction test(s)...\n";
   if ($proxy =~ /^tcp:/) {
     for (1..2) {skip('No SOAPAction checks for tcp: protocol on server side' => undef)}
   } else {
@@ -246,7 +245,7 @@ sub run_for {
     ok($s->getStateName(1)->faultstring =~ /SOAPAction shall match/); 
   }
 
-  print "UTF8 test(s)...\n";
+  print STDERR "UTF8 test(s)...\n";
   if (!eval "pack('U*', 0)") {
     for (1) {skip('No UTF8 test. No support for pack("U*") modifier' => undef)}
   } else {
@@ -263,7 +262,7 @@ sub run_for {
 
   {
     my $on_fault_was_called = 0;
-    print "Die in server method test(s)...\n";
+    print STDERR "Die in server method test(s)...\n";
     my $s = SOAP::Lite
       -> uri('http://my.own.site.com/My/Parameters')                
       -> proxy($proxy)
@@ -283,7 +282,7 @@ sub run_for {
     ok($fault->{faultactor} eq 'http://www.soaplite.com/custom');
   }
 
-  print "Method with attributes test(s)...\n";
+  print STDERR "Method with attributes test(s)...\n";
 
   $s = SOAP::Lite
     -> uri('urn:/My/Examples')                
@@ -292,7 +291,7 @@ sub run_for {
 
   ok($s->call(SOAP::Data->name('getStateName')->attr({xmlns => 'urn:/My/Examples'}), 1)->result eq 'Alabama');
 
-  print "Call with empty uri test(s)...\n";
+  print STDERR "Call with empty uri test(s)...\n";
   $s = SOAP::Lite
     -> uri('')                
     -> proxy($proxy)
@@ -302,7 +301,7 @@ sub run_for {
 
   ok($s->call('a:getStateName' => 1)->faultstring =~ /Denied access to method \(getStateName\) in class \(main\)/);
 
-  print "Number of parameters test(s)...\n";
+  print STDERR "Number of parameters test(s)...\n";
 
   $s = SOAP::Lite
     -> uri('http://my.own.site.com/My/Parameters')                
@@ -312,21 +311,21 @@ sub run_for {
   { my @all = $s->echo(1)->paramsall; ok(@all == 1) }
   { my @all = $s->echo((1) x 10)->paramsall; ok(@all == 10) }
 
-  print "Memory refresh test(s)...\n";
+  print STDERR "Memory refresh test(s)...\n";
 
   # Funny test. 
   # Let's forget about ALL settings we did before with 'use SOAP::Lite...'
   SOAP::Lite->self(undef); 
   ok(!defined SOAP::Lite->self);
 
-  print "Call without uri test(s)...\n";
+  print STDERR "Call without uri test(s)...\n";
   $s = SOAP::Lite
     -> proxy($proxy)
   ;
 
   ok($s->getStateName(1)->faultstring =~ /Denied access to method \(getStateName\) in class \(main\)/);
 
-  print "Different settings for method and namespace test(s)...\n";
+  print STDERR "Different settings for method and namespace test(s)...\n";
 
   ok($s->call(SOAP::Data
     ->name('getStateName')
@@ -355,7 +354,7 @@ sub run_for {
   eval "use SOAP::Lite 
     uri => 'urn:/My/Examples', proxy => '$proxy'; 1" or die;
 
-  print "Global settings test(s)...\n";
+  print STDERR "Global settings test(s)...\n";
   $s = new SOAP::Lite;
 
   ok($s->getStateName(1)->result eq 'Alabama');

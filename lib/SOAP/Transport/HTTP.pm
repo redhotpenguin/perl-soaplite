@@ -30,14 +30,14 @@ my(%redirect, %mpost, %nocompress);
 # hack for HTTP conection that returns Keep-Alive 
 # miscommunication (?) between LWP::Protocol and LWP::Protocol::http
 # dies after timeout, but seems like we could make it work
-sub patch { 
-  local $^W; 
+sub patch {
+  local $^W;
   { sub LWP::UserAgent::redirect_ok; *LWP::UserAgent::redirect_ok = sub {1} }
-  { package LWP::Protocol; 
-    my $collect = \&collect; # store original  
-    *collect = sub {          
+  { package LWP::Protocol;
+    my $collect = \&collect; # store original
+    *collect = sub {
       if (defined $_[2]->header('Connection') && $_[2]->header('Connection') eq 'Keep-Alive') {
-        my $data = $_[3]->(); 
+        my $data = $_[3]->();
         my $next = SOAP::Utils::bytelength($$data) == $_[2]->header('Content-Length') ? sub { \'' } : $_[3];
         my $done = 0; $_[3] = sub { $done++ ? &$next : $data };
       }
@@ -49,7 +49,9 @@ sub patch {
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { require LWP::UserAgent; patch;
+sub new {
+  require LWP::UserAgent;
+  patch if $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
   my $self = shift;
 
   unless (ref $self) {
@@ -69,91 +71,116 @@ sub new { require LWP::UserAgent; patch;
 
 sub send_receive {
   my($self, %parameters) = @_;
-  my($envelope, $endpoint, $action, $encoding) = 
-    @parameters{qw(envelope endpoint action encoding)};
-
+  my($envelope, $endpoint, $action, $encoding, $headers) =
+    @parameters{qw(envelope endpoint action encoding headers)};
+  # MIME:                                            ^^^^^^^
+  # MIME: I modified this because the transport layer needs access to the
+  #       HTTP headers to properly set the content-type
   $endpoint ||= $self->endpoint;
 
-  my $method = 'POST';
+  my $method='POST';
+  $COMPRESS='gzip';
   my $resp;
 
-  $self->options->{is_compress} ||= exists $self->options->{compress_threshold} &&
-                                    eval { require Compress::Zlib };
+  $self->options->{is_compress}
+    ||= exists $self->options->{compress_threshold}
+      && eval { require Compress::Zlib };
 
-  COMPRESS: {
+ COMPRESS: {
 
-    my $compressed = !exists $nocompress{$endpoint} &&
-                     $self->options->{is_compress} && 
-                     ($self->options->{compress_threshold} || 0) < SOAP::Utils::bytelength $envelope;
-    $envelope = Compress::Zlib::compress($envelope) if $compressed;
+    my $compressed
+      = !exists $nocompress{$endpoint} &&
+	$self->options->{is_compress} &&
+	  ($self->options->{compress_threshold} || 0) < length $envelope;
+    $envelope = Compress::Zlib::memGzip($envelope) if $compressed;
 
-    while (1) { 
-
+    while (1) {
       # check cache for redirect
       $endpoint = $redirect{$endpoint} if exists $redirect{$endpoint};
       # check cache for M-POST
       $method = 'M-POST' if exists $mpost{$endpoint};
-  
-      # what's this all about? 
+
+      # what's this all about?
       # unfortunately combination of LWP and Perl 5.6.1 and later has bug
       # in sending multibyte characters. LWP uses length() to calculate
       # content-length header and starting 5.6.1 length() calculates chars
       # instead of bytes. 'use bytes' in THIS file doesn't work, because
       # it's lexically scoped. Unfortunately, content-length we calculate
-      # here doesn't work either, because LWP overwrites it with 
+      # here doesn't work either, because LWP overwrites it with
       # content-length it calculates (which is wrong) AND uses length()
       # during syswrite/sysread, so we are in a bad shape anyway.
 
-      # what to do? we calculate proper content-length (using 
+      # what to do? we calculate proper content-length (using
       # bytelength() function from SOAP::Utils) and then drop utf8 mark
-      # from string (doing pack with 'C0A*' modifier) if length and 
+      # from string (doing pack with 'C0A*' modifier) if length and
       # bytelength are not the same
-      my $bytelength = SOAP::Utils::bytelength($envelope);
-      $envelope = pack('C0A*', $envelope) 
-        if !$SOAP::Constants::DO_NOT_USE_LWP_LENGTH_HACK && length($envelope) != $bytelength;
 
-      my $req = HTTP::Request->new($method => $endpoint, HTTP::Headers->new, $envelope);
+      my $req =
+	HTTP::Request->new($method => $endpoint,
+			   (defined $headers ? $headers : $HTTP::Headers->new),
+      # MIME:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      # MIME: This is done so that the HTTP Headers instance is properly
+      #       created.
+			   $envelope);
+      $req->protocol('HTTP/1.1');
 
-      $req->proxy_authorization_basic($ENV{'HTTP_proxy_user'}, $ENV{'HTTP_proxy_pass'})
-        if ($ENV{'HTTP_proxy_user'} && $ENV{'HTTP_proxy_pass'}); # by Murray Nesbitt 
-  
+      $req->proxy_authorization_basic($ENV{'HTTP_proxy_user'},
+				      $ENV{'HTTP_proxy_pass'})
+	if ($ENV{'HTTP_proxy_user'} && $ENV{'HTTP_proxy_pass'});
+      # by Murray Nesbitt
+
       if ($method eq 'M-POST') {
-        my $prefix = sprintf '%04d', int(rand(1000));
-        $req->header(Man => qq!"$SOAP::Constants::NS_ENV"; ns=$prefix!);
-        $req->header("$prefix-SOAPAction" => $action) if defined $action;  
+	my $prefix = sprintf '%04d', int(rand(1000));
+	$req->header(Man => qq!"$SOAP::Constants::NS_ENV"; ns=$prefix!);
+	$req->header("$prefix-SOAPAction" => $action) if defined $action;
       } else {
-        $req->header(SOAPAction => $action) if defined $action;
+	$req->header(SOAPAction => $action) if defined $action;
       }
-  
+
       # allow compress if present and let server know we could handle it
       $req->header(Accept => ['text/xml', 'multipart/*']);
 
-      $req->header('Accept-Encoding' => [$COMPRESS]) if $self->options->{is_compress};
-      $req->content_encoding($COMPRESS) if $compressed;
+      $req->header('Accept-Encoding' => 
+		   [$SOAP::Transport::HTTP::Client::COMPRESS])
+	if $self->options->{is_compress};
+      $req->content_encoding($SOAP::Transport::HTTP::Client::COMPRESS)
+	if $compressed;
 
-      $req->content_type(join '; ', 'text/xml', 
-        !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ? 'charset=' . lc($encoding) : ());
-      $req->content_length($bytelength);
-  
+      if(!$req->content_type){
+	$req->content_type(join '; ',
+			   'text/xml',
+			   !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ?
+			   'charset=' . lc($encoding) : ());
+      }elsif (!$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ){
+	my $tmpType=$req->headers->header('Content-type');
+	# MIME:     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	# MIME: This was changed from $req->content_type which was a bug,
+	#       because it does not properly maintain the entire content-type
+	#       header.
+	$req->content_type($tmpType.'; charset=' . lc($encoding));
+      }
+
+      $req->content_length(length($envelope));
       SOAP::Trace::transport($req);
       SOAP::Trace::debug($req->as_string);
-      
+
       $self->SUPER::env_proxy if $ENV{'HTTP_proxy'};
-  
+
       $resp = $self->SUPER::request($req);
-  
+
       SOAP::Trace::transport($resp);
       SOAP::Trace::debug($resp->as_string);
-  
+
       # 100 OK, continue to read?
-      if (($resp->code == 510 || $resp->code == 501) && $method ne 'M-POST') { 
-        $mpost{$endpoint} = 1;
-      } elsif ($resp->code == 415 && $compressed) { # 415 Unsupported Media Type
-        $nocompress{$endpoint} = 1;
-        $envelope = Compress::Zlib::uncompress($envelope);
-        redo COMPRESS; # try again without compression
+      if (($resp->code == 510 || $resp->code == 501) && $method ne 'M-POST') {
+	$mpost{$endpoint} = 1;
+      } elsif ($resp->code == 415 && $compressed) { 
+	# 415 Unsupported Media Type
+	$nocompress{$endpoint} = 1;
+	$envelope = Compress::Zlib::memGunzip($envelope);
+	redo COMPRESS; # try again without compression
       } else {
-        last;
+	last;
       }
     }
   }
@@ -166,18 +193,16 @@ sub send_receive {
   $self->is_success($resp->is_success);
   $self->status($resp->status_line);
 
-  my $content = ($resp->content_encoding || '') =~ /\b$COMPRESS\b/o && $self->options->{is_compress} 
-    ? Compress::Zlib::uncompress($resp->content) 
-    : ($resp->content_encoding || '') =~ /\S/ 
-      ? die "Unexpected Content-Encoding '@{[$resp->content_encoding]}' returned\n"
-      : $resp->content;
-  $resp->content_type =~ m!^multipart/! 
-    ? join("\n", $resp->headers_as_string, $content) 
-    : ($resp->content_type eq 'text/xml' ||          # text/xml
-       !$resp->is_success ||                         # failed request
-       $SOAP::Constants::DO_NOT_CHECK_CONTENT_TYPE) 
-      ? $content
-      : die "Unexpected Content-Type '@{[join '; ', $resp->content_type]}' returned\n";
+  my $content =
+    ($resp->content_encoding || '') 
+      =~ /\b$SOAP::Transport::HTTP::Client::COMPRESS\b/o &&
+	$self->options->{is_compress} ? 
+	  Compress::Zlib::memGunzip($resp->content)
+	      : ($resp->content_encoding || '') =~ /\S/
+		? die "Can't understand returned Content-Encoding (@{[$resp->content_encoding]})\n"
+		  : $resp->content;
+  $resp->content_type =~ m!^multipart/!
+    ? join("\n", $resp->headers_as_string, $content) : $content;
 }
 
 # ======================================================================
@@ -200,7 +225,7 @@ sub new { require LWP::UserAgent;
     my $class = ref($self) || $self;
     $self = $class->SUPER::new(@_);
     $self->on_action(sub {
-      (my $action = shift) =~ s/^("?)(.*)\1$/$2/;
+      (my $action = shift || '') =~ s/^("?)(.*)\1$/$2/;
       die "SOAPAction shall match 'uri#method' if present (got '$action', expected '@{[join('#', @_)]}'\n"
         if $action && $action ne join('#', @_) 
                    && $action ne join('/', @_)
@@ -273,27 +298,31 @@ sub make_response {
   my $self = shift;
   my($code, $response) = @_;
 
-  my $encoding = $1 if $response =~ /^<\?xml(?: version="1.0"| encoding="([^"]+)")+\?>/;
-  $response =~ s!(\?>)!$1<?xml-stylesheet type="text/css"?>! if $self->request->content_type eq 'multipart/form-data';
+  my $encoding = $1
+    if $response =~ /^<\?xml(?: version="1.0"| encoding="([^"]+)")+\?>/;
+  $response =~ s!(\?>)!$1<?xml-stylesheet type="text/css"?>!
+    if $self->request->content_type eq 'multipart/form-data';
 
-  $self->options->{is_compress} ||= 
+  $self->options->{is_compress} ||=
     exists $self->options->{compress_threshold} && eval { require Compress::Zlib };
 
-  my $compressed = $self->options->{is_compress} && 
-                   grep(/\b($COMPRESS|\*)\b/, $self->request->header('Accept-Encoding')) &&
-                   ($self->options->{compress_threshold} || 0) < SOAP::Utils::bytelength $response;
+  my $compressed = $self->options->{is_compress} &&
+    grep(/\b($COMPRESS|\*)\b/, $self->request->header('Accept-Encoding')) &&
+      ($self->options->{compress_threshold} || 0) < SOAP::Utils::bytelength $response;
   $response = Compress::Zlib::compress($response) if $compressed;
-
-  $self->response(HTTP::Response->new( 
-     $code => undef, 
+  my ($is_multipart) = ($response =~ /content-type:.* boundary="([^\"]*)"/im);
+  $self->response(HTTP::Response->new(
+     $code => undef,
      HTTP::Headers->new(
-       'SOAPServer' => $self->product_tokens,
-       $compressed ? ('Content-Encoding' => $COMPRESS) : (),
-       'Content-Type' => join('; ', 'text/xml', 
-         !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ? 'charset=' . lc($encoding) : ()),
-       'Content-Length' => SOAP::Utils::bytelength $response), 
+			'SOAPServer' => $self->product_tokens,
+			$compressed ? ('Content-Encoding' => $COMPRESS) : (),
+			'Content-Type' => join('; ', 'text/xml',
+					       !$SOAP::Constants::DO_NOT_USE_CHARSET &&
+					       $encoding ? 'charset=' . lc($encoding) : ()),
+			'Content-Length' => SOAP::Utils::bytelength $response),
      $response,
   ));
+  $self->response->headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$is_multipart.'"') if $is_multipart;
 }
 
 sub product_tokens { join '/', 'SOAP::Lite', 'Perl', SOAP::Transport::HTTP->VERSION }

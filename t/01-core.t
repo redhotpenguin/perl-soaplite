@@ -50,18 +50,18 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Complex circlular references serialization test(s)...\n";
 
   $a = SOAP::Deserializer->deserialize(<<'EOX')->root;
-<root>
-<a id='id1'>
-   <x>1</x>
-   <next id='id2'>
-     <x>7</x>
-     <next href='#id3'/>
-   </next>
-</a>
-<item id='id3'>
-  <x>8</x>
-  <next href='#id1'/>
-</item>
+<root xmlns="urn:Foo">
+  <a id="id1">
+    <x>1</x>
+    <next id="id2">
+      <x>7</x>
+      <next href="#id3" />
+    </next>
+  </a>
+  <item id="id3">
+    <x>8</x>
+    <next href="#id1" />
+  </item>
 </root>
 EOX
 
