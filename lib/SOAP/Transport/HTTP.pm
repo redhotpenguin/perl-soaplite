@@ -72,7 +72,7 @@ sub new {
   eval("require $USERAGENT_CLASS") or die "Could not load UserAgent class $USERAGENT_CLASS: $@"; 
   require HTTP::Request; 
   require HTTP::Headers; 
-  patch if $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
+  patch() if $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
   unless (ref $self) {
     my $class = ref($self) || $self;
     my(@params, @methods);
@@ -114,7 +114,7 @@ sub send_receive {
   no strict 'refs';
   if ($parts) {
     my $packager = $context->packager;
-    $envelope = $packager->package($envelope);    
+    $envelope = $packager->package($envelope,$context);    
     foreach my $hname (keys %{$packager->headers_http}) {
       $self->http_request->headers->header($hname => $packager->headers_http->{$hname});
     }
@@ -303,11 +303,13 @@ sub handle {
   # in some environments (PerlEx?) content_type could be empty, so allow it also
   # anyway it'll blow up inside ::Server::handle if something wrong with message
   # TBD: but what to do with MIME encoded messages in THOSE environments?
-  return $self->make_fault($SOAP::Constants::FAULT_CLIENT, "Content-Type must be 'text/xml' instead of '$content_type'")
+  return $self->make_fault($SOAP::Constants::FAULT_CLIENT, "Content-Type must be 'text/xml,' 'multipart/*,' or 'application/dime' instead of '$content_type'")
     if $content_type && 
        $content_type ne 'text/xml' && 
+       $content_type ne 'application/dime' && 
        $content_type !~ m!^multipart/!;
-
+  # TODO - this should query SOAP::Packager to see what types it supports, I don't
+  #        like how this is hardcoded here.
   my $content = $compressed ? 
     Compress::Zlib::uncompress($self->request->content) 
       : $self->request->content;

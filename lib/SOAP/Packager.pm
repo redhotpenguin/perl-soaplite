@@ -84,10 +84,9 @@ use strict;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Packager);
 
-
 sub BEGIN {
   no strict 'refs';
-  for my $method ( qw(transfer_encoding env_id env_location env_type) ) {
+  for my $method ( qw(transfer_encoding env_id env_location) ) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift;
@@ -103,9 +102,6 @@ sub new {
     $self->{'_content_encoding'} = '8bit';
     $self->{'_env_id'}           = '<main_envelope>';
     $self->{'_env_location'}     = '/main_envelope';
-    $self->{'_env_type'}         = 'text/xml';
-    # TODO - env_type could be application/soap etc - this needs to get its
-    #        value from somewhere else!
     bless $self, $classname;
     $SOAP::Packager::SUPPORTED_TYPES->{"MIME::Entity"} = 1;
     return $self;
@@ -138,13 +134,13 @@ sub get_multipart_id {
  
 sub package {
    my $self = shift;
-   my ($envelope) = @_;
+   my ($envelope,$context) = @_;
    return $envelope if (!$self->parts); # if there are no parts,
                                         # then there is nothing to do
    require MIME::Entity;
    local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
    my $top = MIME::Entity->build('Type'     => "Multipart/Related");
-   $top->attach('Type'                      => $self->env_type(),
+   $top->attach('Type'                      => $context->soapversion == 1.1 ? "text/xml" : "application/soap+xml",
                 'Content-Transfer-Encoding' => $self->transfer_encoding(),
                 'Content-Location'          => $self->env_location(),
                 'Content-ID'                => $self->env_id(),
@@ -162,14 +158,14 @@ sub package {
 
 sub unpackage {
   my $self = shift;
-  my ($raw_input) = @_;
+  my ($raw_input,$context) = @_;
   $self->SUPER::unpackage();
 
   # Parse the raw input into a MIME::Entity structure.
   #   - fail if the raw_input is not MIME formatted
   $self->initialize_parser() if !defined($self->parser);
   my $entity = eval { $self->parser->parse_data($raw_input) }
-    or die "Something wrong with MIME message: @{[$@ || $self->last_error]}\n";
+    or die "Something wrong with MIME message: @{[$@ || $self->parser->last_error]}\n";
 
   my $env = undef;
   # major memory bloat below! TODO - fix!
@@ -248,12 +244,90 @@ sub process_related {
 
 # ======================================================================
 
-# TODO - SOAP::Packager::DIME
 package SOAP::Packager::DIME;
 
 use strict;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Packager);
+
+sub BEGIN {
+  no strict 'refs';
+  for my $method ( qw(foo) ) {
+    my $field = '_' . $method;
+    *$method = sub {
+      my $self = shift;
+      if (@_) { $self->{$field} = shift; return $self }
+      return $self->{$field};
+    }
+  }
+}
+
+sub new {
+    my ($classname) = @_;
+    my $self = SOAP::Packager::new(@_);
+    bless $self, $classname;
+    $SOAP::Packager::SUPPORTED_TYPES->{"DIME::Payload"} = 1;
+    return $self;
+}
+
+sub initialize_parser {
+  my $self = shift;
+  print STDERR "Initializing parser\n";
+  eval "require DIME::Parser;";
+  die "Could not find DIME::Parser - is DIME::Tools installed? Aborting." if $@;
+  $self->{'_parser'} = DIME::Parser->new;
+}
+
+sub package {
+   my $self = shift;
+   my ($envelope,$context) = @_;
+   return $envelope if (!$self->parts); # if there are no parts,
+                                        # then there is nothing to do
+   require DIME::Message;
+   require DIME::Payload;
+   my $message = DIME::Message->new;
+   my $top = DIME::Payload->new;
+   $top->attach('MIMEType' => $context->soapversion == 1.1 ? 
+                  "http://schemas.xmlsoap.org/soap/envelope/" : "application/soap+xml",
+                'Data'     => $envelope );
+   $message->add_payload($top);
+   # consume the attachments that come in as input by 'shift'ing
+   no strict 'refs';
+   while (my $part = shift(@{$self->parts})) {
+      die "You are only allowed to add parts of type DIME::Payload to a DIME::Message"
+        if (!$part->isa('DIME::Payload'));
+#      print STDERR "Adding payload to DIME message: ".ref($part)."\n";
+      $message->add_payload($part);
+#      print STDERR "Payload's payload is: ".${$part->print_content_data}."\n";
+   }
+   $self->headers_http({ 'Content-Type' => 'application/dime' });
+   return $message->print_data;
+}
+
+sub unpackage {
+  my $self = shift;
+  my ($raw_input,$context) = @_;
+  $self->SUPER::unpackage();
+
+  # Parse the raw input into a DIME::Message structure.
+  #   - fail if the raw_input is not DIME formatted
+  print STDERR "raw_data: $raw_input\n";
+  $self->initialize_parser() if !defined($self->parser);
+  my $message = eval { $self->parser->parse_data(\$raw_input) }
+    or die "Something wrong with DIME message: @{[$@]}\n";
+
+  # The first payload is always the SOAP Message
+  # TODO - Error check
+  my @payloads = @{$message->{'_PAYLOADS'}};
+  my $env = shift(@payloads);
+  my $env_str = $env->print_content_data;
+  print STDERR "Received this envelope: ".$env_str."\n";
+  while (my $p = shift(@payloads)) {
+    print STDERR "Adding part to Packager\n";
+    $self->push_part($p);
+  }
+  return $env_str;
+}
 
 1;
 __END__
