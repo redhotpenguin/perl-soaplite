@@ -4249,7 +4249,7 @@ or switch it on individually, with
 
 or
 
-  use SOAP::Lite +trace => debug => sub {'do_what_I_want_here'};
+  use SOAP::Lite +trace => [debug => sub {'do_what_I_want_here'}];
 
 Compare this with:
 
