@@ -1,6 +1,6 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2004 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2005 Paul Kulchenko (paulclinger@yahoo.com)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.65_3';
+$VERSION = '0.65_4';
 
 # ======================================================================
 
