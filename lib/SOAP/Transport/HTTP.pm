@@ -114,6 +114,9 @@ sub send_receive {
       # bytelength() function from SOAP::Utils) and then drop utf8 mark
       # from string (doing pack with 'C0A*' modifier) if length and
       # bytelength are not the same
+      my $bytelength = SOAP::Utils::bytelength($envelope);
+      $envelope = pack('C0A*', $envelope) 
+        if !$SOAP::Constants::DO_NOT_USE_LWP_LENGTH_HACK && length($envelope) != $bytelength;
 
       my $req =
 	HTTP::Request->new($method => $endpoint,
@@ -160,7 +163,7 @@ sub send_receive {
 	$req->content_type($tmpType.'; charset=' . lc($encoding));
       }
 
-      $req->content_length(length($envelope));
+      $req->content_length($bytelength);
       SOAP::Trace::transport($req);
       SOAP::Trace::debug($req->as_string);
 

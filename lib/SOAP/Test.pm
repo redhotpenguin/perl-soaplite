@@ -257,7 +257,9 @@ sub run_for {
      my $utf8 = pack('U*', unpack('C*', $latin1));
      my $result = $s->echo(SOAP::Data->type(string => $utf8))->result;
 
-     ok(pack('U*', unpack('C*', $result)) eq $utf8);
+     ok(pack('U*', unpack('C*', $result)) eq $utf8                       # should work where XML::Parser marks resulting strings as UTF-8
+     || join('', unpack('C*', $result)) eq join('', unpack('C*', $utf8)) # should work where it doesn't
+     );
   }
 
   {
