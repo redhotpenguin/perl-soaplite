@@ -697,7 +697,6 @@ sub DESTROY { SOAP::Trace::objects('()') }
 sub new { 
   my $self = shift;
   return $self if ref $self;
-  print STDERR "Calling SOAP::Serializer::new()\n";
   unless (ref $self) {
     my $class = ref($self) || $self;
     $self = bless {
@@ -1306,7 +1305,6 @@ sub envelope {
 #  my $self = shift;
   my $type = shift;
   my(@parameters, @header);
-  print STDERR "SOAP::Serializer::envelope: context - ".ref($self->context)."\n";
 #  $self->context->packager->parts([]);
   for (@_) { 
     if (defined($_) && ref($_) && UNIVERSAL::isa($_ => 'SOAP::Header')) {
@@ -3098,7 +3096,6 @@ sub DESTROY { SOAP::Trace::objects('()') }
 sub new { 
   my $self = shift;
   return $self if ref $self;
-#  print STDERR "SOAP::Lite::new() called\n";
   unless (ref $self) {
     my $class = ref($self) || $self;
     # TODO - SOAP::Lite deserializer needs to get a hold of a SOAP::Packager
