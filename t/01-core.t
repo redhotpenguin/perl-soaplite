@@ -209,10 +209,16 @@ EOBASE64
   ok($@ =~ /Transport is not specified/);
 }
 
-{ 
+{
   print "Deserialization of CDATA test(s)...\n";
 
   UNIVERSAL::isa(SOAP::Deserializer->parser->parser => 'XML::Parser::Lite') ?
     skip(q!CDATA decoding is not supported in XML::Parser::Lite! => undef) :
     ok(SOAP::Deserializer->deserialize('<root><![CDATA[<123>]]></root>')->root eq '<123>');
+}
+
+{
+  print "Test of XML::Parser External Entity vulnerability...\n";
+  print STDERR SOAP::Deserializer->deserialize('<?xml version="1.0"?><!DOCTYPE foo [ <!ENTITY ll system "http://localhost/foo.txt"> ]><root>&ll</root>')->root;
+  #ok(SOAP::Deserializer->deserialize('<?xml version="1.0"?><!DOCTYPE ENTITY ll system "http://somehost:8000"><root>&ll</root>')->root);
 }

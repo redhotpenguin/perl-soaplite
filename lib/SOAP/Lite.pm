@@ -33,7 +33,7 @@ BEGIN {
     integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language QName
+    recurringDate recurringDay language
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
@@ -54,7 +54,7 @@ BEGIN {
     gMonthDay gDay duration recurringDuration anyURI
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger date time dateTime QName
+    positiveInteger date time dateTime
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
@@ -113,7 +113,7 @@ BEGIN {
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger timeInstant time timePeriod date month year century 
     recurringDate recurringDay language
-    base64 hex string boolean QName
+    base64 hex string boolean
   );
   # predeclare subs, so ->can check will be positive 
   foreach (@EXPORT) { eval "sub as_$_" } 
@@ -163,7 +163,6 @@ package SOAP::XMLSchema1999::Deserializer;
 sub anyTypeValue { 'ur-type' }
 
 sub as_string; *as_string = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_string;
-sub as_QName; *as_QName = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_string;
 sub as_boolean; *as_boolean = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_boolean;
 sub as_hex { shift; my $value = shift; $value =~ s/([a-zA-Z0-9]{2})/chr oct '0x'.$1/ge; $value }
 sub as_ur_type { $_[1] }
@@ -176,7 +175,7 @@ BEGIN {
     integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language QName
+    recurringDate recurringDay language
   )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
@@ -198,7 +197,7 @@ BEGIN {
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger date time
-    string hex base64 boolean QName
+    string hex base64 boolean
   );
   # predeclare subs, so ->can check will be positive 
   foreach (@EXPORT) { eval "sub as_$_" } 
@@ -1201,7 +1200,7 @@ sub envelope {
     # need to find out more about it
     # -> attr({'xmlns' => ''})
       -> value(\SOAP::Data->set_value(
-        SOAP::Data->name(faultcode => SOAP::Serializer::qualify($self->envprefix => $parameters[0]))->type("xsd:QName"),
+        SOAP::Data->name(faultcode => SOAP::Serializer::qualify($self->envprefix => $parameters[0]))->type(""),
         SOAP::Data->name(faultstring => $parameters[1]),
         defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
         defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3]) : (),
@@ -1259,9 +1258,11 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub xmlparser {
   my $self = shift;
-  return eval { $SOAP::Constants::DO_NOT_USE_XML_PARSER ? undef : do {require XML::Parser; XML::Parser->new} } || 
-         eval { require XML::Parser::Lite; XML::Parser::Lite->new } ||
-         die "XML::Parser is not @{[$SOAP::Constants::DO_NOT_USE_XML_PARSER ? 'used' : 'available']} and ", $@;
+  return eval { $SOAP::Constants::DO_NOT_USE_XML_PARSER ? undef : do {
+    require XML::Parser; 
+    new XML::Parser(Handlers => { ExternEnt => undef } ) }} ||
+      eval { require XML::Parser::Lite; XML::Parser::Lite->new } ||
+	die "XML::Parser is not @{[$SOAP::Constants::DO_NOT_USE_XML_PARSER ? 'used' : 'available']} and ", $@;
 }
 
 sub parser {
@@ -2962,6 +2963,8 @@ sub call {
 
   my $top;
   my $headers=new HTTP::Headers();
+  #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  # This needs to be moved to HTTP transport layer - what is this doing here?!
   if ($self->parts) {
     local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
     $top = MIME::Entity->build('Type' => "Multipart/Related");
