@@ -68,6 +68,13 @@ sub as_map {
 }
 sub as_Map; *as_Map = \&as_map;
 
+# Thank to Kenneth Draper for this contribution
+sub as_vector {
+  my $self = shift;
+  [ map { scalar(($self->decode_object($_))[1]) } @{$_[3] || []} ];
+}
+sub as_Vector; *as_Vector = \&as_vector;
+
 # ----------------------------------------------------------------------
 
 package SOAP::XMLSchema::Serializer;
@@ -222,6 +229,7 @@ sub anyTypeValue { 'anyType' }
 sub as_long;        *as_long = \&SOAP::XMLSchema1999::Serializer::as_long;
 sub as_float;       *as_float = \&SOAP::XMLSchema1999::Serializer::as_float;
 sub as_string;      *as_string = \&SOAP::XMLSchema1999::Serializer::as_string;
+# TODO - QNames still don't work for 2001 schema!
 #sub as_QName;       *as_QName = \&SOAP::XMLSchema1999::Serializer::as_string;
 sub as_hex;         *as_hex = \&as_hexBinary;
 sub as_base64;      *as_base64 = \&as_base64Binary;
@@ -317,7 +325,7 @@ BEGIN {
               $DO_NOT_USE_CHARSET $DO_NOT_PROCESS_XML_IN_MIME
               $DO_NOT_USE_LWP_LENGTH_HACK $DO_NOT_CHECK_CONTENT_TYPE
               $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE $DEFAULT_PACKAGER
-              @SUPPORTED_ENCODING_STYLES
+              @SUPPORTED_ENCODING_STYLES $OBJS_BY_REF_KEEPALIVE
   );
 
   $FAULT_CLIENT           = 'Client';
@@ -383,7 +391,7 @@ BEGIN {
   $DO_NOT_USE_LWP_LENGTH_HACK = 0;
   $DO_NOT_CHECK_CONTENT_TYPE = 0;
   $PATCH_HTTP_KEEPALIVE = 1;
-
+  $OBJS_BY_REF_KEEPALIVE = 600; # seconds
   # TODO - use default packager constant somewhere 
   $DEFAULT_PACKAGER = "SOAP::Packager::MIME";
 }
@@ -398,7 +406,7 @@ sub disqualify {
   (my $qname = shift) =~ s/^($SOAP::Constants::NSMASK?)://;
   $qname;
 }
-sub splitqname { local($1,$2); $_[0] =~ /^(?:([^:]+):)?(.+)$/; return ($1,$2) }
+sub splitqname { local($1,$2); $_[0] =~ /^(?:([^:]+):)?(.+)$/ ; return ($1,$2) }
 sub longname { defined $_[0] ? sprintf('{%s}%s', $_[0], $_[1]) : $_[1] }
 sub splitlongname { local($1,$2); $_[0] =~ /^(?:\{(.*)\})?(.+)$/; return ($1,$2) }
 
@@ -1014,6 +1022,7 @@ sub encode_object {
   } 
 
   my $class = ref $object;
+
   if ($class !~ /^(?:SCALAR|ARRAY|HASH|REF)$/o) { 
     # we could also check for CODE|GLOB|LVALUE, but we cannot serialize 
     # them anyway, so they'll be cought by check below
@@ -1349,7 +1358,7 @@ sub serialize { SOAP::Trace::trace('()');
 
 sub envelope {
   SOAP::Trace::trace('()');
-  my $self = shift->new; # stop reinitializing!!!?
+  my $self = shift->new;
   my $type = shift;
   my(@parameters, @header);
   for (@_) { 
@@ -1371,20 +1380,22 @@ sub envelope {
   my($body,$parameters);
   if ($type eq 'method' || $type eq 'response') {
     SOAP::Trace::method(@parameters);
-    my $method = shift(@parameters) 
-	  or die "Unspecified method for SOAP call\n";
+
+    my $method = shift(@parameters);
+#	  or die "Unspecified method for SOAP call\n";
+
     $parameters = @parameters ? SOAP::Data->set_value(@parameters) : undef;
-    if (UNIVERSAL::isa($method => 'SOAP::Data')) {
+    if (!defined($method)) {
+    } elsif (UNIVERSAL::isa($method => 'SOAP::Data')) {
       $body = $method;
     } elsif ($self->use_prefix) {
       $body = SOAP::Data->name($method)->uri($self->uri);
     } else {
       $body = SOAP::Data->name($method)->attr( { 'xmlns' => $self->uri } );
-#      $body = SOAP::Data->name($method)->uri($self->uri); # original return before use_prefix
+      #$body = SOAP::Data->name($method)->uri($self->uri); # original return before use_prefix
     }
-#    print STDERR "Setting value of body\n";
-    # TODO - parameters have not yet been encoded
-    $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()));
+    $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
+      if $body;
   } elsif ($type eq 'fault') {
     SOAP::Trace::fault(@parameters);
     $body = SOAP::Data
@@ -1402,6 +1413,9 @@ sub envelope {
   } elsif ($type eq 'freeform') {
     SOAP::Trace::freeform(@parameters);
     $body = SOAP::Data->set_value(@parameters);
+  } elsif (!defined($type)) {
+    # This occurs when the Body is intended to be null. When no method has been
+    # passed in of any kind.
   } else {
     die "Wrong type of envelope ($type) for SOAP call\n";
   }
@@ -1413,7 +1427,8 @@ sub envelope {
   my($encoded) = $self->encode_object(
     SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Envelope') => \SOAP::Data->value(
       ($header ? SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Header') => \$header) : ()),
-      SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Body')   => \$body)
+      ($body ? SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Body') => \$body) : 
+               SOAP::Data->name(SOAP::Utils::qualify($self->envprefix => 'Body')) ),
     ))->attr($self->attr)
   );
   $self->signature($parameters->signature) if ref $parameters;
@@ -2116,7 +2131,7 @@ my %objects;
 
 sub objects_by_reference { 
   shift; 
-  while (@_) { @alive{shift()} = ref $_[0] ? shift : sub { $_[1]-$_[$_[5] ? 5 : 4] > 600 } } 
+  while (@_) { @alive{shift()} = ref $_[0] ? shift : sub { $_[1]-$_[$_[5] ? 5 : 4] > $SOAP::Constants::OBJS_BY_REF_KEEPALIVE } } 
   keys %alive;
 }
 
@@ -2388,7 +2403,7 @@ sub find_target {
 sub handle {
   SOAP::Trace::trace('()');
   my $self = shift;
-  $self = $self->new if !ref $self; # This initializes the server when called in a static context
+  $self = $self->new if !ref $self; # inits the server when called in a static context
   $self->init_context();
   # we want to restore it when we are done
   local $SOAP::Constants::DEFAULT_XML_SCHEMA
@@ -2594,14 +2609,16 @@ use vars qw(@ISA);
 
 package SOAP::Schema::WSDL;
 
-use vars qw(%imported);
+use vars qw(%imported @ISA);
+@ISA = qw(SOAP::Schema);
 
 sub new { 
   my $self = shift;
 
   unless (ref $self) {
     my $class = ref($self) || $self;
-    $self = bless {} => $class;
+    $self = $class->SUPER::new(@_);
+#    $self = bless {} => $class;
   }
   return $self;
 }
@@ -2616,7 +2633,7 @@ sub import {
   my $s = shift;
   my $base = shift || $self->base || die "Missing base argument for ", __PACKAGE__, "\n";
 
-  my $schema;
+#  my $schema;
   my @a = $s->import;
   local %imported = %imported;
   foreach (@a) {
@@ -2626,14 +2643,16 @@ sub import {
       warn "Recursion loop detected in service description from '$location'. Ignored\n" if $^W;
       return $s;
     }
-    $schema ||= SOAP::Schema->new;
-    my $root = $self->import($schema->deserializer->deserialize($schema->access($location))->root, $location);
+#    $schema ||= SOAP::Schema->new;
+#    my $root = $self->import($schema->deserializer->deserialize($schema->access($location))->root, $location);
+    my $root = $self->import($self->deserializer->deserialize($self->access($location))->root, $location);
     $root->SOAP::Data::name eq 'definitions' ? $s->set_value($s->value, $root->value) : 
     $root->SOAP::Data::name eq 'schema' ? do { # add <types> element if there is no one
-      $s->set_value($s->value, SOAP::Schema::Deserializer->deserialize('<types></types>')->root) unless $s->types;
+      $s->set_value($s->value, $self->deserializer->deserialize('<types></types>')->root) unless $s->types;
       $s->types->set_value($s->types->value, $root) } : 
     die "Don't know what to do with '@{[$root->SOAP::Data::name]}' in schema imported from '$location'\n";
   }
+  # return the parsed WSDL file
   $s;
 }
 
@@ -2648,7 +2667,8 @@ sub parse {
   # handle descriptions without <service>, aka tModel-type descriptions
   my @services = $s->service;
   # if there is no <service> element we'll provide it
-  @services = SOAP::Schema::Deserializer->deserialize(<<"FAKE")->root->service unless @services;
+  #@services = SOAP::Schema::Deserializer->deserialize(<<"FAKE")->root->service unless @services;
+  @services = $self->deserializer->deserialize(<<"FAKE")->root->service unless @services;
 <definitions>
   <service name="@{[$service || 'FakeService']}">
     <port name="@{[$port || 'FakePort']}" binding="@{[$s->binding->name]}"/>
@@ -2703,6 +2723,7 @@ FAKE
 
 # ======================================================================
 
+# Naming? SOAP::Service::Schema?
 package SOAP::Schema;
 
 use Carp ();
@@ -2711,11 +2732,13 @@ sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
   my $self = shift;
-
+  return $self if ref $self;
   unless (ref $self) {
     my $class = ref($self) || $self;
+    require LWP::UserAgent;
     $self = bless {
-      _deserializer => SOAP::Schema::Deserializer->new,
+      '_deserializer' => SOAP::Schema::Deserializer->new,
+      '_useragent'    => LWP::UserAgent->new,
     } => $class;
 
     SOAP::Trace::objects('()');
@@ -2727,9 +2750,14 @@ sub new {
   return $self;
 }
 
+sub schema {
+  warn "SOAP::Schema->schema has been deprecated. Please use SOAP::Schema->schema_url instead.";
+  return shift->schema_url(@_);
+}
+
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(deserializer schema services)) {
+  for my $method (qw(deserializer schema_url services useragent)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
@@ -2739,10 +2767,10 @@ sub BEGIN {
 }
 
 sub parse {
-  my $self = shift->new;
+  my $self = shift;
   my $s = $self->deserializer->deserialize($self->access)->root;
   # here should be something that defines what schema description we want to use
-  $self->services({SOAP::Schema::WSDL->base($self->schema)->parse($s, @_)});
+  $self->services({SOAP::Schema::WSDL->base($self->schema_url)->parse($s, @_)});
 }
 
 sub load {
@@ -2754,17 +2782,16 @@ sub load {
   $self;
 }
 
-sub access { require LWP::UserAgent;
+sub access { 
   my $self = shift->new;
-  my $url = shift || $self->schema || Carp::croak 'Nothing to access. URL is not specified';
-  my $ua = LWP::UserAgent->new;
-  $ua->env_proxy if $ENV{'HTTP_proxy'};
+  my $url = shift || $self->schema_url || Carp::croak 'Nothing to access. URL is not specified';
+  $self->useragent->env_proxy if $ENV{'HTTP_proxy'};
 
   my $req = HTTP::Request->new(GET => $url);
   $req->proxy_authorization_basic($ENV{'HTTP_proxy_user'}, $ENV{'HTTP_proxy_pass'})
     if ($ENV{'HTTP_proxy_user'} && $ENV{'HTTP_proxy_pass'});
 
-  my $resp = $ua->request($req);
+  my $resp = $self->useragent->request($req);
   $resp->is_success ? $resp->content : die "Service description '$url' can't be loaded: ",  $resp->status_line, "\n";
 }
 
@@ -2772,11 +2799,11 @@ sub stub {
   my $self = shift->new;
   my $package = shift;
   my $services = $self->services->{$package};
-  my $schema = $self->schema;
+  my $schema_url = $self->schema_url;
   join("\n", 
     "package $package;\n",
     "# -- generated by SOAP::Lite (v$SOAP::Lite::VERSION) for Perl -- soaplite.com -- Copyright (C) 2000-2004 Paul Kulchenko --",
-    ($schema ? "# -- generated from $schema [@{[scalar localtime]}]\n" : "\n"),
+    ($schema_url ? "# -- generated from $schema_url [@{[scalar localtime]}]\n" : "\n"),
     'my %methods = (',
     (map { my $service = $_;
            join("\n", 
@@ -2808,9 +2835,19 @@ sub _call {
   $self->proxy($method{endpoint} || Carp::croak "No server address (proxy) specified") 
     unless $self->proxy;
   my @templates = @{$method{parameters}};
-  # TODO - values need to be escaped properly - why is this not being run through
-  #        a centralized serializer?
-  my @parameters = map {@templates ? shift(@templates)->value($_) : $_} @_;
+  my @parameters = ();
+  foreach my $param (@_) {
+    if (@templates) {
+      my $template = shift @templates;
+      my ($prefix,$typename) = SOAP::Utils::splitqname($template->type);
+      my $method = 'as_'.$typename;
+      # TODO - if can('as_'.$typename) {...}
+      my $result = $self->serializer->$method($param, $template->name, $template->type, $template->attr);
+      push(@parameters, $template->value($result->[2]));
+    } else {
+      push(@parameters, $param);
+    }
+  }
   my $som = $self
     ->endpoint($method{endpoint})
     ->uri($method{uri})
@@ -2933,7 +2970,6 @@ sub import {
   my $pkg = shift;
   my $caller = caller;
   no strict 'refs'; 
-
   # emulate 'use SOAP::Lite 0.99' behavior
   $pkg->require_version(shift) if defined $_[0] && $_[0] =~ /^\d/;
 
@@ -2951,10 +2987,8 @@ sub import {
           ? (\&{*$sub} eq \&{*SOAP::AUTOLOAD} ? () : Carp::croak "$sub already assigned and won't work with DISPATCH. Died")
           : (*$sub = *SOAP::AUTOLOAD);
       }
-    } elsif ($command eq 'service' || $command eq 'schema') {
-      warn "'schema =>' interface is changed. Use 'service =>' instead\n" 
-        if $command eq 'schema' && $^W;
-      foreach (keys %{SOAP::Schema->schema(shift(@parameters))->parse(@parameters)->load->services}) {
+    } elsif ($command eq 'service') {
+      foreach (keys %{SOAP::Schema->schema_url(shift(@parameters))->parse(@parameters)->load->services}) {
         $_->export_to_level(1, undef, ':all');
       }
     } elsif ($command eq 'debug' || $command eq 'trace') { 
@@ -2977,24 +3011,19 @@ sub new {
   return $self if ref $self;
   unless (ref $self) {
     my $class = ref($self) || $self;
-    # TODO - SOAP::Lite deserializer needs to get a hold of a SOAP::Packager
-    #        instance
     # Check whether we can clone. Only the SAME class allowed, no inheritance
     $self = ref($soap) eq $class ? $soap->clone : {
       _transport    => SOAP::Transport->new,
       _serializer   => SOAP::Serializer->new,
       _deserializer => SOAP::Deserializer->new,
       _packager     => SOAP::Packager::MIME->new, # TODO - autodetect packager to use (DIME vs MIME)
+      _schema       => undef,
       _autoresult   => 0,
       _on_action    => sub { sprintf '"%s#%s"', shift || '', shift },
       _on_fault     => sub {ref $_[1] ? return $_[1] : Carp::croak $_[0]->transport->is_success ? $_[1] : $_[0]->transport->status},
     };
     bless $self => $class;
     $self->on_nonserialized($self->on_nonserialized || $self->serializer->on_nonserialized);
-    # This can be problematic because I am creating a recursive data structure,
-    # which Perl's garbage collector has a hard time cleaning up. So, I can
-    # manually delete these references, or I can use a non-rec. structure. :(
-    #$self->init_context();
     SOAP::Trace::objects('()');
   }
 
@@ -3019,6 +3048,18 @@ sub destroy_context {
   delete($self->{'_deserializer'}->{'_context'});
   delete($self->{'_serializer'}->{'_context'})
 }       
+
+# Naming? wsdl_parser
+sub schema {
+  my $self = shift;
+  if (@_) {
+    $self->{'_schema'} = shift;
+    return $self;
+  } else {
+    if (!defined $self->{'_schema'}) { $self->{'_schema'} = SOAP::Schema->new; }
+    return $self->{'_schema'}; 
+  }
+}
 
 sub BEGIN {
   no strict 'refs';
@@ -3083,29 +3124,17 @@ sub parts {
   return $self;
 }
 
+# Naming? wsdl
 sub service {
-  my $field = '_service';
   my $self = shift->new;
-  return $self->{$field} unless @_;
-
-  my %services = %{SOAP::Schema->schema($self->{$field} = shift)->parse(@_)->load->services};
+  return $self->{'_service'} unless @_;
+  $self->schema->schema_url($self->{'_service'} = shift);
+  my %services = %{$self->schema->parse(@_)->load->services};
 
   Carp::croak "More than one service in service description. Service and port names have to be specified\n" 
     if keys %services > 1; 
-  return (keys %services)[0]->new;
-}
-
-sub schema {
-  warn "SOAP::Lite->schema(...) interface is changed. Use ->service() instead\n" if $^W;
-  shift->service(@_);
-}
-
-sub on_debug { 
-  my $self = shift; 
-  # comment this warning for now, till we redesign SOAP::Trace (2001/02/20)
-  # Carp::carp "'SOAP::Lite->on_debug' method is deprecated. Instead use 'SOAP::Lite +debug ...'" if $^W;
-  SOAP::Trace->import(debug => shift);
-  $self;
+  my $service = (keys %services)[0]->new;
+  return $service;
 }
 
 sub AUTOLOAD {
@@ -3128,21 +3157,21 @@ sub AUTOLOAD {
 sub call {
   SOAP::Trace::trace('()');
   my $self = shift;
-  return $self->{_call} unless @_;
-  die "Transport is not specified (using proxy() method or service description)\n"
+  # Why is this here? Can't call be null? Indicating that there are no input arguments?
+  #return $self->{_call} unless @_;
+  die "A service address has not been specified either by using SOAP::Lite->proxy() or a service description)\n"
     unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
 
   $self->init_context();
   my $serializer = $self->serializer;
   $serializer->on_nonserialized($self->on_nonserialized);
-  use Data::Dumper;
-#  print STDERR "Calling with ".Dumper(@_)."\n";
   my $response = $self->transport->send_receive(
     context  => $self, # this is provided for context
     endpoint => $self->endpoint,
     action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
                 # leave only parameters so we can later update them if required
     envelope => $serializer->envelope(method => shift, @_),
+#    envelope => $serializer->envelope(method => shift, @_),
     encoding => $serializer->encoding,
     parts    => @{$self->packager->parts} ? $self->packager->parts : undef,
   );
@@ -4296,6 +4325,17 @@ of I<Programming Web Services with Perl>.
 And special gratitude to all the developers who have contributed patches, ideas,
 time, energy, and help in a million different forms to the development of this
 software.
+
+=head1 REPORTING BUGS
+
+Please report all suspected SOAP::Lite bugs using Sourceforge. This ensures
+proper tracking of the issue and allows you the reporter to know when something
+gets fixed.
+
+http://sourceforge.net/tracker/?group_id=66000&atid=513017
+
+If under dire circumstances you need immediate assistance with the resolution of
+an issue, you are welcome to contact Byrne Reese at <byrne at majordojo dot com>.
 
 =head1 COPYRIGHT
 

@@ -21,8 +21,10 @@ use SOAP::Packager;
 
 package SOAP::Transport::HTTP::Client;
 
-use vars qw(@ISA $COMPRESS);
-@ISA = qw(SOAP::Client LWP::UserAgent);
+use vars qw(@ISA $COMPRESS $USERAGENT_CLASS);
+$USERAGENT_CLASS = 'LWP::UserAgent';
+@ISA = qw(SOAP::Client);
+#@ISA = ("SOAP::Client",$USERAGENT_CLASS);
 
 $COMPRESS = 'deflate';
 
@@ -64,24 +66,26 @@ sub http_response {
 }
 
 sub new {
-  require LWP::UserAgent;
+  my $self = shift;
+  return $self if ref $self;
+  push @ISA,$USERAGENT_CLASS;
+  eval("require $USERAGENT_CLASS") or die "Could not load UserAgent class $USERAGENT_CLASS: $@"; 
   require HTTP::Request; 
   require HTTP::Headers; 
   patch if $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
-  my $self = shift;
-
   unless (ref $self) {
     my $class = ref($self) || $self;
     my(@params, @methods);
     while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
     $self = $class->SUPER::new(@params);
+    die "SOAP::Transport::HTTP::Client must inherit from LWP::UserAgent, or one of its subclasses"
+      if !$self->isa("LWP::UserAgent");
     $self->agent(join '/', 'SOAP::Lite', 'Perl', SOAP::Transport::HTTP->VERSION);
     $self->options({});
     $self->http_request(HTTP::Request->new);
     $self->http_request->headers(HTTP::Headers->new);
     # TODO - add application/dime
     $self->http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
-
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
     }
