@@ -11,6 +11,21 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
+0.65 Mon Dec 15 12:10:27 2003
+  + Made SOAP::Serializer->readable actually produce readable XML!
+  + Made XML Schema 2001 the default schema
+  + Added support for [almost] all XML Schema 2001 built-in datatypes
+  + Added register_ns subroutine to SOAP::Serializer
+  + Added find_prefix subroutine to SOAP::Serializer
+  + Added use_prefix subroutine to SOAP::Serializer
+  + Added necessary subroutinues to support wsdl2perl project
+  + Added format_datetime to SOAP::Utils
+  ! 
+
+-----------------------------------------------------------------------
+PREVIOUS RELEASES
+-----------------------------------------------------------------------
+
 0.60 Mon Aug 18 12:10:27 2003
   + Merged SOAP::MIME into SOAP::Lite's core
   + Cleaned up the UI for the Makefile.PL script - it now detects and
@@ -47,10 +62,6 @@ THIS RELEASE
     1 (bug 747281)
   ! Removed dependency on the URI module for non-HTTP transports
     (bug 747306)
-
------------------------------------------------------------------------
-PREVIOUS RELEASES
------------------------------------------------------------------------
 
 0.55 Mon Apr 15 22:20:39 2002
   ! fixed security vulnerability with fully qualified method names

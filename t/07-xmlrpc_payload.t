@@ -29,7 +29,7 @@ my($a, $s, $r, $serialized, $deserialized);
 
   $serialized = XMLRPC::Serializer->serialize({param1 => 'value1', param2 => undef, param3 => 0});
 
-  ok($serialized =~ m!<member><name>param2</name><value/></member>!);
+  ok($serialized =~ m!<member><name>param2</name><value /></member>!);
   ok($serialized =~ m!<member><name>param3</name><value><int>0</int></value></member>!);
 
   $deserialized = XMLRPC::Deserializer->deserialize($serialized)->root;
@@ -39,7 +39,7 @@ my($a, $s, $r, $serialized, $deserialized);
 
   $serialized = XMLRPC::Serializer->method(a => {param1 => 'value1', param2 => undef, param3 => 'value3'});
 
-  ok($serialized =~ m!<methodCall><methodName>a</methodName><params><param><value><struct>(<member><name>param1</name><value><string>value1</string></value></member>|<member><name>param2</name><value/></member>|<member><name>param3</name><value><string>value3</string></value></member>){3}</struct></value></param></params></methodCall>!);
+  ok($serialized =~ m!<methodCall><methodName>a</methodName><params><param><value><struct>(<member><name>param1</name><value><string>value1</string></value></member>|<member><name>param2</name><value /></member>|<member><name>param3</name><value><string>value3</string></value></member>){3}</struct></value></param></params></methodCall>!);
 
   $serialized = XMLRPC::Serializer->method(a => {param1 => 'value1'});
 

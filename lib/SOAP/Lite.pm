@@ -162,6 +162,12 @@ sub as_boolean {
   return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? '1' : '0'];
 }
 
+sub as_float {
+  my $self = shift;
+  my($value, $name, $type, $attr) = @_;
+  return [$name, {'xsi:type' => 'xsd:float', %$attr}, $value ];
+}
+
 # ----------------------------------------------------------------------
 
 package SOAP::XMLSchema1999::Deserializer;
@@ -197,13 +203,13 @@ use vars qw(@EXPORT);
 *AUTOLOAD = \&SOAP::XMLSchema1999::Serializer::AUTOLOAD;
 
 BEGIN {
-  @EXPORT = qw(anyType anySimpleType
-    float double decimal dateTime timePeriod gMonth gYearMonth gYear century 
-    gMonthDay gDay duration recurringDuration anyURI
-    language integer nonPositiveInteger negativeInteger long int short byte
-    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger date time
-    string hex base64 boolean
+  @EXPORT = qw(anyType anySimpleType float double decimal dateTime
+	       timePeriod gMonth gYearMonth gYear century 
+	       gMonthDay gDay duration recurringDuration anyURI
+	       language integer nonPositiveInteger negativeInteger
+	       long int short byte nonNegativeInteger unsignedLong
+	       unsignedInt unsignedShort unsignedByte positiveInteger
+	       date time string hex base64 boolean
   );
   # predeclare subs, so ->can check will be positive 
   foreach (@EXPORT) { eval "sub as_$_" } 
@@ -211,6 +217,14 @@ BEGIN {
 
 sub nilValue { 'nil' }
 sub anyTypeValue { 'anyType' }
+
+sub as_long;        *as_long = \&SOAP::XMLSchema1999::Serializer::as_long;
+sub as_float;       *as_float = \&SOAP::XMLSchema1999::Serializer::as_float;
+sub as_string;      *as_string = \&SOAP::XMLSchema1999::Serializer::as_string;
+sub as_hex;         *as_hex = \&as_hexBinary;
+sub as_base64;      *as_base64 = \&as_base64Binary;
+sub as_timeInstant; *as_timeInstant = \&as_dateTime;
+sub as_undef { $_[1] ? 'true' : 'false' }
 
 sub as_hexBinary { 
   my $self = shift;
@@ -224,14 +238,6 @@ sub as_base64Binary {
   require MIME::Base64;
   return [$name, {'xsi:type' => 'xsd:base64Binary', %$attr}, MIME::Base64::encode_base64($value,'')];
 }
-
-sub as_long; *as_long = \&SOAP::XMLSchema1999::Serializer::as_long;
-sub as_string; *as_string = \&SOAP::XMLSchema1999::Serializer::as_string;
-sub as_hex; *as_hex = \&as_hexBinary;
-sub as_base64; *as_base64 = \&as_base64Binary;
-sub as_timeInstant; *as_timeInstant = \&as_dateTime;
-
-sub as_undef { $_[1] ? 'true' : 'false' }
 
 sub as_boolean {
   my $self = shift;
@@ -301,8 +307,8 @@ BEGIN {
       NEXT_ACTOR => 'http://schemas.xmlsoap.org/soap/actor/next',
       NS_ENV => 'http://schemas.xmlsoap.org/soap/envelope/',
       NS_ENC => 'http://schemas.xmlsoap.org/soap/encoding/',
-      DEFAULT_XML_SCHEMA => 'http://www.w3.org/1999/XMLSchema',
-#      DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
+#      DEFAULT_XML_SCHEMA => 'http://www.w3.org/1999/XMLSchema',
+      DEFAULT_XML_SCHEMA => 'http://www.w3.org/2001/XMLSchema',
     },
     1.2 => {
       NEXT_ACTOR => 'http://www.w3.org/2001/06/soap-envelope/actor/next',
@@ -692,12 +698,40 @@ sub new {
       _multirefinplace => 0,
       _seen => {},
       _typelookup => {
-        base64 => [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/}, 'as_base64'],
-        'int'  => [20, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 2147483648;}, 'as_int'],
-        float  => [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
-        string => [40, sub {1}, 'as_string'],
-        'long' => [25, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
-        'dateTime' => [39, sub { print STDERR "[0]=".$_[0]."\n"; $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/; }, 'as_dateTime'],
+	  'base64' => 
+	      [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/}, 'as_base64'],
+          'int'  => 
+	      [20, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 2147483648;}, 'as_int'],
+          'long' => 
+	      [25, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
+	  'float'  => 
+	      [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
+	  'gMonth' => 
+	      [35, sub { $_[0] =~ /^--\d\d--(-\d\d:\d\d)?$/; }, 'as_gMonth'],
+          'gDay' => 
+	      [40, sub { $_[0] =~ /^---\d\d(-\d\d:\d\d)?$/; }, 'as_gDay'],
+          'gYear' => 
+	      [45, sub { $_[0] =~ /^-?\d\d\d\d(-\d\d:\d\d)?$/; }, 'as_gYear'],
+          'gMonthDay' => 
+	      [50, sub { $_[0] =~ /^-\d\d-\d\d(-\d\d:\d\d)?$/; }, 'as_gMonthDay'],
+          'gYearMonth' => 
+	      [55, sub { $_[0] =~ /^-?\d\d\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_gYearMonth'],
+          'date' => 
+	      [60, sub { $_[0] =~ /^-?\d\d\d\d-\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_date'],
+          'time' => 
+	      [70, sub { $_[0] =~ /^\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_time'],
+          'dateTime' => 
+	      [75, sub { $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_dateTime'],
+          'duration' => 
+	      [80, sub { $_[0] =~ /^-?P(\d+Y)?(\d+M)?(\dD)?(T(\d+H)?(\d+M)?(\d+S)?)?$/; }, 'as_duration'],
+          'duration' => 
+	      [85, sub { $_[0] =~ /^-?P(\d+Y)?(\d+M)?(\dD)?(T(\d+H)?(\d+M)?(\d+S)?)?$/; }, 'as_duration'],
+          'boolean' => 
+	      [90, sub { $_[0] =~ /^(true|false)$/i; }, 'as_boolean'],
+          'anyURI' => 
+	      [95, sub { $_[0] =~ /^(urn:)|(http:\/\/)/i; }, 'as_anyURI'],
+          'string' => 
+	      [100, sub {1}, 'as_string'],
       },
       _encoding => 'UTF-8',
       _objectstack => {},
@@ -827,7 +861,7 @@ sub uri {
     my $self = shift->new;
     if (@_) {
 	$self->{'_uri'} = shift;
-	$self->register_ns($self->{'_uri'});
+	$self->register_ns($self->{'_uri'}) if (!$self->use_prefix);
 	return $self;
     }
     return $self->{'_uri'};
@@ -915,6 +949,7 @@ sub encode_object {
   # return if we already saw it twice. It should be already properly serialized
   return if $objectstack{$id} > 2;
 
+  use Data::Dumper;
   if (UNIVERSAL::isa($object => 'SOAP::Data')) { 
     # use $object->SOAP::Data:: to enable overriding name() and others in inherited classes
     $object->SOAP::Data::name($name) unless defined $object->SOAP::Data::name;
@@ -933,9 +968,9 @@ sub encode_object {
       # store null/nil attribute if value is undef
       local $attr->{qualify(xsi => $self->xmlschemaclass->nilValue)} = $self->xmlschemaclass->as_undef(1)
         unless defined;
-         $self->can($method) && $self->$method($_, $name || gen_name, $object->SOAP::Data::type, $attr)
-      || $self->typecast($_, $name || gen_name, $object->SOAP::Data::type, $attr)
-      || $self->encode_object($_, $name, $object->SOAP::Data::type, $attr)
+      $self->can($method) && $self->$method($_, $name || gen_name, $object->SOAP::Data::type, $attr)
+        || $self->typecast($_, $name || gen_name, $object->SOAP::Data::type, $attr)
+        || $self->encode_object($_, $name, $object->SOAP::Data::type, $attr)
     } @realvalues;
     $object->SOAP::Data::signature([map {join $;, $_->[0], disqualify($_->[1]->{'xsi:type'} || '')} @values]) if @values;
     return wantarray ? @values : $values[0];
@@ -1091,7 +1126,7 @@ sub fixattrs {
   my($name, $attr) = ($data->SOAP::Data::name, {%{$data->SOAP::Data::attr}});
   my($xmlns, $prefix) = ($data->uri, $data->prefix);
   unless (defined($xmlns) || defined($prefix)) {
-      $self->register_ns($xmlns,$prefix);
+      $self->register_ns($xmlns,$prefix) if (!$self->use_prefix);
       return ($name, $attr);
   }
   $name ||= gen_name; # local name
@@ -1101,7 +1136,7 @@ sub fixattrs {
 
   $attr->{join ':', xmlns => $prefix || ()} = $xmlns if defined $xmlns; 
   $name = join ':', $prefix, $name if $prefix;
-  $self->register_ns($xmlns,$prefix);
+  $self->register_ns($xmlns,$prefix) if (!$self->use_prefix);
   return ($name, $attr);
 }
 
@@ -1130,26 +1165,34 @@ sub tag {
   my($tag, $attrs, @values) = @_;
   my $value = join '', @values;
   my $level = $self->level;
-  my $indent = $self->readable ? "\n" . ' ' x (($level-1)*2) : '';
+  my $indent = $self->readable ? ' ' x (($level-1)*2) : '';
+
   # check for special attribute
   return "$indent$value" if exists $attrs->{_xml} && delete $attrs->{_xml}; 
+
   die "Element '$tag' can't be allowed in valid XML message. Died\n"
     if $tag !~ /^(?![xX][mM][lL])$SOAP::Constants::NSMASK$/o;
 
-  my $prolog = '';
+  my $prolog = $self->readable ? "\n" : "";
+  my $epilog = $self->readable ? "\n" : "";
+  my $tagjoiner = " ";
   if ($level == 1) {
     my $namespaces = $self->namespaces;
     foreach (keys %$namespaces) { $attrs->{qualify(xmlns => $namespaces->{$_})} = $_ }
     $prolog = qq!<?xml version="1.0" encoding="@{[$self->encoding]}"?>!
       if defined $self->encoding;
+    $prolog .= "\n" if $self->readable;
+    $tagjoiner = " \n".(' ' x (($level+1) * 2)) if $self->readable;
   }
+  my $tagattrs = join($tagjoiner, '', map { sprintf '%s="%s"', $_, SOAP::Utils::encode_attribute($attrs->{$_}) } 
+                               grep { $_ && defined $attrs->{$_} && ($_ ne 'xsi:type' || $attrs->{$_} ne '')
+                                    } keys %$attrs);
 
-  my $tagattrs = join(' ', '', map { sprintf '%s="%s"', $_, SOAP::Utils::encode_attribute($attrs->{$_}) } 
-                              grep { $_ && defined $attrs->{$_} && ($_ ne 'xsi:type' || $attrs->{$_} ne '')
-                                   } keys %$attrs);
-  $value gt '' 
-    ? sprintf("$prolog$indent<%s%s$indent>%s</%s>", $tag, $tagattrs, $value, $tag) 
-    : sprintf("$prolog$indent<%s%s/>", $tag, $tagattrs);
+  if ($value gt '') {
+    return sprintf("$prolog$indent<%s%s>%s%s</%s>$epilog",$tag,$tagattrs,$value,($value =~ /^\s*</ ? $indent : ""),$tag);
+  } else {
+    return sprintf("$prolog$indent<%s%s />$epilog$indent",$tag,$tagattrs);
+  }
 }
 
 sub xmlize {
@@ -1228,9 +1271,9 @@ sub envelope {
   for (@_) { 
     defined $_ && ref $_ && UNIVERSAL::isa($_ => 'SOAP::Header') ?
       push(@header, $_) :
-	UNIVERSAL::isa($_ => 'MIME::Entity') ?
-	    push(@attachments, $_) :
-	      push(@parameters, $_);
+      UNIVERSAL::isa($_ => 'MIME::Entity') ?
+        push(@attachments, $_) :
+	push(@parameters, $_);
   }
   my $header = @header ? SOAP::Data->set_value(@header) : undef;
   my($body,$parameters);
@@ -1239,8 +1282,14 @@ sub envelope {
     my $method = shift(@parameters) 
 	or die "Unspecified method for SOAP call\n";
     $parameters = @parameters ? SOAP::Data->set_value(@parameters) : undef;
-    $body = UNIVERSAL::isa($method => 'SOAP::Data') 
-      ? $method : ($self->use_prefix ? SOAP::Data->name($method)->uri($self->uri) : SOAP::Data->name($method)->attr( { 'xmlns' => $self->uri } ));
+    if (UNIVERSAL::isa($method => 'SOAP::Data')) {
+      $body = $method;
+    } elsif ($self->use_prefix) {
+      $body = SOAP::Data->name($method)->uri($self->uri);
+    } else {
+      $body = SOAP::Data->name($method)->attr( { 'xmlns' => $self->uri } );
+#      $body = SOAP::Data->name($method)->uri($self->uri); # original return before use_prefix
+    }
     $body->set_value($parameters ? \$parameters : ());
   } elsif ($type eq 'fault') {
     SOAP::Trace::fault(@parameters);
@@ -3974,6 +4023,15 @@ SOAP::Data element. A good example of how this might be used is as follows:
 
 SOAP::Data->name("foo" => $inputParams{'foo'})
 	  ->type($client->serializer->find_prefix('urn:Foo').':Foo');
+
+=item xmlschema
+
+The xmlschema subroutine tells SOAP::Lite what XML Schema to use when
+serializing XML element values. There are two supported schemas of 
+SOAP::Lite, they are:
+
+  http://www.w3.org/1999/XMLSchema, and
+  http://www.w3.org/2001/XMLSchema (default)
 
 =back
 

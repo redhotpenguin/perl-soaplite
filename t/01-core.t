@@ -31,7 +31,7 @@ my($a, $s, $r, $serialized, $deserialized);
     SOAP::Data->name(test => \SOAP::Data->value(1, [1,2], {a=>3}, \4))
   );
 
-  ok($serialized =~ m!<test(?: xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){4}><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\1><SOAP-ENC:Array(?: xsi:type="SOAP-ENC:Array"| SOAP-ENC:arrayType="xsd:int\[2\]"){2}><item xsi:type="xsd:int">1</item><item xsi:type="xsd:int">2</item></SOAP-ENC:Array><c-gensym(\d+)><a xsi:type="xsd:int">3</a></c-gensym\2><c-gensym(\d+)><c-gensym(\d+) xsi:type="xsd:int">4</c-gensym\4></c-gensym\3></test>!);
+  ok($serialized =~ m!<test(?: xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){4}><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\1><SOAP-ENC:Array(?: xsi:type="SOAP-ENC:Array"| SOAP-ENC:arrayType="xsd:int\[2\]"){2}><item xsi:type="xsd:int">1</item><item xsi:type="xsd:int">2</item></SOAP-ENC:Array><c-gensym(\d+)><a xsi:type="xsd:int">3</a></c-gensym\2><c-gensym(\d+)><c-gensym(\d+) xsi:type="xsd:int">4</c-gensym\4></c-gensym\3></test>!);
 }  
 
 { # check simple circular references
@@ -40,7 +40,7 @@ my($a, $s, $r, $serialized, $deserialized);
   $a = \$a;
   $serialized = SOAP::Serializer->namespaces({})->serialize($a);
 
-  ok($serialized =~ m!<c-gensym(\d+) id="ref-(\w+)"><c-gensym(\d+) href="#ref-\2"/></c-gensym\1>!);
+  ok($serialized =~ m!<c-gensym(\d+) id="ref-(\w+)"><c-gensym(\d+) href="#ref-\2" /></c-gensym\1>!);
 
   $a = SOAP::Deserializer->deserialize($serialized)->root;
   ok(0+$a == 0+(values%$a)[0]);
@@ -71,7 +71,7 @@ EOX
   $a = { a => 1 }; my $b = { b => $a }; $a->{a} = $b;
   $serialized = SOAP::Serializer->autotype(0)->namespaces({})->serialize($a);
 
-  ok($serialized =~ m!<c-gensym(\d+) id="ref-(\w+)"><a id="ref-\w+"><b href="#ref-\2"/></a></c-gensym\1>!);
+  ok($serialized =~ m!<c-gensym(\d+) id="ref-(\w+)"><a id="ref-\w+"><b href="#ref-\2" /></a></c-gensym\1>!);
 }
 
 { # check multirefs
@@ -83,13 +83,13 @@ EOX
     SOAP::Data->name(test => \SOAP::Data->value($b, $b))
   );
 
-  ok($serialized =~ m!<test(?: xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){4}><c-gensym(\d+) id="ref-(\w+)"><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\3></c-gensym\1><c-gensym\d+ href="#ref-\2"/></test>!);
+  ok($serialized =~ m!<test(?: xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){4}><c-gensym(\d+) id="ref-(\w+)"><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\3></c-gensym\1><c-gensym\d+ href="#ref-\2" /></test>!);
 
   $serialized = SOAP::Serializer->namespaces({})->serialize(
     SOAP::Data->name(test => \SOAP::Data->value($b, $b))
   );
 
-  ok($serialized =~ m!<c-gensym\d+ href="#ref-(\w+)"/><c-gensym\d+ href="#ref-\1"/><c-gensym(\d+) id="ref-\1"><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\3></c-gensym\2>!);
+  ok($serialized =~ m!<c-gensym\d+ href="#ref-(\w+)" /><c-gensym\d+ href="#ref-\1" /><c-gensym(\d+) id="ref-\1"><c-gensym(\d+) xsi:type="xsd:int">1</c-gensym\3></c-gensym\2>!);
 }
 
 { # check base64, XML encoding of elements and attributes 
@@ -99,7 +99,7 @@ EOX
     SOAP::Data->name(test => \SOAP::Data->value("\0\1\2\3   \4\5\6", "<123>&amp;\015</123>"))
   );
 
-  ok($serialized =~ m!<c-gensym(\d+) xsi:type="SOAP-ENC:base64">AAECAyAgIAQFBg==</c-gensym\1><c-gensym(\d+) xsi:type="xsd:string">&lt;123>&amp;amp;&#xd;&lt;/123></c-gensym\2>!);
+  ok($serialized =~ m!<c-gensym(\d+) xsi:type="xsd:base64Binary">AAECAyAgIAQFBg==</c-gensym\1><c-gensym(\d+) xsi:type="xsd:string">&lt;123&gt;&amp;amp;&#xd;&lt;/123&gt;</c-gensym\2>!);
 
   $serialized = SOAP::Serializer->namespaces({})->serialize(
     SOAP::Data->name(name=>'value')->attr({attr => '<123>"&amp"</123>'})
@@ -113,7 +113,7 @@ EOX
 
   $serialized = SOAP::Serializer->serialize(SOAP::Data->uri('some_urn' => bless {a => 1} => 'ObjectType'));
 
-  ok($serialized =~ m!<namesp(\d+):c-gensym(\d+)(:? xsi:type="namesp\d+:ObjectType"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:namesp\1="some_urn"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){7}><a xsi:type="xsd:int">1</a></namesp\1:c-gensym\2>!);
+  ok($serialized =~ m!<namesp(\d+):c-gensym(\d+)(:? xsi:type="namesp\d+:ObjectType"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:namesp\1="some_urn"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){7}><a xsi:type="xsd:int">1</a></namesp\1:c-gensym\2>!);
 }
 
 #{
@@ -133,7 +133,7 @@ EOX
 
   $serialized = SOAP::Serializer->serialize(SOAP::Data->type(hex => $a));
 
-  ok($serialized =~ m!<c-gensym(\d+)(?: xsi:type="xsd:hex"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){5}>61626332333478797A</c-gensym(\d+)>!);
+  ok($serialized =~ m!<c-gensym(\d+)(?: xsi:type="xsd:hexBinary"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}>61626332333478797A</c-gensym(\d+)>!);
   ok(SOAP::Deserializer->deserialize($serialized)->root eq $a); 
 
   $a = <<"EOBASE64";

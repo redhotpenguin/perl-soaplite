@@ -226,9 +226,9 @@ my $package = '
 <namesp1:schema xmlns:namesp1="http://www.soaplite.com/Calculator"/>
 </SOAP-ENV:Body></SOAP-ENV:Envelope>');
 
-  ok($a =~ m!xsi="http://www.w3.org/1999/XMLSchema-instance"!);
-  ok($a =~ m!xsd="http://www.w3.org/1999/XMLSchema"!);
-  ok($a =~ m!>http://www.w3.org/1999/XMLSchema<!);
+  ok($a =~ m!xsi="http://www.w3.org/2001/XMLSchema-instance"!);
+  ok($a =~ m!xsd="http://www.w3.org/2001/XMLSchema"!);
+  ok($a =~ m!>http://www.w3.org/2001/XMLSchema<!);
 
   $a = $server->handle('<SOAP-ENV:Envelope xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" 
                    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 

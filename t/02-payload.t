@@ -21,7 +21,7 @@ my($a, $s, $r, $serialized, $deserialized);
 
   $serialized = SOAP::Serializer->serialize(SOAP::Data->root(1 => 1)->name('rootandunderstand')->mustUnderstand(1));
 
-  ok($serialized =~ m!<rootandunderstand( xsi:type="xsd:int"| SOAP-ENV:mustUnderstand="1"| SOAP-ENC:root="1"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){7}>1</rootandunderstand>!);
+  ok($serialized =~ m!<rootandunderstand( xsi:type="xsd:int"| SOAP-ENV:mustUnderstand="1"| SOAP-ENC:root="1"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){7}>1</rootandunderstand>!);
 }
 
 { # check deserialization of envelope with result
@@ -30,8 +30,8 @@ my($a, $s, $r, $serialized, $deserialized);
   $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
-	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
-	 xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+	 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
 <SOAP-ENV:Body>
 <m:doublerResponse xmlns:m="http://simon.fell.com/calc">
@@ -236,9 +236,9 @@ my($a, $s, $r, $serialized, $deserialized);
   $serialized = SOAP::Serializer
     -> envprefix('')
     -> method('mymethod');
-  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){5}><Body><mymethod/></Body></Envelope>!);
+  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod /></Body></Envelope>!);
 
-  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><SOAP-ENV:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></SOAP-ENV:Body></SOAP-ENV:Envelope>');
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><SOAP-ENV:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></SOAP-ENV:Body></SOAP-ENV:Envelope>');
   ok(! defined $deserialized->namespaceuriof('//getStateName'));
 
   $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns="a" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><SOAP-ENV:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></SOAP-ENV:Body></SOAP-ENV:Envelope>');
@@ -268,7 +268,8 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Stringified type serialization test(s)...\n";
 
   $serialized = SOAP::Serializer->serialize(bless { a => 1, _current => [] } => 'SOAP::SOM');
-  ok($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: SOAP-ENC:arrayType="xsd:ur-type\[0\]"| xsi:type="SOAP-ENC:Array"){2}/></SOAP__SOM>!);
+
+  ok($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: SOAP-ENC:arrayType="xsd:anyType\[0\]"| xsi:type="SOAP-ENC:Array"){2} /></SOAP__SOM>!);
 
   $serialized =~ s/__/./g; # check for SOAP.SOM instead of SOAP__SOM
   ok(ref SOAP::Deserializer->deserialize($serialized)->root eq 'SOAP::SOM');
@@ -295,7 +296,7 @@ my($a, $s, $r, $serialized, $deserialized);
   ! or die;
 
   $serialized = SOAP::Serializer->serialize(bless {a => 1, b => 2} => 'My::Own::Class');
-  ok($serialized =~ m!<My__Own__Class( xsi:type="xsd:string"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/1999/XMLSchema"){5}>a => 1, b => 2</My__Own__Class>!);
+  ok($serialized =~ m!<My__Own__Class( xsi:type="xsd:string"| xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}>a => 1, b => 2</My__Own__Class>!);
 }
 
 { # Multirefs serialization
@@ -306,16 +307,16 @@ my($a, $s, $r, $serialized, $deserialized);
   my $c = { c1 => $a, c2 => $a };
 
   $serialized = SOAP::Serializer->autotype(0)->method(a => $c);
-  ok($serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c1 href="#ref-(\d+)"/><c2 href="#ref-\2"/></c-gensym\1></a><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4"/></c-gensym\5></SOAP-ENV:Body>! ||
-     $serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c1 href="#ref-(\d+)"/><c2 href="#ref-\2"/></c-gensym\1></a><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)"/></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></SOAP-ENV:Body>! ||
-     $serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c2 href="#ref-(\d+)"/><c1 href="#ref-\2"/></c-gensym\1></a><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4"/></c-gensym\5></SOAP-ENV:Body>! ||
-     $serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c2 href="#ref-(\d+)"/><c1 href="#ref-\2"/></c-gensym\1></a><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)"/></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></SOAP-ENV:Body>!);
+  ok($serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></SOAP-ENV:Body>! ||
+     $serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></SOAP-ENV:Body>! ||
+     $serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></SOAP-ENV:Body>! ||
+     $serialized =~ m!<SOAP-ENV:Body><a><c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></SOAP-ENV:Body>!);
 
   $serialized = SOAP::Serializer->autotype(0)->namespaces({})->serialize($c);
-  ok($serialized =~ m!<c-gensym(\d+)><c1 href="#ref-(\d+)"/><c2 href="#ref-\2"/><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4"/></c-gensym\5></c-gensym\1>! ||
-     $serialized =~ m!<c-gensym(\d+)><c1 href="#ref-(\d+)"/><c2 href="#ref-\2"/><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)"/></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></c-gensym\1>! ||
-     $serialized =~ m!<c-gensym(\d+)><c2 href="#ref-(\d+)"/><c1 href="#ref-\2"/><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4"/></c-gensym\5></c-gensym\1>! ||
-     $serialized =~ m!<c-gensym(\d+)><c2 href="#ref-(\d+)"/><c1 href="#ref-\2"/><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)"/></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></c-gensym\1>!);
+  ok($serialized =~ m!<c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></c-gensym\1>! ||
+     $serialized =~ m!<c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></c-gensym\1>! ||
+     $serialized =~ m!<c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></c-gensym\1>! ||
+     $serialized =~ m!<c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></c-gensym\1>!);
 
   my $root = SOAP::Deserializer->deserialize($serialized)->root;
 
@@ -329,7 +330,7 @@ my($a, $s, $r, $serialized, $deserialized);
   $a = { b => 2 };
 
   $serialized = SOAP::Serializer->autotype(0)->method(a => SOAP::Header->value($a), $a);
-  ok($serialized =~ m!<SOAP-ENV:Header><c-gensym\d+ href="#ref-(\d+)"/></SOAP-ENV:Header><SOAP-ENV:Body><a><c-gensym\d+ href="#ref-\1"/></a><c-gensym(\d+) id="ref-\1"><b>2</b></c-gensym\2></SOAP-ENV:Body>!);
+  ok($serialized =~ m!<SOAP-ENV:Header><c-gensym\d+ href="#ref-(\d+)" /></SOAP-ENV:Header><SOAP-ENV:Body><a><c-gensym\d+ href="#ref-\1" /></a><c-gensym(\d+) id="ref-\1"><b>2</b></c-gensym\2></SOAP-ENV:Body>!);
 }
 
 { # Deserialization with typecast
@@ -564,11 +565,11 @@ my($a, $s, $r, $serialized, $deserialized);
     [ undef,  undef,  '<b>1</b>' ],
     [ undef,     '',  '<b xmlns="">1</b>' ],
     [ undef,    'a',  '<(namesp\d+):b xmlns:\1="a">1</\1:b>' ],
-    [    '',  undef,  '<b>1</b>' ],
-    [    '',     '',  '<b xmlns="">1</b>' ],
-    [    '',    'a',  '<b xmlns="a">1</b>' ],
-    [   'c',  undef,  '<c:b>1</c:b>' ],       # no URI, but we may need prefix
-    [   'c',     '',  '<b xmlns="">1</b>' ],  # MUST not be prefix with empty URI
+    [    '',  undef,  '<b>1</b>' ],           
+    [    '',     '',  '<b xmlns="">1</b>' ],  
+    [    '',    'a',  '<b xmlns="a">1</b>' ], 
+    [   'c',  undef,  '<c:b>1</c:b>' ],       
+    [   'c',     '',  '<b xmlns="">1</b>' ],  
     [   'c',    'a',  '<c:b xmlns:c="a">1</c:b>' ],
   );
 
