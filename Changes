@@ -11,12 +11,32 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.65 Sun Sep 27 00:01:34 2004
+0.65-beta2 Mon Oct 18 15:55:00 2004
   ** WARNING ** substantial changes have been made to SOAP::Lite in
   this release in regards to how it manages attachments. The changes
   may introduce instabilities into your software that relies on this
   functionality. Please test your software with 0.65 prior to moving it
   to a production environment.
+
+  + Added ReleaseNotes.txt
+  + Added section REPORTING BUGS to pod comments
+  + Deprecated SOAP::Lite->schema removed
+  + Deprecated SOAP::Lite->on_debug removed
+  + Deprecated SOAP::Schema->schema in favor of SOAP::Schema->schema_url
+  + Added SOAP::Schema->useragent - which returns the LWP::UserAgent instance
+    that will be used when accessing WSDLs via the SOAP::Lite->service call.
+    This is helpful when access to a WSDL requires authentication, etc.
+  + Made changes that allow messages to be constructed using a NULL body:
+    <Envelope><Body /></Envelope>
+  + Added constant OBJS_BY_REF_KEEPALIVE which defaults to 600 - this is
+    so that service can configure how long to cache objects marked as persistent
+    using SOAP::Server::Object->objects_by_reference()
+  + Added the ability for a user to modify the UserAgent class used
+    by SOAP::Transport::HTTP::Client, updated Transport.pm's documentation
+    to reflect this. Added $SOAP::Transport::HTTP::Client::USERAGENT_CLASS
+    variable as a means of setting this.
+
+0.65-beta1 Mon Oct 18 15:55:00 2004
 
   + Made SOAP::Serializer->readable actually produce readable XML!
   ! Fixed bug 747312 - Made XML Schema 2001 the default schema
