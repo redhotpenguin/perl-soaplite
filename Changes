@@ -35,6 +35,7 @@ THIS RELEASE
   ! Fixed documentation error around turning on a trace for multiple
     "channels" (bug 747310)
   ! Disabled SOAPStruct (bug 747316)
+  ! Fixed XML::Parser::Expat vulnerability (bug 747265)
   ! Added item in TROUBLESHOOTING section explaining that there is a 
     bug in Perl 5.8 that prevents +autodispatch from working properly.
     The workaround is to use dispatch_from instead (bug 747290)
