@@ -371,8 +371,8 @@ sub splitlongname { local($1,$2); $_[0] =~ /^(?:\{(.*)\})?(.+)$/; return ($1,$2)
 my %encode_attribute = ('&' => '&amp;', '<' => '&lt;', '"' => '&quot;');
 sub encode_attribute { (my $e = $_[0]) =~ s/([&<"])/$encode_attribute{$1}/g; $e }
 
-my %encode_data = ('&' => '&amp;', '<' => '&lt;', "\xd" => '&#xd;');
-sub encode_data { (my $e = $_[0]) =~ s/([&<\015])/$encode_data{$1}/g; $e =~ s/\]\]>/\]\]&gt;/g; $e }
+my %encode_data = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', "\xd" => '&#xd;');
+sub encode_data { (my $e = $_[0]) =~ s/([&<>\015])/$encode_data{$1}/g; $e =~ s/\]\]>/\]\]&gt;/g; $e }
 
 # methods for internal tree (SOAP::Deserializer, SOAP::SOM and SOAP::Serializer)
 
@@ -1196,12 +1196,14 @@ sub envelope {
     SOAP::Trace::fault(@parameters);
     $body = SOAP::Data
       -> name(SOAP::Serializer::qualify($self->envprefix => 'Fault'))
+    # parameters[1] needs to be escaped - thanks to aka_hct at gmx dot de
     # commented on 2001/03/28 because of failing in ApacheSOAP
     # need to find out more about it
     # -> attr({'xmlns' => ''})
       -> value(\SOAP::Data->set_value(
         SOAP::Data->name(faultcode => SOAP::Serializer::qualify($self->envprefix => $parameters[0]))->type(""),
-        SOAP::Data->name(faultstring => $parameters[1])->type(""),
+#        SOAP::Data->name(faultstring => $parameters[1])->type(""),
+        SOAP::Data->name(faultstring => SOAP::Utils::encode_data($parameters[1]))->type(""),
         defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
         defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3])->type("") : (),
       ));
