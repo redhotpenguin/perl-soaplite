@@ -69,12 +69,14 @@ sub with {
   my @values;
   while (@_) {
     my $data = shift;
-    my($method, @value) = UNIVERSAL::isa($data => __PACKAGE__)
-      ? ($data->SUPER::name, $data->value)
-      : ($data, shift);
+    my($method, $attr, @value) = UNIVERSAL::isa($data => __PACKAGE__)
+      ? ($data->SUPER::name, $data->SUPER::attr, $data->SUPER::value)
+      : ($data, {}, shift);
     exists $attributes{$name}{$method}
+      # attribute
       ? $self->$method(@value)
-      : push(@values, ($self->can($method) || Carp::croak "Don't know what to do with '$method'")->(@value));
+      # sub element
+      : push(@values, ($self->can($method) || Carp::croak "Don't know what to do with '$method'")->(@value)->attr($attr));
   }
   $self->set_value([@values]);
 }
@@ -91,30 +93,40 @@ sub _compileit {
     die "Expected element (UDDI::Data) as parameter for $method()\n"
       if !ref $_[0] && exists $elements{$method};
 
-    my $uddi = UNIVERSAL::isa($_[0] => __PACKAGE__);
-
-    # MAKE ELEMENT: name('old')
-    return __PACKAGE__->SUPER::name($method => @_) 
-      if !$uddi;
+    # MAKE ELEMENT: name( [{attr => value},] 'old')
+    if (!UNIVERSAL::isa($_[0] => __PACKAGE__)) {
+      # get optional list of attributes as a first parameter
+      my $attr = ref $_[0] eq 'HASH' ? shift @_ : {};
+      return __PACKAGE__->SUPER::name($method => @_)->attr($attr);
+    }
 
     my $name = $_[0]->SUPER::name;
 
-    # GET/SET ATTRIBUTE: businessInfo->businessKey
-    return @_ > 1 
-        ? scalar($_[0]->attr->{$method} = $_[1], $_[0])               # SET
-        : __PACKAGE__->SUPER::name($method => $_[0]->attr->{$method}) # GET
-      if exists $attributes{$name} && exists $attributes{$name}{$method};
+    if (defined $name) {
+      # GET/SET ATTRIBUTE: businessInfo->businessKey
+      return @_ > 1 
+          ? scalar($_[0]->attr->{$method} = $_[1], $_[0])               # SET
+          : __PACKAGE__->SUPER::name($method => $_[0]->attr->{$method}) # GET
+        if exists $attributes{$name} && exists $attributes{$name}{$method};
 
-    # GET ELEMENT: businessInfos->businessInfo
-    my @elems = grep {
-      ref $_ && UNIVERSAL::isa($_ => __PACKAGE__) && $_->SUPER::name eq $method
-    } map {ref $_ eq 'ARRAY' ? @$_ : $_} $_[0]->value;
-    return wantarray? @elems : $elems[0]
-      if exists $elements{$name} && exists $elements{$name}{$method};
+      # GET ELEMENT: businessInfos->businessInfo
+      my @elems = grep {
+        ref $_ && UNIVERSAL::isa($_ => __PACKAGE__) && $_->SUPER::name eq $method
+      } map {ref $_ eq 'ARRAY' ? @$_ : $_} $_[0]->value;
+      return wantarray? @elems : $elems[0]
+        if exists $elements{$name} && exists $elements{$name}{$method};
 
-    # MAKE ELEMENT: businessInfos(businessInfo('something'))
-    return __PACKAGE__->SUPER::name($method => @_) 
-      if exists $elements{$method} && exists $elements{$method}{$name};
+      # MAKE ELEMENT: businessInfos(businessInfo('something'))
+      return __PACKAGE__->SUPER::name($method => @_) 
+        if exists $elements{$method} && exists $elements{$method}{$name};
+    }
+
+    # handle UDDI::Data->method() calls for those SOAP::Data methods 
+    #  that conflict with UDDI methods, like name()
+    if (UNIVERSAL::can($ISA[0] => $method)) {
+      my $pkg = shift @_;
+      return eval "\$pkg->SUPER::$method(\@_)";
+    }
 
     Carp::croak "Don't know what to do with '$method' and '$name' elements";
   }

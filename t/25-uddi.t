@@ -30,7 +30,7 @@ unless (defined $r && defined $r->envelope) {
 }
 # ------------------------------------------------------
 
-plan tests => 17;
+plan tests => 21;
 
 {
   $a = bindingTemplate([
@@ -82,7 +82,7 @@ plan tests => 17;
 
   # all syntaxes should give the same serialized string
   for (1..4) {
-    ok($syntaxes[0] eq $syntaxes[$_]);
+    ok($syntaxes[0], $syntaxes[$_]);
   }
 
   @syntaxes = map { UDDI::Serializer->serialize($_) } (
@@ -95,14 +95,14 @@ plan tests => 17;
         )->tModelKey('UUID:C1ACF26D-9672-4404-9D70-39B756E62AB4')
       );
       bindingTemplate([
-        accessPoint('someurl'), 
+        accessPoint('someurl')->attr({foo => 'bar'}), 
         $tmodels
       ])->bindingKey('');
     },
 
     # syntax 2
     bindingTemplate([
-      accessPoint('someurl'), 
+      accessPoint('someurl')->attr({foo => 'bar'}), 
       tModelInstanceDetails( 
         tModelInstanceInfo(
           description('some tModel')
@@ -118,15 +118,17 @@ plan tests => 17;
         )->tModelKey('UUID:C1ACF26D-9672-4404-9D70-39B756E62AB4')
       );
 
+      my $ap = accessPoint('someurl');
+      $ap->attr({foo => 'bar'});
       with bindingTemplate => 
-        accessPoint('someurl'), 
+        $ap, 
         $tmodels,
         bindingKey => ''
     },
 
     # syntax 4
     with bindingTemplate => 
-      accessPoint('someurl'), 
+      accessPoint('someurl')->attr({foo => 'bar'}), 
       tModelInstanceDetails => 
         tModelInstanceInfo(
           description('some tModel')
@@ -136,8 +138,53 @@ plan tests => 17;
 
   # all syntaxes should give the same serialized string
   for (1..3) {
-    ok($syntaxes[0] eq $syntaxes[$_]);
+    ok($syntaxes[0], $syntaxes[$_]);
   }
+
+  # testing UDDI::Data and alternative syntaxes
+  @syntaxes = map { UDDI::Serializer->serialize($_) } (
+
+    # syntax 1
+    businessEntity(name('old')),
+
+    # syntax 2
+    businessEntity(UDDI::Data->name(name => 'old')),
+
+    # syntax 3
+    businessEntity(UDDI::Data->name('name')->value('old')),
+
+    # syntax 4
+    # while there is also method(name => 'old') syntax
+    # it only works for UDDI methods, like find_business:
+    #  find_business(name => 'old')
+    # and doesn't work for all other data elements
+
+  );
+
+  # all syntaxes should give the same serialized string
+  for (1..2) {
+    ok($syntaxes[0], $syntaxes[$_]);
+  }
+
+  # testing attributes
+  my $u = UDDI::Data->name(name => 'old')->attr({foo => 'bar'});
+  ok($u->attr->{'foo'} eq 'bar');
+
+  @syntaxes = map { UDDI::Serializer->serialize($_) } (
+
+    # syntax 1
+    UDDI::Data->name(name => 'old')->attr({foo => 'bar'}),
+
+    # syntax 2
+    name({foo => 'bar'}, 'old'),
+
+  );
+
+  # all syntaxes should give the same serialized string
+  for (1..1) {
+    ok($syntaxes[0], $syntaxes[$_]);
+  }
+
 }
 
 {
