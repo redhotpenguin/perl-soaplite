@@ -10,7 +10,8 @@ a '!'.
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
-0.60
+
+0.60 Mon Aug 18 12:10:27 2003
   + Merged SOAP::MIME into SOAP::Lite's core
   + Cleaned up the UI for the Makefile.PL script - it now detects and
     indicated whether certain Perl modules have been detected. The
@@ -26,8 +27,7 @@ THIS RELEASE
     parser requires that MIME boundaries are terminiated by a CRLF
     character where the MIME::Tools package only outputs a CR
     character. A patch was integrated into the MIME::Tools module
-    which allows SOAP::Lite to specify its own MIME Boundary delimiter.
-    (bug ?)
+    which allows SOAP::Lite to specify its own MIME Boundary delimiter
   ! SOAP Faultcodes are now properly typed a xsd:QName, whereas
     before they were xsd:string - to be honest, they are left untyped
     so that toolkits can serialize them according to the schema
