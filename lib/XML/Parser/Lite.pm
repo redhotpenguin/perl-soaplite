@@ -12,7 +12,8 @@ package XML::Parser::Lite;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+$VERSION = '0.65_3';
 
 sub new { 
   my $self = shift;

@@ -3198,6 +3198,7 @@ sub BEGIN {
     }
   }
   # SOAP::Transport Shortcuts
+  # TODO - deprecate proxy() in favor of new language endpoint_url()
   for my $method (qw(proxy)) {
     *$method = sub { 
       my $self = shift->new;
