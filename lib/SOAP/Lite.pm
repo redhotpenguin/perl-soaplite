@@ -280,7 +280,6 @@ BEGIN {
               $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE
   );
 
-  $PATCH_HTTP_KEEPALIVE = 0;
   $FAULT_CLIENT = 'Client';
   $FAULT_SERVER = 'Server';
   $FAULT_VERSION_MISMATCH = 'VersionMismatch';
@@ -338,6 +337,7 @@ BEGIN {
   $DO_NOT_PROCESS_XML_IN_MIME = 0;
   $DO_NOT_USE_LWP_LENGTH_HACK = 0;
   $DO_NOT_CHECK_CONTENT_TYPE = 0;
+  $PATCH_HTTP_KEEPALIVE = 1;
 }
   
 # ======================================================================
@@ -2759,7 +2759,6 @@ my $soap; # shared between SOAP and SOAP::Lite packages
 
 package SOAP::Lite;
 
-use HTTP::Headers;
 use vars qw($AUTOLOAD @ISA);
 use Carp ();
 
@@ -2964,10 +2963,12 @@ sub call {
   die "Transport is not specified (using proxy() method or service description)\n"
     unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
 
-  my $top;
+  require HTTP::Headers; 
   my $headers=new HTTP::Headers();
   #  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   # This needs to be moved to HTTP transport layer - what is this doing here?!
+
+  my $top;
   if ($self->parts) {
     require MIME::Entity;
     local $MIME::Entity::BOUNDARY_DELIMITER = "\r\n";
