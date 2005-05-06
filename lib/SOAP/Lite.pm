@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.65_4';
+$VERSION = '0.65_5';
 
 # ======================================================================
 
@@ -2215,6 +2215,17 @@ use Carp ();
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
+sub initialize {
+    return (
+	    packager => SOAP::Packager::MIME->new,
+	    transport => SOAP::Transport->new,
+	    serializer => SOAP::Serializer->new,
+	    deserializer => SOAP::Deserializer->new,
+	    on_action => sub { ; },
+	    on_dispatch => sub { return; },
+	    );
+}
+
 sub new { 
   my $self = shift;
   return $self if ref $self;
@@ -2228,18 +2239,19 @@ sub new {
                            : $^W && Carp::carp "Unrecognized parameter '$method' in new()";
     }
     $self = bless {
-      _transport     => SOAP::Transport->new,
-      _serializer    => SOAP::Serializer->new,
-      _deserializer  => SOAP::Deserializer->new,
-      _packager      => SOAP::Packager::MIME->new,
-      _on_action     => sub { ; },
-      _on_dispatch   => sub { return; }, 
+#      _transport     => SOAP::Transport->new,
+#      _packager      => SOAP::Packager::MIME->new,
+#      _serializer    => SOAP::Serializer->new,
+#      _deserializer  => SOAP::Deserializer->new,
+#      _on_action     => sub { ; },
+#      _on_dispatch   => sub { return; }, 
       _dispatch_to   => [], 
       _dispatch_with => {}, 
       _dispatched    => [],
       _action        => '',
       _options       => {},
     } => $class;
+    unshift(@methods, $self->initialize);
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
     }
@@ -2270,7 +2282,7 @@ sub destroy_context {
 
 sub BEGIN {
   no strict 'refs';
-  for my $method (qw(serializer deserializer)) {
+  for my $method (qw(serializer deserializer transport)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
