@@ -11,7 +11,11 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.65-beta4 In progress
+0.65-beta5 May 6 2005
+
+  ! Fixed critical bug which prevented all XMLRPC servers from working
+
+0.65-beta4 Apr 3 2005
 
   ! Fixed bug 1160881 - HTTP headers are now terminated by \r\n for
     compatibility with .NET and compliance with HTTP spec.
