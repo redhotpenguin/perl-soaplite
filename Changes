@@ -11,6 +11,11 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
+0.65-beta6 May 12 2005
+
+  ! Fixed bug resulting in XMLRPC requests to be serialized using the
+    doc/literal serializer if serializing arrays
+
 0.65-beta5 May 6 2005
 
   ! Fixed critical bug which prevented all XMLRPC servers from working

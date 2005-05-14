@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.65_5';
+$VERSION = '0.65_6';
 
 # ======================================================================
 
@@ -1046,7 +1046,7 @@ sub encode_object {
   if (UNIVERSAL::isa($object => 'REF') || UNIVERSAL::isa($object => 'SCALAR')) {
     return $self->encode_scalar($object, $name, $type, $attr);
   } elsif (UNIVERSAL::isa($object => 'ARRAY')) {
-    return $self->encodingStyle eq "" ? 
+    return $self->encodingStyle eq "" || ref $self eq 'XMLRPC::Serializer' ?
       $self->encode_array($object, $name, $type, $attr) :
       $self->encode_literal_array($object, $name, $type, $attr);
   } elsif (UNIVERSAL::isa($object => 'HASH')) {
