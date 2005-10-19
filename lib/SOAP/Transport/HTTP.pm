@@ -309,6 +309,13 @@ sub handle {
        $content_type ne 'text/xml' && 
        $content_type ne 'application/dime' && 
        $content_type !~ m!^multipart/!;
+
+  # TODO - Handle the Expect: 100-Continue HTTP/1.1 Header
+  if ($self->request->header("Expect") eq "100-Continue") {
+      
+  }
+
+
   # TODO - this should query SOAP::Packager to see what types it supports, I don't
   #        like how this is hardcoded here.
   my $content = $compressed ? 
@@ -398,7 +405,12 @@ sub handle {
   } elsif (defined $SOAP::Constants::MAX_CONTENT_SIZE && $length > $SOAP::Constants::MAX_CONTENT_SIZE) {
     $self->response(HTTP::Response->new(413)) # REQUEST ENTITY TOO LARGE
   } else {
-    my $content; binmode(STDIN); read(STDIN,$content,$length);
+    if ($ENV{EXPECT} =~ /\b100-Continue\b/i) {
+      print "HTTP/1.1 100 Continue\r\n\r\n";
+    }
+    my $content; 
+    binmode(STDIN); 
+    read(STDIN,$content,$length);
     $self->request(HTTP::Request->new( 
       $ENV{'REQUEST_METHOD'} || '' => $ENV{'SCRIPT_NAME'},
 #      HTTP::Headers->new(map {(/^HTTP_(.+)/i ? $1 : $_) => $ENV{$_}} keys %ENV),
@@ -531,10 +543,20 @@ sub handler {
   my $r = shift;
   $r = Apache->request if (!$r && $self->{'MOD_PERL_VERSION'} == 1);
 
+  if ($r->header_in('Expect') =~ /\b100-Continue\b/i) {
+      $r->print("HTTP/1.1 100 Continue\r\n\r\n");
+  }
+
   $self->request(HTTP::Request->new( 
     $r->method() => $r->uri,
     HTTP::Headers->new($r->headers_in),
-    do { my ($c,$buf); while ($r->read($buf,$r->header_in('Content-length'))) { $c.=$buf; } $c; }
+    do { 
+	my ($c,$buf); 
+	while ($r->read($buf,$r->header_in('Content-length'))) { 
+	    $c.=$buf; 
+	} 
+	$c; 
+    }
   ));
   $self->SUPER::handle;
 
