@@ -11,6 +11,7 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 32 }
+$SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
 
 use SOAP::Lite;
 

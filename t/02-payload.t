@@ -13,6 +13,7 @@ use Test;
 BEGIN { plan tests => 125 }
 
 use SOAP::Lite;
+$SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
 
 my($a, $s, $r, $serialized, $deserialized);
 

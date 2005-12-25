@@ -11,7 +11,12 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.65-beta6 May 12 2005
+0.65-beta7 May 12 2005
+
+  + Added default_ns and ns to replace the confusing use of uri() and
+    use_prefex()
+
+0.65-beta6 June 3 2005
 
   ! Fixed bug resulting in XMLRPC requests to be serialized using the
     doc/literal serializer if serializing arrays

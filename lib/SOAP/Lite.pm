@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.65_6';
+$VERSION = '0.66';
 
 # ======================================================================
 
@@ -735,7 +735,8 @@ sub BEGIN {
   no strict 'refs';
   for my $method (qw(readable level seen autotype typelookup attr maptype
                      namespaces multirefinplace encoding signature
-                     on_nonserialized use_prefix context)) {
+                     on_nonserialized context 
+		     ns_uri ns_prefix use_default_ns)) {
     my $field = '_' . $method;
     *$method = sub {
       my $self = shift->new;
@@ -763,7 +764,9 @@ sub new {
       _level => 0,
       _autotype => 1,
       _readable => 0,
-      _use_prefix => 1,
+      _ns_uri => '',
+      _ns_prefix => '',
+      _use_default_ns => 1,
       _multirefinplace => 0,
       _seen => {},
       _typelookup => {
@@ -823,6 +826,65 @@ sub new {
   while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
   return $self;
+}
+
+sub ns {
+    my $self = shift->new;
+    if (@_) {
+	my ($u,$p) = @_;
+	$self->register_ns($u);
+	$self->{'_ns_uri'}         = $u;
+	$self->{'_ns_prefix'}      = $p ? $p : $self->gen_ns;
+	$self->{'_use_default_ns'} = 0;
+	return $self;
+    }
+    return $self->{'_ns_uri'};
+}
+
+sub default_ns {
+    my $self = shift->new;
+    if (@_) {
+	my ($u) = @_;
+	$self->{'_ns_uri'}         = $u;
+	$self->{'_ns_prefix'}      = '';
+	$self->{'_use_default_ns'} = 1;
+	return $self;
+    }
+    return $self->{'_ns_uri'};
+}
+
+sub use_prefix {
+  my $self = shift->new;
+  warn 'use_prefix has been deprecated. if you wish to turn off or on the use of a default namespace, then please use either ns(uri) or default_ns(uri)';
+  if (@_) {
+      my $use = shift;
+      $self->{'_use_default_ns'} = !$use;
+      return $self;
+  } else {
+      return $self->{'_use_default_ns'};
+  }
+}
+
+# old
+# sub uri {
+#    my $self = shift->new;
+#    if (@_) {
+#      $self->{'_uri'} = shift;
+#      $self->register_ns($self->{'_uri'}) if (!$self->use_prefix);
+#      return $self;
+#    }
+#    return $self->{'_uri'};
+# }
+
+sub uri {
+  my $self = shift->new;
+#  warn 'uri has been deprecated. if you wish to set the namespace for the request, then please use either ns(uri) or default_ns(uri)';
+  if (@_) {
+      $self->{'_ns_uri'} = shift;
+      $self->register_ns($self->{'_ns_uri'}) if (!$self->use_prefix);
+      return $self;
+  }
+  return $self->{'_ns_uri'};
 }
 
 sub encodingStyle {
@@ -907,16 +969,6 @@ sub encprefix {
   return $self->namespaces->{$SOAP::Constants::NS_ENC} unless @_;
   $self->namespaces->{$SOAP::Constants::NS_ENC} = shift;
   return $self;
-}
-
-sub uri {
-    my $self = shift->new;
-    if (@_) {
-      $self->{'_uri'} = shift;
-      $self->register_ns($self->{'_uri'}) if (!$self->use_prefix);
-      return $self;
-    }
-    return $self->{'_uri'};
 }
 
 sub gen_id { sprintf "%U", $_[1] }
@@ -1046,9 +1098,10 @@ sub encode_object {
   if (UNIVERSAL::isa($object => 'REF') || UNIVERSAL::isa($object => 'SCALAR')) {
     return $self->encode_scalar($object, $name, $type, $attr);
   } elsif (UNIVERSAL::isa($object => 'ARRAY')) {
-    return $self->encodingStyle eq "" || ref $self eq 'XMLRPC::Serializer' ?
-      $self->encode_array($object, $name, $type, $attr) :
-      $self->encode_literal_array($object, $name, $type, $attr);
+      # Added in SOAP::Lite 0.65_6 to fix an XMLRPC bug
+      return $self->encodingStyle eq "" || ref $self eq 'XMLRPC::Serializer' ?
+	  $self->encode_array($object, $name, $type, $attr) :
+	  $self->encode_literal_array($object, $name, $type, $attr);
   } elsif (UNIVERSAL::isa($object => 'HASH')) {
     return $self->encode_hash($object, $name, $type, $attr);
   } else {
@@ -1204,8 +1257,8 @@ sub typecast {
 }
 
 sub register_ns {
-#    my $self = shift->new;
-    my $self = shift;
+    my $self = shift->new;
+#    my $self = shift;
     my ($ns,$prefix) = @_;
     $prefix = gen_ns if !$prefix;
     $self->{'_namespaces'}->{$ns} = $prefix if $ns;
@@ -1225,7 +1278,7 @@ sub fixattrs {
   my($name, $attr) = ($data->SOAP::Data::name, {%{$data->SOAP::Data::attr}});
   my($xmlns, $prefix) = ($data->uri, $data->prefix);
   unless (defined($xmlns) || defined($prefix)) {
-      $self->register_ns($xmlns,$prefix) if (!$self->use_prefix);
+      $self->register_ns($xmlns,$prefix) unless ($self->use_default_ns);
       return ($name, $attr);
   }
   $name ||= gen_name; # local name
@@ -1235,7 +1288,7 @@ sub fixattrs {
 
   $attr->{join ':', xmlns => $prefix || ()} = $xmlns if defined $xmlns; 
   $name = join ':', $prefix, $name if $prefix;
-  $self->register_ns($xmlns,$prefix) if (!$self->use_prefix);
+  $self->register_ns($xmlns,$prefix) unless ($self->use_default_ns);
   return ($name, $attr);
 }
 
@@ -1392,11 +1445,17 @@ sub envelope {
     if (!defined($method)) {
     } elsif (UNIVERSAL::isa($method => 'SOAP::Data')) {
       $body = $method;
-    } elsif ($self->use_prefix) {
-      $body = SOAP::Data->name($method)->uri($self->uri);
+    } elsif (!$self->use_default_ns) {
+      $body = SOAP::Data->name($method)->uri($self->{'_ns_uri'});
+      $body = $body->prefix($self->{'_ns_prefix'}) if ($self->{'_ns_prefix'});
     } else {
-      $body = SOAP::Data->name($method)->attr( { 'xmlns' => $self->uri } );
-      #$body = SOAP::Data->name($method)->uri($self->uri); # original return before use_prefix
+      if ($self->{'_ns_uri'}) {
+        $body = SOAP::Data->name($method)->attr( { 
+	    'xmlns' => $self->{'_ns_uri'},
+	} ); 
+      } else {
+        $body = SOAP::Data->name($method); 
+      }
     }
     # This is breaking a unit test right now...
     $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
@@ -2239,12 +2298,6 @@ sub new {
                            : $^W && Carp::carp "Unrecognized parameter '$method' in new()";
     }
     $self = bless {
-#      _transport     => SOAP::Transport->new,
-#      _packager      => SOAP::Packager::MIME->new,
-#      _serializer    => SOAP::Serializer->new,
-#      _deserializer  => SOAP::Deserializer->new,
-#      _on_action     => sub { ; },
-#      _on_dispatch   => sub { return; }, 
       _dispatch_to   => [], 
       _dispatch_with => {}, 
       _dispatched    => [],
@@ -2457,6 +2510,8 @@ sub handle {
 
     die "Can't find method element in the message"
       unless $request->match($som->method);
+    # TODO - SOAP::Dispatcher plugs in here
+    # my $handler = $self->dispatcher->find_handler($request);
     my($class, $method_uri, $method_name) = $self->find_target($request);
     my @results = eval {
       local $^W;
@@ -2480,6 +2535,8 @@ sub handle {
 		      ->uri($SOAP::Constants::NS_SL_HEADER => $object)
 			->name($request->dataof($som->method.'/[1]')->name)
 		      } # end do block
+	 # SOAP::Dispatcher will plug-in here as well
+         # $handler->dispatch(SOAP::Server::Object->objects(@parameters)
        : $class->$method_name(SOAP::Server::Object->objects(@parameters)) );
     }; # end eval block
     SOAP::Trace::result(@results);
@@ -2494,7 +2551,7 @@ sub handle {
     my $result = $self->serializer
       ->prefix('s') # distinguish generated element names between client and server
       ->uri($method_uri)
-	  ->envelope(response => $method_name . 'Response', @results);
+      ->envelope(response => $method_name . 'Response', @results);
     $self->destroy_context();
     return $result;
   };
@@ -3227,10 +3284,13 @@ sub BEGIN {
       @_ ? ($self->transport->$method(@_), return $self) : return $self->transport->$method();
     }
   }
+
   # SOAP::Seriailizer Shortcuts
   for my $method (qw(autotype readable envprefix encodingStyle
-                     encprefix multirefinplace encoding typelookup uri
-                     header maptype xmlschema use_prefix)) {
+                     encprefix multirefinplace encoding
+		     typelookup header maptype xmlschema
+		     uri ns_prefix ns_uri use_prefix use_default_ns
+		     ns default_ns)) {
     *$method = sub { 
       my $self = shift->new;
       @_ ? ($self->serializer->$method(@_), return $self) : return $self->serializer->$method();
@@ -3579,7 +3639,33 @@ This method is a shortcut for:
 
 When this is used to set a true value for this property, the generated XML sent to the endpoint has extra characters (spaces and new lines) added in to make the XML itself more readable to human eyes (presumably for debugging). The default is to not send any additional characters.
 
+=item default_ns($uri)
+
+Sets the default namespace for the request to the specified uri. This overrides any previous namespace declaration that may have been set using a previous call to C<ns()> or C<default_ns()>. Setting the default namespace causes elements to be serialized without a namespace prefix, like so:
+
+  <soap:Envelope>
+    <soap:Body>
+      <myMethod xmlns="http://www.someuri.com">
+        <foo />
+      </myMethod>
+    </soap:Body>
+  </soap:Envelope>
+
+=item ns($uri,$prefix=undef)
+
+Sets the namespace uri and optionally the namespace prefix for the request to the specified values. This overrides any previous namespace declaration that may have been set using a previous call to C<ns()> or C<default_ns()>. If a prefix is not specified, one will be generated for you automatically. Setting the namespace causes elements to be serialized with a declared namespace prefix, like so:
+
+  <soap:Envelope>
+    <soap:Body>
+      <my:myMethod xmlns:my="http://www.someuri.com">
+        <my:foo />
+      </my:myMethod>
+    </soap:Body>
+  </soap:Envelope>
+
 =item use_prefix(boolean)
+
+Deprecated - the C<use_prefix()> subroutine has been deprecated in order to provide a more intuitive naming scheme for subroutines that set namespaces. C<use_prefix()> was originally added to allow users to turn on or off the use of a default namespace. This functionality is being replaced by C<ns()> and C<default_ns()>.
 
 Shortcut for C<< serializer->use_prefix() >>. This lets you turn on/off the use of a namespace prefix for the children of the /Envelope/Body element. Default is 'true'. (This was introduced in 0.61 for better .NET compatibility)
 
@@ -3653,13 +3739,17 @@ Gives the application access to the type-lookup table from the serializer object
 
 =item uri(service specifier)
 
+Deprecated - the C<uri> subroutine has been deprecated in order to provide a more intuitive naming scheme for subroutines that set namespaces. In the future, you will be required to use either the C<ns()> or C<default_ns()> subroutines in lieu of C<uri()>.
+
     $client->uri($service_uri);
 
 This method is a shortcut for:
 
     $client->serializer->uri(service);
 
-The URI associated with this accessor on a client object is the service-specifier for the request, often encoded for HTTP-based requests as the SOAPAction header. While the names may seem confusing, this method doesn't specify the endpoint itself. Often times, the value may look like a valid URL. Despite this, it doesn't have to point to an existing resource (and often doesn't). This method sets and retrieves this value from the object. Note that no transport code is triggered by this because it has no direct effect on the transport of the object.
+The URI associated with this accessor on a client object is the service-specifier for the request, often encoded for HTTP-based requests as the SOAPAction header. While the names may seem confusing, this method doesn't specify the endpoint itself. In most circumstances, the C<uri> refers to the namespace used for the request. 
+
+Often times, the value may look like a valid URL. Despite this, it doesn't have to point to an existing resource (and often doesn't). This method sets and retrieves this value from the object. Note that no transport code is triggered by this because it has no direct effect on the transport of the object.
 
 =item multirefinplace(boolean)
 
