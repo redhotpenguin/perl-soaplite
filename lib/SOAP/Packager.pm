@@ -208,8 +208,10 @@ sub process_related {
   my ($entity) = @_;
   die "Multipart MIME messages MUST declare Multipart/Related content-type"
     if ($entity->head->mime_attr('content-type') !~ /^multipart\/related/i);
-  my $start = get_multipart_id($entity->head->mime_attr('content-type.start'))
-    || get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
+  my $start = get_multipart_id($entity->head->mime_attr('content-type.start'));
+  if (!defined($start) || $start eq "") {
+      $start = get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
+  }
   my $location = $entity->head->mime_attr('content-location') ||
     'thismessage:/';
   my $env;
