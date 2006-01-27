@@ -183,9 +183,11 @@ sub send_receive {
 			   $SOAP::Constants::DEFAULT_HTTP_CONTENT_TYPE,
 			   !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ?
 			   'charset=' . lc($encoding) : ());
-      }elsif (!$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ){
+      } elsif (!$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ){
 	my $tmpType = $self->http_request->headers->header('Content-type');
-	$self->http_request->content_type($tmpType.'; charset=' . lc($encoding));
+#	$self->http_request->content_type($tmpType.'; charset=' . lc($encoding));
+        my $addition = '; charset=' . lc($encoding);
+        $self->http_request->content_type($tmpType.$addition) if ($tmpType !~ /$addition/);
       }
 
       $self->http_request->content_length($bytelength);
