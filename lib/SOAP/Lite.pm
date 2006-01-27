@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.66.1';
+$VERSION = '0.67';
 
 # ======================================================================
 
@@ -832,10 +832,10 @@ sub ns {
     my $self = shift->new;
     if (@_) {
 	my ($u,$p) = @_;
-	$self->register_ns($u);
 	$self->{'_ns_uri'}         = $u;
 	$self->{'_ns_prefix'}      = $p ? $p : $self->gen_ns;
 	$self->{'_use_default_ns'} = 0;
+	$self->register_ns($u,$self->{'_ns_prefix'});
 	return $self;
     }
     return $self->{'_ns_uri'};
@@ -855,10 +855,10 @@ sub default_ns {
 
 sub use_prefix {
   my $self = shift->new;
-#  warn 'use_prefix has been deprecated. if you wish to turn off or on the use of a default namespace, then please use either ns(uri) or default_ns(uri)';
+  warn 'use_prefix has been deprecated. if you wish to turn off or on the use of a default namespace, then please use either ns(uri) or default_ns(uri)';
   if (@_) {
       my $use = shift;
-      $self->{'_use_default_ns'} = !$use;
+      $self->{'_use_default_ns'} = !$use || 0;
       return $self;
   } else {
       return $self->{'_use_default_ns'};
@@ -880,8 +880,14 @@ sub uri {
   my $self = shift->new;
 #  warn 'uri has been deprecated. if you wish to set the namespace for the request, then please use either ns(uri) or default_ns(uri)';
   if (@_) {
-      $self->{'_ns_uri'} = shift;
-      $self->register_ns($self->{'_ns_uri'}) if (!$self->use_prefix);
+      my $ns = shift;
+      if ($self->{_use_default_ns}) {
+	  $self->default_ns($ns);
+      } else {
+	  $self->ns($ns);
+      }
+#      $self->{'_ns_uri'} = $ns;
+#      $self->register_ns($self->{'_ns_uri'}) if (!$self->{_use_default_ns});
       return $self;
   }
   return $self->{'_ns_uri'};
@@ -1445,8 +1451,15 @@ sub envelope {
     if (!defined($method)) {
     } elsif (UNIVERSAL::isa($method => 'SOAP::Data')) {
       $body = $method;
-    } elsif (!$self->use_default_ns) {
-
+    } elsif ($self->use_default_ns) {
+      if ($self->{'_ns_uri'}) {
+        $body = SOAP::Data->name($method)->attr( { 
+	    'xmlns' => $self->{'_ns_uri'},
+	} ); 
+      } else {
+        $body = SOAP::Data->name($method); 
+      }
+    } else {
 # Commented out by Byrne on 1/4/2006 - to address default namespace problems
 #      $body = SOAP::Data->name($method)->uri($self->{'_ns_uri'});
 #      $body = $body->prefix($self->{'_ns_prefix'}) if ($self->{'_ns_prefix'});
@@ -1459,14 +1472,6 @@ sub envelope {
       $body = $body->prefix($pre) if ($self->{'_ns_prefix'});
 # End new code
 
-    } else {
-      if ($self->{'_ns_uri'}) {
-        $body = SOAP::Data->name($method)->attr( { 
-	    'xmlns' => $self->{'_ns_uri'},
-	} ); 
-      } else {
-        $body = SOAP::Data->name($method); 
-      }
     }
     # This is breaking a unit test right now...
     $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
