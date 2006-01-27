@@ -208,9 +208,13 @@ sub process_related {
   my ($entity) = @_;
   die "Multipart MIME messages MUST declare Multipart/Related content-type"
     if ($entity->head->mime_attr('content-type') !~ /^multipart\/related/i);
+  # As it turns out, the Content-ID and start parameters are optional
+  # according to the MIME and SOAP specs. In the event that the head cannot
+  # be found, the head/root entity is used as a starting point.
   my $start = get_multipart_id($entity->head->mime_attr('content-type.start'));
   if (!defined($start) || $start eq "") {
-      $start = get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
+      $start = $self->generate_random_string(10);
+      $entity->parts(0)->head->add('content-id',$start);
   }
   my $location = $entity->head->mime_attr('content-location') ||
     'thismessage:/';
@@ -239,8 +243,8 @@ sub process_related {
       $self->push_part($part) if (defined($part->bodyhandle));
     }
   }
-  die "Can't find 'start' parameter in multipart MIME message\n"
-    if @{$self->parts} > 1 && !$start;
+#  die "Can't find 'start' parameter in multipart MIME message\n"
+#    if @{$self->parts} > 1 && !$start;
   return $env;
 }
 
