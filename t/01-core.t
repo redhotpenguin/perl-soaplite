@@ -22,13 +22,14 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($@ =~ /99\.99 required/);
 }
 
+# These tests are for backwards compatibility
 { # check use of use_prefix and uri together
   # test 2 - turn OFF default namespace
   $SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
   $serialized = SOAP::Serializer->use_prefix(1)->uri("urn:Test")->method(
     'testMethod', SOAP::Data->name(test => 123)
   );
-  ok($serialized =~ m!<soap:Body><namesp(\d):testMethod xmlns:namesp\1="urn:Test"><test xsi:type="xsd:int">123</test></namesp\1:testMethod></soap:Body>!);
+  ok($serialized =~ m!<soap:Body><namesp(\d):testMethod><test xsi:type="xsd:int">123</test></namesp\1:testMethod></soap:Body>!);
 
   # test 3 - turn ON default namespace
   $serialized = SOAP::Serializer->use_prefix(0)->uri("urn:Test")->method(
@@ -42,12 +43,12 @@ my($a, $s, $r, $serialized, $deserialized);
   $serialized = SOAP::Serializer->ns("urn:Test")->method(
     'testMethod', SOAP::Data->name(test => 123)
   );
-  ok($serialized =~ m!<namesp(\d):testMethod xmlns:namesp\1="urn:Test"><test xsi:type="xsd:int">123</test></namesp\1:testMethod>!);
+  ok($serialized =~ m!<namesp(\d):testMethod><test xsi:type="xsd:int">123</test></namesp\1:testMethod>!);
 
   $serialized = SOAP::Serializer->ns("urn:Test","testns")->method(
     'testMethod', SOAP::Data->name(test => 123)
   );
-  ok($serialized =~ m!<testns:testMethod xmlns:testns="urn:Test"><test xsi:type="xsd:int">123</test></testns:testMethod>!);
+  ok($serialized =~ m!<testns:testMethod><test xsi:type="xsd:int">123</test></testns:testMethod>!);
 
   $serialized = SOAP::Serializer->default_ns("urn:Test")->method(
     'testMethod', SOAP::Data->name(test => 123)
