@@ -11,6 +11,11 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
+0.68
+
+  + Patched support for mod_perl Apache2
+    http://rt.cpan.org/Ticket/Attachment/161340/50566/HTTP.pm.patch
+
 0.65-beta7 May 12 2005
 
   + Added default_ns and ns to replace the confusing use of uri() and
