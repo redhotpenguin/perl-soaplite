@@ -529,10 +529,10 @@ sub new {
       Apache::Constants->import('OK');
       $self->{'MOD_PERL_VERSION'} = 1;
   } elsif ($mod_perl::VERSION < 3) {
-      require Apache::RequestRec;
-      require Apache::RequestIO;
-      require Apache::Const;
-      Apache::Const->import(-compile => 'OK');
+      require Apache2::RequestRec;
+      require Apache2::RequestIO;
+      require Apache2::Const;
+      Apache2::Const->import(-compile => 'OK');
       $self->{'MOD_PERL_VERSION'} = 2;
   } else {
       die "Unsupported version of mod_perl";
