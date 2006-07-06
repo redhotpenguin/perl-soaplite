@@ -11,10 +11,15 @@ a '!'.
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.68
+0.68 July 6 2006
 
-  + Patched support for mod_perl Apache2
-    http://rt.cpan.org/Ticket/Attachment/161340/50566/HTTP.pm.patch
+  ! Patched support for mod_perl Apache2 (thanks to JT Justman)
+  ! Fixed bug where SOAP::SOM objects were not properly detected,
+    serialized and returned (thanks chris at prather dot o r g)
+  ! Fixed bug with default_ns and ns functions so that they
+    serialized XML properly.
+  + Started to add experimental DIME support - possible impacts to MIME
+    support as well
 
 0.65-beta7 May 12 2005
 
