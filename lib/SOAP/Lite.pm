@@ -100,8 +100,12 @@ sub AUTOLOAD {
   my($package, $method) = $AUTOLOAD =~ m/(?:(.+)::)([^:]+)$/;
   return if $method eq 'DESTROY';
   no strict 'refs';
+
+  my $export_var = $package . '::EXPORT';
+  my @export = @$export_var;
+
   die "Type '$method' can't be found in a schema class '$package'\n"
-    unless $method =~ s/^as_// && grep {$_ eq $method} @{"$package\::EXPORT"};
+    unless $method =~ s/^as_// && grep {$_ eq $method} @{$export_var};
 
   $method =~ s/_/-/; # fix ur-type
 
@@ -813,11 +817,14 @@ sub new {
         "{$SOAP::Constants::NS_ENV}encodingStyle" => $SOAP::Constants::NS_ENC,
       },
       _namespaces => {
-        $SOAP::Constants::NS_ENC => $SOAP::Constants::PREFIX_ENC,
-        $SOAP::Constants::PREFIX_ENV ? ($SOAP::Constants::NS_ENV => $SOAP::Constants::PREFIX_ENV) : (),
+#        $SOAP::Constants::NS_ENC => $SOAP::Constants::PREFIX_ENC,
+#        $SOAP::Constants::PREFIX_ENV ? ($SOAP::Constants::NS_ENV => $SOAP::Constants::PREFIX_ENV) : (),
       },
       _soapversion => SOAP::Lite->soapversion,
     } => $class;
+    $self->register_ns($SOAP::Constants::NS_ENC,$SOAP::Constants::PREFIX_ENC);
+    $self->register_ns($SOAP::Constants::NS_ENV,$SOAP::Constants::PREFIX_ENV)
+	if $SOAP::Constants::PREFIX_ENV;
     $self->xmlschema($SOAP::Constants::DEFAULT_XML_SCHEMA);
     SOAP::Trace::objects('()');
   }
@@ -832,10 +839,17 @@ sub ns {
     my $self = shift->new;
     if (@_) {
 	my ($u,$p) = @_;
+	my $prefix;
+        if ($p) {
+	    $prefix = $p;
+	} elsif (!$p && !($prefix = $self->find_prefix($u))) {
+	    $prefix = gen_ns;
+	}
 	$self->{'_ns_uri'}         = $u;
-	$self->{'_ns_prefix'}      = $p ? $p : $self->gen_ns;
+	$self->{'_ns_prefix'}      = $prefix;
 	$self->{'_use_default_ns'} = 0;
-	$self->register_ns($u,$self->{'_ns_prefix'});
+#	$self->register_ns($u,$prefix);
+        $self->{'_namespaces'}->{$u} = $prefix;
 	return $self;
     }
     return $self->{'_ns_uri'};
@@ -1266,6 +1280,7 @@ sub register_ns {
     my $self = shift->new;
 #    my $self = shift;
     my ($ns,$prefix) = @_;
+#    print STDERR ">> registering $prefix\n" if $prefix;
     $prefix = gen_ns if !$prefix;
     $self->{'_namespaces'}->{$ns} = $prefix if $ns;
 }
@@ -2815,8 +2830,8 @@ FAKE
               foreach my $msg ($s->message) {
                 next unless $msg->name eq $inputmessage;
                 if ($invocationStyle eq "document" && $encodingStyle eq "literal") {
-                  warn "document/literal support is EXPERIMENTAL in SOAP::Lite"
-		      if !$has_warned && ($has_warned = 1);
+#                  warn "document/literal support is EXPERIMENTAL in SOAP::Lite"
+#		      if !$has_warned && ($has_warned = 1);
                   my ($input_ns,$input_name) = SOAP::Utils::splitqname($msg->part->element);
                   foreach my $schema ($s->types->schema) {
                     foreach my $element ($schema->element) {
@@ -3395,7 +3410,7 @@ sub call {
   return unless $response; # nothing to do for one-ways
 
   # little bit tricky part that binds in/out parameters
-  if (UNIVERSAL::isa($result => 'SOAPSOM') &&
+  if (UNIVERSAL::isa($result => 'SOAP::SOM') &&
       ($result->paramsout || $result->headers) &&
       $serializer->signature) {
     my $num = 0;
