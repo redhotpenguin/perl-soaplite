@@ -109,6 +109,14 @@ sub AUTOLOAD {
 #  die "Type '$method' can't be found in a schema class '$package'\n"
 #    unless $method =~ s/^as_// && grep {$_ eq $method} @{$export_var};
 
+# This was added in its place - it is still a hack, but it performs the 
+# necessary substitution. It just does not die.
+  if ($method =~ s/^as_// && grep {$_ eq $method} @{$export_var}) {
+#      print STDERR "method is now '$method'\n";
+  } else {
+      return;
+  }
+
   $method =~ s/_/-/; # fix ur-type
 
   *$AUTOLOAD = sub { 
