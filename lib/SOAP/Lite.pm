@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.68';
+$VERSION = '0.69';
 
 # ======================================================================
 
@@ -104,8 +104,10 @@ sub AUTOLOAD {
   my $export_var = $package . '::EXPORT';
   my @export = @$export_var;
 
-  die "Type '$method' can't be found in a schema class '$package'\n"
-    unless $method =~ s/^as_// && grep {$_ eq $method} @{$export_var};
+# Removed in 0.69 - this is a total hack. For some reason this is failing
+# despite not being a fatal error condition.
+#  die "Type '$method' can't be found in a schema class '$package'\n"
+#    unless $method =~ s/^as_// && grep {$_ eq $method} @{$export_var};
 
   $method =~ s/_/-/; # fix ur-type
 
