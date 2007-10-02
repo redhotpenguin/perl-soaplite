@@ -21,11 +21,12 @@ $VERSION = '0.69';
 
 package SOAP::XMLSchemaSOAP1_1::Deserializer;
 
+# sub as_anyURI; *as_anyURI = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_anyURI;
 sub anyTypeValue { 'ur-type' }
-
 sub as_boolean { shift; my $value = shift; $value eq '1' || $value eq 'true' ? 1 : $value eq '0' || $value eq 'false' ? 0 : die "Wrong boolean value '$value'\n" }
 sub as_base64 { shift; require MIME::Base64; MIME::Base64::decode_base64(shift) }
 sub as_ur_type { $_[1] }
+sub as_anyURI { $_[1] }
 
 BEGIN {
   no strict 'refs';
@@ -175,6 +176,13 @@ sub as_string {
   return [$name, {'xsi:type' => 'xsd:string', %$attr}, SOAP::Utils::encode_data($value)];
 }
 
+sub as_anyURI {
+  my $self = shift;
+  my($value, $name, $type, $attr) = @_;
+  die "String value expected instead of @{[ref $value]} reference\n" if ref $value;
+  return [$name, {'xsi:type' => 'xsd:anyURI', %$attr}, SOAP::Utils::encode_data($value)];
+}
+
 sub as_undef { $_[1] ? '1' : '0' }
 
 sub as_boolean {
@@ -196,6 +204,7 @@ package SOAP::XMLSchema1999::Deserializer;
 sub anyTypeValue { 'ur-type' }
 
 sub as_string; *as_string = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_string;
+# sub as_anyURI; *as_anyURI = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_anyURI;
 sub as_boolean; *as_boolean = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_boolean;
 sub as_hex { shift; my $value = shift; $value =~ s/([a-zA-Z0-9]{2})/chr oct '0x'.$1/ge; $value }
 sub as_ur_type { $_[1] }
@@ -244,6 +253,7 @@ sub anyTypeValue { 'anyType' }
 sub as_long;        *as_long = \&SOAP::XMLSchema1999::Serializer::as_long;
 sub as_float;       *as_float = \&SOAP::XMLSchema1999::Serializer::as_float;
 sub as_string;      *as_string = \&SOAP::XMLSchema1999::Serializer::as_string;
+sub as_anyURI;      *as_anyURI = \&SOAP::XMLSchema1999::Serializer::as_anyURI;
 # TODO - QNames still don't work for 2001 schema!
 sub as_QName;       *as_QName = \&SOAP::XMLSchema1999::Serializer::as_string;
 sub as_hex;         *as_hex = \&as_hexBinary;
@@ -277,6 +287,7 @@ package SOAP::XMLSchema2001::Deserializer;
 sub anyTypeValue { 'anyType' }
 
 sub as_string; *as_string = \&SOAP::XMLSchema1999::Deserializer::as_string;
+sub as_anyURI; *as_anyURI = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_anyURI;
 sub as_boolean; *as_boolean = \&SOAP::XMLSchemaSOAP1_2::Deserializer::as_boolean;
 sub as_base64Binary; *as_base64Binary = \&SOAP::XMLSchemaSOAP1_2::Deserializer::as_base64;
 sub as_hexBinary; *as_hexBinary = \&SOAP::XMLSchema1999::Deserializer::as_hex;
@@ -287,7 +298,7 @@ BEGIN {
   for my $method (qw(
     anyType anySimpleType
     float double decimal dateTime timePeriod gMonth gYearMonth gYear century 
-    gMonthDay gDay duration recurringDuration anyURI
+    gMonthDay gDay duration recurringDuration
     language integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
     positiveInteger date time dateTime
@@ -813,7 +824,7 @@ sub new {
           'boolean' => 
 	      [90, sub { $_[0] =~ /^(true|false)$/i; }, 'as_boolean'],
           'anyURI' => 
-	      [95, sub { $_[0] =~ /^(urn:)|(http:\/\/)/i; }, 'as_anyURI'],
+	      [95, sub { $_[0] =~ /^(urn:|http:\/\/)/i; }, 'as_anyURI'],
           'string' => 
 	      [100, sub {1}, 'as_string'],
       },
@@ -2181,9 +2192,13 @@ sub decode_value {
     return defined $class && $class ne 'SOAPStruct' ? bless($res => $class) : $res;
   } else {
     my $res;
-    if ($schemaclass->can($method)) {
-      $method = "$schemaclass\::$method" unless ref $schemaclass; 
-      $res = $self->$method($value, $name, $attrs, $children, $type);
+    if (my $method_ref = $schemaclass->can($method)) {
+# TODO delete comment after it has had some time to ripe...        
+# fiddling with the method name after can() is potentially dangerous - 
+# and as can() returns a sub ref, it's not needed, anyway.
+#      $method = "$schemaclass\::$method" unless ref $schemaclass; 
+#      # $res = $self->$method($value, $name, $attrs, $children, $type);
+      $res = $method_ref->($self, $value, $name, $attrs, $children, $type);
     } else {
       $res = $self->typecast($value, $name, $attrs, $children, $type);
       $res = $class ? die "Unrecognized type '$type'\n" : $value
