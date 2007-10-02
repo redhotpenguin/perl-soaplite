@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 125 }
+BEGIN { plan tests => 127 }
 
 use SOAP::Lite;
 $SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
@@ -536,7 +536,22 @@ my($a, $s, $r, $serialized, $deserialized);
   };
   ok($@ =~ /for type 'noint' is not specified/);
 }
+{
+  print "Serialization w/out explicit typing test(s)...\n";
 
+  $a = { a => 'false' };
+  $serialized = SOAP::Serializer->namespaces({})->serialize($a);
+
+  ### 'false' evaluated as a boolean should still be false after the evaluation.
+  ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:boolean">false</a></c-gensym\1>!);
+
+  $a = { a => 'true' };
+  $serialized = SOAP::Serializer->namespaces({})->serialize($a);
+
+  ### 'false' evaluated as a boolean should still be false after the evaluation.
+  ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:boolean">true</a></c-gensym\1>!);
+
+}
 {
   print "Serialization with explicit namespaces test(s)...\n";
 

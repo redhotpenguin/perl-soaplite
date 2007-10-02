@@ -185,10 +185,26 @@ sub as_anyURI {
 
 sub as_undef { $_[1] ? '1' : '0' }
 
+# The 1999 XML schema spec says that (true|false) are allowed values - 
+# so this is wrong.
+#
+#sub as_boolean {
+#  my $self = shift;
+#  my($value, $name, $type, $attr) = @_;
+#  return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? '1' : '0'];
+#}
+
+# this should be OK:
+
 sub as_boolean {
   my $self = shift;
   my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? '1' : '0'];
+  # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
+  # fix [ 1204279 ] Boolean serialization error
+  return [$name, 
+    {'xsi:type' => 'xsd:boolean', %$attr}, 
+    ( $value eq 'true' or $value eq "1") ? 'true' : 'false' 
+  ];
 }
 
 sub as_float {
@@ -277,7 +293,12 @@ sub as_base64Binary {
 sub as_boolean {
   my $self = shift;
   my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
+  # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
+  # fix [ 1204279 ] Boolean serialization error
+  return [$name, 
+    {'xsi:type' => 'xsd:boolean', %$attr}, 
+    ( $value eq 'true' or $value eq "1") ? 'true' : 'false' 
+  ];
 }
 
 # ----------------------------------------------------------------------
