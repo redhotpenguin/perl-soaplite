@@ -499,7 +499,7 @@ sub handle {
     }
     # replaced ->close, thanks to Sean Meisner <Sean.Meisner@VerizonWireless.com>
     # shutdown() doesn't work on AIX. close() is used in this case. Thanks to Jos Clijmans <jos.clijmans@recyfin.be>
-    UNIVERSAL::isa($c, 'shutdown') ? $c->shutdown(2) : $c->close(); 
+    UNIVERSAL::can($c, 'shutdown') ? $c->shutdown(2) : $c->close(); 
     $c->close;
   }
 }
