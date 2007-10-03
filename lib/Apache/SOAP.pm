@@ -15,8 +15,7 @@ use vars qw(@ISA $VERSION);
 use SOAP::Transport::HTTP;
 
 @ISA = qw(SOAP::Transport::HTTP::Apache);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
-$VERSION = $SOAP::Lite::VERSION;
+$VERSION = '0.69_01';
 
 my $server = __PACKAGE__->new;
 

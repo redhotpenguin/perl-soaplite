@@ -203,7 +203,7 @@ sub as_boolean {
   # fix [ 1204279 ] Boolean serialization error
   return [$name, 
     {'xsi:type' => 'xsd:boolean', %$attr}, 
-    ( $value eq 'true' or $value eq "1") ? 'true' : 'false' 
+    ( $value ne 'false' && $value ) ? 'true' : 'false' 
   ];
 }
 
@@ -297,7 +297,7 @@ sub as_boolean {
   # fix [ 1204279 ] Boolean serialization error
   return [$name, 
     {'xsi:type' => 'xsd:boolean', %$attr}, 
-    ( $value eq 'true' or $value eq "1") ? 'true' : 'false' 
+    ( $value ne 'false' && $value ) ? 'true' : 'false' 
   ];
 }
 

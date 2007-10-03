@@ -6,10 +6,18 @@
 The contents of this file provides a change history for the SOAP::Lite
 Perl module. New features are designated with a '+' and bug fixes with
 a '!'.
+Numbers in square brackets are sourceforge tracker IDs from
+https://sourceforge.net/tracker/?group_id=66000&atid=513017
 
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
+
+0.69_01
+
+  ! Fixed [ 1612405 ] Incorrect deserialization of arrays/vectors
+  ! Fixed [ 1204279 ] Boolean serialization error and added test
+  ! Fixed [ 1569418 ] anyURI Serialization problem
 
 0.68 July 6 2006
 
@@ -306,7 +314,7 @@ PREVIOUS RELEASES
   ! fixed skipping undef elements in arrays under Perl 5.005 (thanks to
     Arne Georg Gleditsch)
   ! fixed warning from undefined type in out parameters (thanks to
-    J†rg Ziefle)
+    Jrg Ziefle)
   ! fixed autovivification warnings on 5.7.x (thanks to Igor Pechersky)
   ! fixed tests on 64bit systems (thanks to Gurusamy Sarathy)
   ! fixed installation problem with long filenames on MacOS (thanks to
