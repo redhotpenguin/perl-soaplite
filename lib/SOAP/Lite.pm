@@ -2248,7 +2248,8 @@ sub typecast { } # typecast is called for both objects AND scalar types
 # ======================================================================
 
 package SOAP::Client;
-
+use vars qw($VERSION);
+$VERSION = '0.70';
 sub BEGIN {
   no strict 'refs';
   for my $method (qw(endpoint code message is_success status options)) {
