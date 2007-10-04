@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 127 }
+BEGIN { plan tests => 131 }
 
 use SOAP::Lite;
 $SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
@@ -260,8 +260,40 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Stringified type serialization test(s)...\n";
 
   $serialized = SOAP::Serializer->serialize(bless { a => 1, _current => [] } => 'SOAP::SOM');
+  
+  my $test = $serialized;
+  ok $test =~s{
+            <\?xml \s version="1.0" \s encoding="UTF-8"\?>
+            <SOAP__SOM
+            (?: 
+                \sxsi:type="namesp(\d+):SOAP__SOM"
+                | \sxmlns:namesp\d+="http://namespaces.soaplite.com/perl"
+                | \sxmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                | \sxmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                | \sxmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                | \sxmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}>
+  }{}xms;
 
-  ok($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2} /></SOAP__SOM>!);
+  ok $test =~s{
+      </SOAP__SOM> \z
+  }{}xms;
+
+  ok $test =~s{ <a \s xsi:type="xsd:int">1</a> }{}xms;
+  ok $test =~s{ <_current (:? 
+        \s soapenc:arrayType="xsd:anyType\[0\]"
+        | \s xsi:type="soapenc:Array" ){2}
+       \s/>
+    }{}xms;
+
+  ok length $test == 0;
+  
+  # Replaced complex regex by several simpler (see above).
+  
+  # ok($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2} /></SOAP__SOM>!);
+  # ok( ($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2}/></SOAP__SOM>!) 
+  # ||  ($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2}/><a xsi:type="xsd:int">1</a></SOAP__SOM>!));
+  #print $serialized;
+  #  exit;
 
   $serialized =~ s/__/./g; # check for SOAP.SOM instead of SOAP__SOM
   ok(ref SOAP::Deserializer->deserialize($serialized)->root eq 'SOAP::SOM');
