@@ -61,7 +61,9 @@ sub AUTOLOAD {
 sub handle {
   my $self = shift->new;
   my $messages = $self->list or return;
-  foreach my $msgid (keys %$messages) {
+  # fixes [ 1416700 ] POP3 Processes Messages Out of Order
+  foreach my $msgid (sort { $a <=> $b } (keys(%{$messages}) ) ) {
+  # foreach my $msgid (keys %$messages) {
     $self->SUPER::handle(join '', @{$self->get($msgid)});
   } continue {
     $self->delete($msgid);
