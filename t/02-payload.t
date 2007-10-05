@@ -228,7 +228,6 @@ my($a, $s, $r, $serialized, $deserialized);
     -> method('mymethod');
 
   ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod xsi:nil="true" /></Body></Envelope>!);
-
   $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></soap:Body></soap:Envelope>');
   ok(! defined $deserialized->namespaceuriof('//getStateName'));
 
@@ -236,7 +235,6 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($deserialized->namespaceuriof('//getStateName') eq 'a');
 }
 
-# TODO - These tests are failing at line 243 because of the odd $key value
 { # Map type serialization/deserialization
   print "Map type serialization/deserialization test(s)...\n";
 

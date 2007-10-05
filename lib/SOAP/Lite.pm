@@ -1493,7 +1493,9 @@ sub envelope {
 
     # Find all the SOAP Body elements
     } else {
-      push(@parameters, $_);
+      # proposed resolution for [ 1700326 ] encode_data called incorrectly in envelope
+      # push(@parameters, $_);
+      push (@parameters, SOAP::Utils::encode_data($_));
     }
   }
   my $header = @header ? SOAP::Data->set_value(@header) : undef;
@@ -1531,8 +1533,11 @@ sub envelope {
 
     }
     # This is breaking a unit test right now...
-    $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
-      if $body;
+# proposed resolution for [ 1700326 ] encode_data called incorrectly in envelope
+#    $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
+#      if $body;
+    # must call encode_data on nothing to enforce xsi:nil="true" to be set.
+    $body->set_value($parameters ? \$parameters : SOAP::Utils::encode_data()) if $body;
   } elsif ($type eq 'fault') {
     SOAP::Trace::fault(@parameters);
     $body = SOAP::Data
@@ -2255,7 +2260,8 @@ sub BEGIN {
   for my $method (qw(endpoint code message is_success status options)) {
     my $field = '_' . $method;
     *$method = sub {
-      my $self = shift->new;
+       my $self = ref $_[0] ? shift : shift->new();
+#      my $self = shift->new;
 #      my $self = shift;
       @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
     }
