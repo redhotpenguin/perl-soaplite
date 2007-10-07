@@ -8,13 +8,13 @@ BEGIN {
     chdir 't' if -d 't';
     unshift @INC, '../lib' if -d '../lib';
   }
-  plan tests => 10;
+  plan tests => 20;
 }
 
 my ($mp, $env, $part, @part_data);
 
 use SOAP::Packager;
-$mp = SOAP::MIME::Packager->new;
+$mp = SOAP::Packager::MIME->new;
 ok(ref $mp);
 
 # check attachment deserialization

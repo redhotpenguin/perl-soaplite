@@ -134,6 +134,7 @@ lib/SOAP/Transport/HTTP.pm	HTTP transport, client and server
 lib/SOAP/Transport/IO.pm	IO transport, client
 lib/SOAP/Transport/JABBER.pm
 lib/SOAP/Transport/LOCAL.pm	LOCAL transport, client and server
+lib/SOAP/Transport/LOOPBACK.pm	LOOPBACK transport, client
 lib/SOAP/Transport/MAILTO.pm	SMTP/sendmail transport, client
 lib/SOAP/Transport/MQ.pm
 lib/SOAP/Transport/POP3.pm	POP3 transport, server
@@ -152,6 +153,9 @@ META.yml			Module meta-data (added by MakeMaker)
 README
 ReleaseNotes.txt
 t/01-core.t
+t/010-serializer.t
+t/011-deserializer.t
+t/012-cloneable.t
 t/02-payload.t
 t/03-server.t
 t/04-attach.t

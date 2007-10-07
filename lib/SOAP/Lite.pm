@@ -585,7 +585,7 @@ sub new {
   my $self = shift;
 
   unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = $self;
     $self = bless {} => $class;
     SOAP::Trace::objects('()');
   }
@@ -631,7 +631,7 @@ sub new {
   my $self = shift;
 
   unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = $self;
     $self = bless {_attr => {}, _value => [], _signature => []} => $class;
     SOAP::Trace::objects('()');
   }
@@ -802,10 +802,10 @@ sub BEGIN {
 sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
-  my $self = shift;
-  return $self if ref $self;
-  unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $self = shift;
+    return $self if ref $self;
+
+    my $class = $self;
     $self = bless {
       _level => 0,
       _autotype => 1,
@@ -869,12 +869,12 @@ sub new {
 	if $SOAP::Constants::PREFIX_ENV;
     $self->xmlschema($SOAP::Constants::DEFAULT_XML_SCHEMA);
     SOAP::Trace::objects('()');
-  }
 
-  Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
-  while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
-  return $self;
+    Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
+    while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
+
+    return $self;
 }
 
 sub ns {
@@ -1246,25 +1246,6 @@ sub encode_literal_array {
   ];
 }
 
-sub encode_hash_old {
-#sub encode_hash {
-  my($self, $hash, $name, $type, $attr) = @_;
-
-  if ($self->autotype && grep {!/$SOAP::Constants::ELMASK/o} keys %$hash) {
-    warn qq!Cannot encode @{[$name ? "'$name'" : 'unnamed']} element as 'hash'. Will be encoded as 'map' instead\n! if $^W;
-    return $self->as_map($hash, $name || gen_name, $type, $attr);
-  }
-
-  $type = 'SOAPStruct' 
-    if $self->autotype && !defined($type) && exists $self->maptype->{SOAPStruct};
-  return [$name || gen_name, 
-          {'xsi:type' => $self->maptypetouri($type), %$attr},
-          [map {$self->encode_object($hash->{$_}, $_)} keys %$hash], 
-          $self->gen_id($hash)
-  ];
-}
-
-#sub encode_hash_lexi_patch {
 sub encode_hash {
   my($self, $hash, $name, $type, $attr) = @_;
 
@@ -1616,7 +1597,7 @@ sub parser {
 sub new { 
   my $self = shift;
   return $self if ref $self;
-  my $class = ref($self) || $self;
+  my $class = $self;
   SOAP::Trace::objects('()');
   return bless {_parser => shift} => $class;
 }
@@ -1897,7 +1878,7 @@ sub BEGIN {
 sub new {
   my $self = shift;
   return $self if ref $self;
-  my $class = ref($self) || $self;
+  my $class = $self;
   SOAP::Trace::objects('()');
   return bless {
        '_ids'        => {},
@@ -2374,7 +2355,7 @@ sub new {
   return $self if ref $self;
 
   unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = $self;
     my(@params, @methods);
 
     while (@_) { my($method, $params) = splice(@_,0,2);
@@ -2774,9 +2755,8 @@ sub new {
   my $self = shift;
 
   unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = $self;
     $self = $class->SUPER::new(@_);
-#    $self = bless {} => $class;
   }
   return $self;
 }
@@ -2933,7 +2913,7 @@ sub new {
   my $self = shift;
   return $self if ref $self;
   unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = $self;
     require LWP::UserAgent;
     $self = bless {
       '_deserializer' => SOAP::Schema::Deserializer->new,
@@ -3270,7 +3250,7 @@ sub new {
   my $self = shift;
   return $self if ref $self;
   unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = $self;
     # Check whether we can clone. Only the SAME class allowed, no inheritance
     $self = ref($soap) eq $class ? $soap->clone : {
       _transport    => SOAP::Transport->new,

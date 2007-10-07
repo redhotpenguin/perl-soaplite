@@ -16,6 +16,8 @@ THIS RELEASE
 0.69_01
 
   + Added LOOPBACK test transport backend.
+  + Added more core tests
+  ! Fixed [ 1750846 ] Error with ENV{EXPECT}
   ! Fixed [ 1700326 ] encode_data called incorrectly in envelope
   ! Fixed [ 1612405 ] Incorrect deserialization of arrays/vectors
   ! Fixed [ 1204279 ] Boolean serialization error and added test
