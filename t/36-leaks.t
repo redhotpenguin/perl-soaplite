@@ -1,5 +1,5 @@
 #!/bin/env perl 
-
+use Devel::Cycle;
 BEGIN {
   unless(grep /blib/, @INC) {
     chdir 't' if -d 't';
@@ -47,19 +47,21 @@ plan tests => 16;
   my %calls = ();
 
   SOAP::Lite->import(trace => [objects => sub { 
-    warn join ', ' , caller(2);
+#    warn join ', ' , caller(2);
     my @caller = caller(2);
-    $calls{$2}{$1}++ if (@caller[3] =~ /^(.+)::([^\:]+)$/);
+    $calls{$2}{$1}++ if ($caller[3] =~ /^(.+)::([^\:]+)$/);
   }]);
   {
     my $soap = SOAP::Lite
       -> uri("Echo")
       -> proxy($proxy)
       -> echo;
-    undef $soap;
+	use Data::Dumper;
+#	find_cycle $soap;
   }
   use Data::Dumper;
   
+
   foreach (keys %{$calls{new}}) {
     print "default parser: $_\n";
     ok(exists $calls{DESTROY}{$_});
@@ -80,3 +82,5 @@ plan tests => 16;
 
   # SOAP::Lite->import(trace => '-objects');
 }
+
+

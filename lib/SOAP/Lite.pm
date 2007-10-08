@@ -2174,30 +2174,33 @@ sub decode_value {
 
     return defined $class && $class ne 'Array' ? bless($res => $class) : $res;
 
-  } elsif ($name =~ /^\{$SOAP::Constants::NS_ENC\}Struct$/ || 
-           !$schemaclass->can($method) && 
-           (ref $children || defined $class && $value =~ /^\s*$/)) {
+  } 
+  elsif ($name =~ /^\{$SOAP::Constants::NS_ENC\}Struct$/ 
+    || !$schemaclass->can($method) 
+       && (ref $children || defined $class && $value =~ /^\s*$/)) {
     my $res = {};
     $self->hrefs->{$id} = $res if defined $id;
     # Patch code introduced in 0.65 - deserializes array properly
-    # %$res = map {$self->decode_object($_)} @{$children || []}; # removed in patch
     # Decode each element of the struct.
+    my %child_count_of = ();    
     foreach my $child (@{$children || []}) {
       my ($child_name, $child_value) = $self->decode_object($child);
       # Store the decoded element in the struct.  If the element name is
       # repeated, replace the previous scalar value with a new array
       # containing both values.
-      my $prev = $res->{$child_name};
-      if (not defined $prev) {
+      if (not $child_count_of{$child_name}) {
         # first time to see this value: use scalar
         $res->{$child_name} = $child_value;
-      } elsif (ref $prev ne "ARRAY") {
+      } 
+      elsif ($child_count_of{$child_name} == 1) {
         # second time to see this value: convert scalar to array
-        $res->{$child_name} = [ $prev, $child_value ];
-      } else {
+        $res->{$child_name} = [ $res->{$child_name}, $child_value ];
+      } 
+      else {
         # already have an array: append to it
         push @{$res->{$child_name}}, $child_value;
       }
+      $child_count_of{$child_name}++;
     }
     # End patch code
     return defined $class && $class ne 'SOAPStruct' ? bless($res => $class) : $res;

@@ -1,14 +1,14 @@
 #!/usr/bin/perl
-use Test;
-plan tests => 1;
-use SOAP::Lite;
-use Data::Dumper;
 use strict;
+use Test;
+plan tests => 5;
 
 local $/ = undef;
 my $xml = <DATA>;
+use SOAP::Lite;
 my $som = SOAP::Deserializer->new->deserialize($xml);
 my $result = $som->result();
+
 ok (@$result == 2);
 ok $result->[0]->isa('outer');
 ok $result->[1]->isa('outer');
