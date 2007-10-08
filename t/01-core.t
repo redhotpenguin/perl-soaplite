@@ -10,7 +10,7 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 35; }
+BEGIN { plan tests => 42; }
 
 use SOAP::Lite;
 
@@ -260,7 +260,7 @@ EOBASE64
 {
   # check deserialization of an array of multiple elements
   # nested within a complex type
-  print "Deserialization of doc/lit arrays nested in complex types...\n";
+  print "Deserialization of document/literal arrays nested in complex types...\n";
   my $input =  '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"><soap:Body><getFooResponse xmlns="http://example.com/v1"><getFooReturn><id>100</id><complexFoo><arrayFoo>one</arrayFoo><arrayFoo>two</arrayFoo></complexFoo></getFooReturn></getFooResponse></soap:Body></soap:Envelope>';
   my $deserializer = SOAP::Deserializer->new;	
   my $ret = $deserializer->deserialize($input);
@@ -275,4 +275,39 @@ EOBASE64
   $input =  '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"><soap:Body><getFooResponse xmlns="http://example.com/v1"><getFooReturn><id>100</id><complexFoo><arrayFoo>one</arrayFoo></complexFoo></getFooReturn></getFooResponse></soap:Body></soap:Envelope>';
   $ret = $deserializer->deserialize($input);
   ok("one" eq $ret->result->{'complexFoo'}{'arrayFoo'});
+}
+
+
+{
+    print "Serialization of docunemt/literal arrays\n";
+    # check array serialization with autotyping disabled
+    my $serializer = SOAP::Serializer->new;
+    $serializer->autotype(0);
+
+    my $hash = {
+	"scalar" => 1,
+	"array" => [ 2, 3],
+	"hash" => {
+	    "scalar" => 4,
+	    "array" => [ 5, 6],
+	}
+    };
+
+    my $xml = $serializer->serialize($hash);
+    
+    ok($xml =~ m|<c-gensym\d+ [^>]*><hash><array>5</array><array>6</array><scalar>4</scalar></hash><array>2</array><array>3</array><scalar>1</scalar></c-gensym\d+>|);
+
+    # deserialize it and check that a similar object is created
+    my $deserializer = SOAP::Deserializer->new;
+    
+    my $obj = $deserializer->deserialize($xml)->root;
+
+    ok(1, $obj->{"scalar"});
+    my @arr= @{$obj->{"array"}};
+    ok(2, $arr[0]);
+    ok(3, $arr[1]);
+    ok(4, $obj->{"hash"}{"scalar"});
+    @arr = @{$obj->{"hash"}{"array"}};
+    ok(5, $arr[0]);
+    ok(6, $arr[1]);
 }
