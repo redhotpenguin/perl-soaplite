@@ -582,18 +582,19 @@ use overload fallback => 1, '""' => "stringify";
 sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
-  my $self = shift;
+    my $self = shift;
 
-  unless (ref $self) {
-    my $class = $self;
-    $self = bless {} => $class;
-    SOAP::Trace::objects('()');
-  }
+    unless (ref $self) {
+        my $class = $self;
+        $self = bless {} => $class;
+        SOAP::Trace::objects('()');
+    }
 
-  Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
-  while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
+    no strict qw(refs);
+    Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
+    while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
-  return $self;
+    return $self;
 }
 
 sub stringify {
@@ -635,7 +636,7 @@ sub new {
     $self = bless {_attr => {}, _value => [], _signature => []} => $class;
     SOAP::Trace::objects('()');
   }
-
+  no strict qw(refs);
   Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
   while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
@@ -870,7 +871,7 @@ sub new {
     $self->xmlschema($SOAP::Constants::DEFAULT_XML_SCHEMA);
     SOAP::Trace::objects('()');
 
-
+    no strict qw(refs);
     Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
     while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
@@ -1127,6 +1128,7 @@ sub encode_object {
 
     my $method = "as_" . ($object->SOAP::Data::type || '-'); # dummy type if not defined
     # try to call method specified for this type
+    no strict qw(refs);
     my @values = map { 
       # store null/nil attribute if value is undef
       local $attr->{SOAP::Utils::qualify(xsi => $self->xmlschemaclass->nilValue)} = $self->xmlschemaclass->as_undef(1)
@@ -1151,9 +1153,10 @@ sub encode_object {
 
     my $method = 'as_' . $class;
     if ($self->can($method)) {
-      my $encoded = $self->$method($object, $name, $type, $attr);
-      return $encoded if ref $encoded;
-      # return only if handled, otherwise handle with default handlers
+        no strict qw(refs);
+        my $encoded = $self->$method($object, $name, $type, $attr);
+        return $encoded if ref $encoded;
+        # return only if handled, otherwise handle with default handlers
     }
   }
 
@@ -1186,6 +1189,7 @@ sub encode_scalar {
   # autodefined type 
   if ($self->autotype) {
     my $lookup = $self->typelookup;
+    no strict qw(refs);
     for (sort {$lookup->{$a}->[0] <=> $lookup->{$b}->[0]} keys %$lookup) {
       my $method = $lookup->{$_}->[2];
       return $self->can($method) && $self->$method($value, $name, $type, $attr)
@@ -2200,11 +2204,6 @@ sub decode_value {
   } else {
     my $res;
     if (my $method_ref = $schemaclass->can($method)) {
-# TODO delete comment after it has had some time to ripe...        
-# fiddling with the method name after can() is potentially dangerous - 
-# and as can() returns a sub ref, it's not needed, anyway.
-#      $method = "$schemaclass\::$method" unless ref $schemaclass; 
-#      # $res = $self->$method($value, $name, $attrs, $children, $type);
       $res = $method_ref->($self, $value, $name, $attrs, $children, $type);
     } else {
       $res = $self->typecast($value, $name, $attrs, $children, $type);
@@ -2370,13 +2369,15 @@ sub new {
       _options       => {},
     } => $class;
     unshift(@methods, $self->initialize);
+    no strict qw(refs);    
     while (@methods) { my($method, $params) = splice(@methods,0,2);
       $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
     }
     SOAP::Trace::objects('()');
   }
 
-  Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
+  Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1);
+  no strict qw(refs); 
   while (@_) { my($method, $params) = splice(@_,0,2);
     $self->can($method) 
       ? $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
@@ -2587,7 +2588,8 @@ sub handle {
 
       push @parameters, $request 
         if UNIVERSAL::isa($class => 'SOAP::Server::Parameters');
-
+      
+      no strict qw(refs);
       SOAP::Server::Object->references(
 	  defined $parameters[0] && ref $parameters[0] &&
           UNIVERSAL::isa($parameters[0] => $class) ? do {
@@ -2924,6 +2926,7 @@ sub new {
   }
 
   Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
+  no strict qw(refs);
   while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
 
   return $self;
@@ -3268,6 +3271,7 @@ sub new {
   }
 
   Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
+  no strict qw(refs);
   while (@_) { my($method, $params) = splice(@_,0,2);
     $self->can($method) 
       ? $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
@@ -3342,6 +3346,7 @@ sub BEGIN {
   }
   # SOAP::Transport Shortcuts
   # TODO - deprecate proxy() in favor of new language endpoint_url()
+  no strict qw(refs);
   for my $method (qw(proxy)) {
     *$method = sub { 
       my $self = shift->new;
