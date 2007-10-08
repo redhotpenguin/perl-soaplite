@@ -3430,14 +3430,17 @@ sub call {
   return $response if $self->outputxml;
 
   # deserialize and store result
-  my $result = $self->{'_call'} = eval { $self->deserializer->deserialize($response) } if $response;
+  # storing causes memory leaks - and _call is never retrieved.
+  my $result = eval { $self->deserializer->deserialize($response) } if $response;
+  # my $result = $self->{'_call'} = eval { $self->deserializer->deserialize($response) } if $response;
 
   if (!$self->transport->is_success || # transport fault
       $@ ||                            # not deserializible
       # fault message even if transport OK
       # or no transport error (for example, fo TCP, POP3, IO implementations)
       UNIVERSAL::isa($result => 'SOAP::SOM') && $result->fault) {
-    return $self->{'_call'} = ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
+      # return $self->{'_call'} = ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
+      return ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
   }
 
   return unless $response; # nothing to do for one-ways
