@@ -14,7 +14,8 @@ use SOAP::Lite;
 use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
-$VERSION = $SOAP::Lite::VERSION;
+#$VERSION = $SOAP::Lite::VERSION;
+$VERSION = '0.69';
 
 # ======================================================================
 
