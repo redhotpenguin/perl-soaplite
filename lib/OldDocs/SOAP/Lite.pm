@@ -422,7 +422,7 @@ When use_prefix is set to 'true', serialized XML will look like this:
     </SOAP-ENV:Body>
   </SOAP-ENV:Envelope>
 
-When use_prefix is set to 'true', serialized XML will look like this:
+When use_prefix is set to 'false', serialized XML will look like this:
 
   <SOAP-ENV:Envelope ...attributes skipped>
     <SOAP-ENV:Body>
