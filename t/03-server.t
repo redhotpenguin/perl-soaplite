@@ -11,7 +11,6 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 32 }
-$SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
 
 use SOAP::Lite;
 
@@ -169,7 +168,7 @@ my $package = '
 
   my $server = SOAP::Server->dispatch_to('Calculator');
 
-  foreach (keys %tests) {
+  foreach (sort keys %tests) {
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
     skip(($_ =~ /XML/ || !$is_mimetools_installed),
 	 ($result->faultstring || '') =~ /Failed to access class \(Calculator\)/);
@@ -177,7 +176,7 @@ my $package = '
 
   eval $package or die;
 
-  foreach (keys %tests) {
+  foreach (sort keys %tests) {
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
     skip(($_ =~ /XML/ || !$is_mimetools_installed),
 	 ($result->result || 0) == 7);

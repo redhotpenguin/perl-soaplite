@@ -20,8 +20,10 @@ foreach (qw(SOAP::Lite SOAP::Transport::HTTP SOAP::Transport::MAILTO
             SOAP::Packager SOAP::Transport::MQ SOAP::Transport::JABBER
             Apache::SOAP)) {
   eval "require $_";
-  print $@;
-  $@ =~ /(Can\'t locate)|(XML::Parser::Lite requires)|(this is only version)|(load mod_perl)/ 
-    ? skip($@ => undef)
-    : ok(!$@);
+
+  if ($@ =~ /(Can\'t locate)|(XML::Parser::Lite requires)|(this is only version)|(load mod_perl)/) {
+    skip($@ => $@, '');
+  } else {
+    ok($@, '') or warn "\nError while loading $_\n";
+  }
 }

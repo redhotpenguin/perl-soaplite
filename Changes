@@ -9,6 +9,9 @@ a '!'.
 Numbers in square brackets are sourceforge tracker IDs from
 https://sourceforge.net/tracker/?group_id=66000&atid=513017
 
+Numbers with # are CPANRT tracker IDs from 
+http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
+
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
@@ -17,6 +20,9 @@ THIS RELEASE
 
   + Added LOOPBACK test transport backend.
   + Added more core tests
+  ! Fixed #27032: Some debugging-aid patches
+  ! Fixed #22732: Documentation error for use_prefix()
+  ! Fixed [ 1481017 ] Typo on CPAN's documentation
   ! Fixed [ 1750846 ] Error with ENV{EXPECT}
   ! Fixed [ 1700326 ] encode_data called incorrectly in envelope
   ! Fixed [ 1612405 ] Incorrect deserialization of arrays/vectors
