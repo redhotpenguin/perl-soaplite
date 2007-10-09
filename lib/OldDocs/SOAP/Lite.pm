@@ -1805,7 +1805,7 @@ use fully qualified names for your return values, e.g.:
 
 Use namespace that you specify for URI instead of 'http://tempuri.org/'.
 
-In addition see comment about default incoding in .NET Web Services below.
+In addition see comment about default encoding in .NET Web Services below.
 
 =back
 
