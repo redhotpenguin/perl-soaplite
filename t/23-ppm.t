@@ -9,7 +9,7 @@ BEGIN {
 
 #use strict;
 BEGIN {
-print "# ActiveState's ppmserver.pl server seems to be broken - skipping tests\n";
+print "1..0 # Skip: ActiveState's ppmserver.pl server seems to be broken - skipping tests\n";
 exit 0;
 };
 

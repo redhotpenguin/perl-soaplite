@@ -20,10 +20,14 @@ THIS RELEASE
 
   + Added LOOPBACK test transport backend.
   + Added more core tests
+  ! Fixed #14052: 'use base' pragma no longer works for SOAP::Lite
   ! Fixed #27032: Some debugging-aid patches
   ! Fixed #22732: Documentation error for use_prefix()
+  ! Fixed [ 1044270 ] Suppress type for array when autotyping off
+  ! Fixed [ 1665916 ] encode_scalar needs "no strict 'refs'"?
   ! Fixed [ 1481017 ] Typo on CPAN's documentation
   ! Fixed [ 1750846 ] Error with ENV{EXPECT}
+  ! Fixed [ 887015 ] Memory Leak
   ! Fixed [ 1700326 ] encode_data called incorrectly in envelope
   ! Fixed [ 1612405 ] Incorrect deserialization of arrays/vectors
   ! Fixed [ 1204279 ] Boolean serialization error and added test
