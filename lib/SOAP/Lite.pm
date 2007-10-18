@@ -15,7 +15,7 @@ use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
 #  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.69';
+$VERSION = '0.70_01';
 
 # ======================================================================
 
@@ -4642,7 +4642,7 @@ an issue, you are welcome to contact Byrne Reese at <byrne at majordojo dot com>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000-2005 Paul Kulchenko. All rights reserved.
+Copyright (C) 2000-2007 Paul Kulchenko. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
@@ -4658,5 +4658,7 @@ Paul Kulchenko (paulclinger@yahoo.com)
 Randy J. Ray (rjray@blackperl.com)
 
 Byrne Reese (byrne@majordojo.com)
+
+Martin Kutter (martin.kutter@fen-net.de)
 
 =cut
