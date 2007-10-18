@@ -16,7 +16,7 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.69_01
+0.70_01 Oct 18 2007
 
   + Added LOOPBACK test transport backend.
   + Added more core tests
