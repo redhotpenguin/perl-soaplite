@@ -8,7 +8,7 @@ use strict;
 my @PREREQS = (
 # ["<feature>","<installed module>",<dependency hash>,<install by default, 2=always>];
   ["Core Package","SOAP::Lite",{"XML::Parser" => "2.23","MIME::Base64" => 0, "URI" => 0},2],
-  ["Client HTTP support","",{"LWP::UserAgent" => 0},1],
+  ["Client HTTP support","SOAP::Transport::HTTP",{"LWP::UserAgent" => 0},1],
   ["Client HTTPS support","SOAP::Transport::HTTPS::Client",{"Crypt::SSLeay" => 0},0],
   ["Client SMTP/sendmail support","SOAP::Transport::MAILTO::Client",{"MIME::Lite" => 0},1],
   ["Client FTP support","SOAP::Transport::FTP::Client",{"Net::FTP" => 0,"IO::File" => 0},0],
