@@ -8,35 +8,51 @@
 #
 # ======================================================================
 
+# Formatting hint:
+# Target is the source code format laid out in Prel Best Practices.
+# Not all code is formatted yet.
+# I don't trust perltidy, but rather format by hand, so please be patient.
+#
+# October 2007, Martin Kutter
+
 package SOAP::Lite;
 
 use 5.004;
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/)
-#  or warn "warning: unspecified/non-released version of ", __PACKAGE__, "\n";
-$VERSION = '0.70_01';
+$VERSION = '0.70_02';
 
 # ======================================================================
 
 package SOAP::XMLSchemaSOAP1_1::Deserializer;
 
-# sub as_anyURI; *as_anyURI = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_anyURI;
 sub anyTypeValue { 'ur-type' }
-sub as_boolean { shift; my $value = shift; $value eq '1' || $value eq 'true' ? 1 : $value eq '0' || $value eq 'false' ? 0 : die "Wrong boolean value '$value'\n" }
+
+sub as_boolean { 
+    shift; 
+    my $value = shift; 
+    $value eq '1' || $value eq 'true' 
+        ? 1 
+        : $value eq '0' || $value eq 'false' 
+            ? 0 
+            : die "Wrong boolean value '$value'\n" 
+}
+
 sub as_base64 { shift; require MIME::Base64; MIME::Base64::decode_base64(shift) }
+
 sub as_ur_type { $_[1] }
+
 sub as_anyURI { $_[1] }
 
 BEGIN {
-  no strict 'refs';
-  for my $method (qw(
-    string float double decimal timeDuration recurringDuration uriReference
-    integer nonPositiveInteger negativeInteger long int short byte
-    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language
-  )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
+    no strict 'refs';
+    for my $method (qw(
+        string float double decimal timeDuration recurringDuration uriReference
+        integer nonPositiveInteger negativeInteger long int short byte
+        nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
+        positiveInteger timeInstant time timePeriod date month year century 
+        recurringDate recurringDay language
+    )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
 }
 
 # ----------------------------------------------------------------------
@@ -50,14 +66,17 @@ sub as_base64 { shift; require MIME::Base64; MIME::Base64::decode_base64(shift) 
 sub as_anyType { $_[1] }
 
 BEGIN {
-  no strict 'refs';
-  for my $method (qw(
-    string float double decimal dateTime timePeriod gMonth gYearMonth gYear
-    century gMonthDay gDay duration recurringDuration anyURI
-    language integer nonPositiveInteger negativeInteger long int short byte
-    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger date time dateTime
-  )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
+    no strict 'refs';
+    for my $method (qw(
+        string float double decimal dateTime timePeriod gMonth gYearMonth gYear
+        century gMonthDay gDay duration recurringDuration anyURI
+        language integer nonPositiveInteger negativeInteger long int short byte
+        nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
+        positiveInteger date time dateTime
+    )) { 
+        my $name = 'as_' . $method; 
+        *$name = sub { $_[1] }; 
+    }
 }
 
 # ----------------------------------------------------------------------
@@ -65,15 +84,20 @@ BEGIN {
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 
 sub as_map { 
-  my $self = shift;
-  +{ map { my $hash = ($self->decode_object($_))[1]; ($hash->{key} => $hash->{value}) } @{$_[3] || []} };
+    my $self = shift;
+    return { 
+        map { 
+            my $hash = ($self->decode_object($_))[1]; 
+            ($hash->{key} => $hash->{value}) 
+        } @{$_[3] || []} 
+    };
 }
 sub as_Map; *as_Map = \&as_map;
 
 # Thank to Kenneth Draper for this contribution
 sub as_vector {
-  my $self = shift;
-  [ map { scalar(($self->decode_object($_))[1]) } @{$_[3] || []} ];
+    my $self = shift;
+    return [ map { scalar(($self->decode_object($_))[1]) } @{$_[3] || []} ];
 }
 sub as_Vector; *as_Vector = \&as_vector;
 
@@ -84,10 +108,10 @@ package SOAP::XMLSchema::Serializer;
 use vars qw(@ISA);
 
 sub xmlschemaclass {
-  my $self = shift;
-  return $ISA[0] unless @_;
-  @ISA = (shift);
-  return $self;
+    my $self = shift;
+    return $ISA[0] unless @_;
+    @ISA = (shift);
+    return $self;
 }
 
 # ----------------------------------------------------------------------
@@ -97,13 +121,13 @@ package SOAP::XMLSchema1999::Serializer;
 use vars qw(@EXPORT $AUTOLOAD);
 
 sub AUTOLOAD {
-  local($1,$2);
-  my($package, $method) = $AUTOLOAD =~ m/(?:(.+)::)([^:]+)$/;
-  return if $method eq 'DESTROY';
-  no strict 'refs';
+    local($1,$2);
+    my($package, $method) = $AUTOLOAD =~ m/(?:(.+)::)([^:]+)$/;
+    return if $method eq 'DESTROY';
+    no strict 'refs';
 
-  my $export_var = $package . '::EXPORT';
-  my @export = @$export_var;
+    my $export_var = $package . '::EXPORT';
+    my @export = @$export_var;
 
 # Removed in 0.69 - this is a total hack. For some reason this is failing
 # despite not being a fatal error condition.
@@ -112,75 +136,98 @@ sub AUTOLOAD {
 
 # This was added in its place - it is still a hack, but it performs the 
 # necessary substitution. It just does not die.
-  if ($method =~ s/^as_// && grep {$_ eq $method} @{$export_var}) {
+    if ($method =~ s/^as_// && grep {$_ eq $method} @{$export_var}) {
 #      print STDERR "method is now '$method'\n";
-  } else {
-      return;
-  }
+    } else {
+        return;
+    }
 
-  $method =~ s/_/-/; # fix ur-type
+    $method =~ s/_/-/; # fix ur-type
 
-  *$AUTOLOAD = sub { 
-    my $self = shift;
-    my($value, $name, $type, $attr) = @_;
-    return [$name, {'xsi:type' => "xsd:$method", %$attr}, $value];
-  };
-  goto &$AUTOLOAD;
+    *$AUTOLOAD = sub { 
+        my $self = shift;
+        my($value, $name, $type, $attr) = @_;
+        return [$name, {'xsi:type' => "xsd:$method", %$attr}, $value];
+    };
+    goto &$AUTOLOAD;
 }
 
 BEGIN {
-  @EXPORT = qw(ur_type
-    float double decimal timeDuration recurringDuration uriReference
-    integer nonPositiveInteger negativeInteger long int short byte
-    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language
-    base64 hex string boolean
-  );
-  # predeclare subs, so ->can check will be positive 
-  foreach (@EXPORT) { eval "sub as_$_" } 
+    @EXPORT = qw(ur_type
+        float double decimal timeDuration recurringDuration uriReference
+        integer nonPositiveInteger negativeInteger long int short byte
+        nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
+        positiveInteger timeInstant time timePeriod date month year century 
+        recurringDate recurringDay language
+        base64 hex string boolean
+    );
+    # predeclare subs, so ->can check will be positive 
+    foreach (@EXPORT) { eval "sub as_$_" } 
 }
 
 sub nilValue { 'null' }
+
 sub anyTypeValue { 'ur-type' }
 
 sub as_base64 {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  require MIME::Base64;
-  return [$name, {'xsi:type' => SOAP::Utils::qualify($self->encprefix => 'base64'), %$attr}, MIME::Base64::encode_base64($value,'')];
+    my ($self, $value, $name, $type, $attr) = @_;
+    require MIME::Base64;
+    return [
+        $name, 
+        {
+            'xsi:type' => SOAP::Utils::qualify($self->encprefix => 'base64'), 
+            %$attr
+        }, 
+        MIME::Base64::encode_base64($value,'')
+    ];
 }
 
 sub as_hex { 
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:hex', %$attr}, join '', map {uc sprintf "%02x", ord} split '', $value];
+    my ($self, $value, $name, $type, $attr) = @_;
+    return [
+        $name, 
+        {
+            'xsi:type' => 'xsd:hex', %$attr
+        }, 
+        join '', map {
+            uc sprintf "%02x", ord
+        } split '', $value
+    ];
 }
 
 sub as_long {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:long', %$attr}, $value];
+    my($self, $value, $name, $type, $attr) = @_;
+    return [
+        $name, 
+        {'xsi:type' => 'xsd:long', %$attr}, 
+        $value
+    ];
 }
 
 sub as_dateTime {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:dateTime', %$attr}, $value];
+    my ($self, $value, $name, $type, $attr) = @_;
+    return [$name, {'xsi:type' => 'xsd:dateTime', %$attr}, $value];
 }
 
 sub as_string {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  die "String value expected instead of @{[ref $value]} reference\n" if ref $value;
-  return [$name, {'xsi:type' => 'xsd:string', %$attr}, SOAP::Utils::encode_data($value)];
+    my ($self, $value, $name, $type, $attr) = @_;
+    die "String value expected instead of @{[ref $value]} reference\n" 
+        if ref $value;
+    return [
+        $name, 
+        {'xsi:type' => 'xsd:string', %$attr}, 
+        SOAP::Utils::encode_data($value)
+    ];
 }
 
 sub as_anyURI {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  die "String value expected instead of @{[ref $value]} reference\n" if ref $value;
-  return [$name, {'xsi:type' => 'xsd:anyURI', %$attr}, SOAP::Utils::encode_data($value)];
+    my($self, $value, $name, $type, $attr) = @_;
+    die "String value expected instead of @{[ref $value]} reference\n" if ref $value;
+    return [
+        $name, 
+        {'xsi:type' => 'xsd:anyURI', %$attr}, 
+        SOAP::Utils::encode_data($value)
+    ];
 }
 
 sub as_undef { $_[1] ? '1' : '0' }
@@ -197,20 +244,24 @@ sub as_undef { $_[1] ? '1' : '0' }
 # this should be OK:
 
 sub as_boolean {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
-  # fix [ 1204279 ] Boolean serialization error
-  return [$name, 
-    {'xsi:type' => 'xsd:boolean', %$attr}, 
-    ( $value ne 'false' && $value ) ? 'true' : 'false' 
-  ];
+    my $self = shift;
+    my($value, $name, $type, $attr) = @_;
+    # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
+    # fix [ 1204279 ] Boolean serialization error
+    return [
+        $name, 
+        {'xsi:type' => 'xsd:boolean', %$attr}, 
+        ( $value ne 'false' && $value ) ? 'true' : 'false' 
+    ];
 }
 
 sub as_float {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:float', %$attr}, $value ];
+    my($self, $value, $name, $type, $attr) = @_;
+    return [
+        $name, 
+        {'xsi:type' => 'xsd:float', %$attr}, 
+        $value 
+    ];
 }
 
 # ----------------------------------------------------------------------
@@ -220,21 +271,40 @@ package SOAP::XMLSchema1999::Deserializer;
 sub anyTypeValue { 'ur-type' }
 
 sub as_string; *as_string = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_string;
-# sub as_anyURI; *as_anyURI = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_anyURI;
+
 sub as_boolean; *as_boolean = \&SOAP::XMLSchemaSOAP1_1::Deserializer::as_boolean;
-sub as_hex { shift; my $value = shift; $value =~ s/([a-zA-Z0-9]{2})/chr oct '0x'.$1/ge; $value }
+
+sub as_hex { 
+    shift; 
+    my $value = shift; 
+    $value =~ s/([a-zA-Z0-9]{2})/chr oct '0x'.$1/ge; 
+    $value 
+}
+
 sub as_ur_type { $_[1] }
-sub as_undef { shift; my $value = shift; $value eq '1' || $value eq 'true' ? 1 : $value eq '0' || $value eq 'false' ? 0 : die "Wrong null/nil value '$value'\n" }
+
+sub as_undef { 
+    shift; 
+    my $value = shift; 
+    $value eq '1' || $value eq 'true' 
+        ? 1 
+        : $value eq '0' || $value eq 'false' 
+            ? 0 
+            : die "Wrong null/nil value '$value'\n" 
+}
 
 BEGIN {
-  no strict 'refs';
-  for my $method (qw(
-    float double decimal timeDuration recurringDuration uriReference
-    integer nonPositiveInteger negativeInteger long int short byte
-    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger timeInstant time timePeriod date month year century 
-    recurringDate recurringDay language
-  )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
+    no strict 'refs';
+    for my $method (qw(
+        float double decimal timeDuration recurringDuration uriReference
+        integer nonPositiveInteger negativeInteger long int short byte
+        nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
+        positiveInteger timeInstant time timePeriod date month year century 
+        recurringDate recurringDay language
+    )) { 
+        my $name = 'as_' . $method; 
+        *$name = sub { $_[1] }; 
+    }
 }
 
 # ----------------------------------------------------------------------
@@ -264,41 +334,69 @@ BEGIN {
 }
 
 sub nilValue { 'nil' }
+
 sub anyTypeValue { 'anyType' }
 
 sub as_long;        *as_long = \&SOAP::XMLSchema1999::Serializer::as_long;
+
 sub as_float;       *as_float = \&SOAP::XMLSchema1999::Serializer::as_float;
+
 sub as_string;      *as_string = \&SOAP::XMLSchema1999::Serializer::as_string;
+
 sub as_anyURI;      *as_anyURI = \&SOAP::XMLSchema1999::Serializer::as_anyURI;
+
 # TODO - QNames still don't work for 2001 schema!
 sub as_QName;       *as_QName = \&SOAP::XMLSchema1999::Serializer::as_string;
+
 sub as_hex;         *as_hex = \&as_hexBinary;
+
 sub as_base64;      *as_base64 = \&as_base64Binary;
+
 sub as_timeInstant; *as_timeInstant = \&as_dateTime;
-sub as_undef { $_[1] ? 'true' : 'false' }
+
+# only 0 and 1 allowed - that's easy...
+sub as_undef { 
+    $_[1] 
+    ? 'true' 
+    : 'false' 
+}
 
 sub as_hexBinary { 
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  return [$name, {'xsi:type' => 'xsd:hexBinary', %$attr}, join '', map {uc sprintf "%02x", ord} split '', $value];
+    my ($self, $value, $name, $type, $attr) = @_;
+    return [
+        $name, 
+        {'xsi:type' => 'xsd:hexBinary', %$attr}, 
+        join '', map {
+                uc sprintf "%02x", ord
+            } split '', $value
+    ];
 }
 
 sub as_base64Binary {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  require MIME::Base64;
-  return [$name, {'xsi:type' => 'xsd:base64Binary', %$attr}, MIME::Base64::encode_base64($value,'')];
+    my ($self, $value, $name, $type, $attr) = @_;
+    require MIME::Base64;
+    return [
+        $name, 
+        { 
+            'xsi:type' => 'xsd:base64Binary', %$attr
+        }, 
+        MIME::Base64::encode_base64($value,'')
+    ];
 }
 
 sub as_boolean {
-  my $self = shift;
-  my($value, $name, $type, $attr) = @_;
-  # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
-  # fix [ 1204279 ] Boolean serialization error
-  return [$name, 
-    {'xsi:type' => 'xsd:boolean', %$attr}, 
-    ( $value ne 'false' && $value ) ? 'true' : 'false' 
-  ];
+    my ($self, $value, $name, $type, $attr) = @_;
+    # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
+    # fix [ 1204279 ] Boolean serialization error
+    return [
+        $name, 
+        {
+            'xsi:type' => 'xsd:boolean', %$attr
+        }, 
+        ( $value ne 'false' && $value ) 
+            ? 'true' 
+            : 'false' 
+    ];
 }
 
 # ----------------------------------------------------------------------
@@ -350,13 +448,6 @@ BEGIN {
   use constant URI_SOAP12_NOENC      => "http://www.w3.org/2003/05/soap-envelope/encoding/none";
   use constant URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2003/05/soap-envelope/role/next";
 
-  # These URIs are not the *current* 1.2 URIs
-  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2001/06/*";
-  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2001/09/*";
-  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2001/12/*";
-  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2002/06/*";
-  #use constant URI_SOAP12_ENC        => "http://www.w3.org/2002/12/*";
-
   use vars qw($NSMASK $ELMASK);
 
   $NSMASK = '[a-zA-Z_:][\w.\-:]*'; 
@@ -366,7 +457,7 @@ BEGIN {
               $FAULT_CLIENT $FAULT_SERVER $FAULT_VERSION_MISMATCH
               $HTTP_ON_FAULT_CODE $HTTP_ON_SUCCESS_CODE $FAULT_MUST_UNDERSTAND
               $NS_XSI_ALL $NS_XSI_NILS %XML_SCHEMAS $DEFAULT_XML_SCHEMA
-	      $DEFAULT_HTTP_CONTENT_TYPE
+    	      $DEFAULT_HTTP_CONTENT_TYPE
               $SOAP_VERSION %SOAP_VERSIONS $WRONG_VERSION
               $NS_SL_HEADER $NS_SL_PERLTYPE $PREFIX_ENV $PREFIX_ENC
               $DO_NOT_USE_XML_PARSER $DO_NOT_CHECK_MUSTUNDERSTAND 
@@ -453,8 +544,8 @@ package SOAP::Utils;
 sub qualify { $_[1] ? $_[1] =~ /:/ ? $_[1] : join(':', $_[0] || (), $_[1]) : defined $_[1] ? $_[0] : '' }
 sub overqualify (&$) { for ($_[1]) { &{$_[0]}; s/^:|:$//g } }
 sub disqualify {
-  (my $qname = shift) =~ s/^($SOAP::Constants::NSMASK?)://;
-  $qname;
+    (my $qname = shift) =~ s/^($SOAP::Constants::NSMASK?)://;
+    return $qname;
 }
 sub splitqname { local($1,$2); $_[0] =~ /^(?:([^:]+):)?(.+)$/ ; return ($1,$2) }
 sub longname { defined $_[0] ? sprintf('{%s}%s', $_[0], $_[1]) : $_[1] }
@@ -499,12 +590,13 @@ sub format_datetime {
 
 # make bytelength that calculates length in bytes regardless of utf/byte settings
 # either we can do 'use bytes' or length will count bytes already      
+# TODO Ouch! replace inner eval by symbol table operation...
 BEGIN { 
-  sub bytelength; 
-  eval ( eval('use bytes; 1') # 5.6.0 and later?
-    ? 'sub bytelength { use bytes; length(@_ ? $_[0] : $_) }; 1'
-    : 'sub bytelength { length(@_ ? $_[0] : $_) }; 1' 
-  ) or die;
+    sub bytelength; 
+    eval ( eval('use bytes; 1') # 5.6.0 and later?
+        ? 'sub bytelength { use bytes; length(@_ ? $_[0] : $_) }; 1'
+        : 'sub bytelength { length(@_ ? $_[0] : $_) }; 1' 
+    ) or die;
 }
 
 # ======================================================================
@@ -512,14 +604,16 @@ BEGIN {
 package SOAP::Cloneable;
 
 sub clone {
-  my $self = shift;
-  return unless ref $self && UNIVERSAL::isa($self => __PACKAGE__);
-  my $clone = bless {} => ref($self) || $self;
-  foreach (keys %$self) {
-    my $value = $self->{$_};
-    $clone->{$_} = ref $value && UNIVERSAL::isa($value => __PACKAGE__) ? $value->clone : $value;
-  }
-  $clone;
+    my $self = shift;
+    
+    return unless ref $self && UNIVERSAL::isa($self => __PACKAGE__);
+    
+    my $clone = bless {} => ref($self) || $self;
+    for (keys %$self) {
+        my $value = $self->{$_};
+        $clone->{$_} = ref $value && UNIVERSAL::isa($value => __PACKAGE__) ? $value->clone : $value;
+    }
+    return $clone;
 }
 
 # ======================================================================
@@ -533,42 +627,51 @@ use vars qw($AUTOLOAD @ISA);
 sub DESTROY { SOAP::Trace::objects('()') }
 
 sub new { 
-  my $self = shift;
-  return $self if ref $self;
-  my $class = ref($self) || $self;
+    my $self = shift;
+    return $self if ref $self;
+    my $class = ref($self) || $self;
 
-  SOAP::Trace::objects('()');
-  return bless {} => $class;
+    SOAP::Trace::objects('()');
+    return bless {} => $class;
 }
 
 sub proxy {
-  my $self = shift->new;
-#  my $self = shift;
-  my $class = ref $self;
-  return $self->{_proxy} unless @_;
-  $_[0] =~ /^(\w+):/ or die "proxy: transport protocol not specified\n";
-  my $protocol = uc "$1"; # untainted now
-  # https: should be done through Transport::HTTP.pm
-  for ($protocol) { s/^HTTPS$/HTTP/ }
+    my $self = shift;
+    $self = $self->new() if not ref $self;
 
-  (my $protocol_class = "${class}::$protocol") =~ s/-/_/g;
-  no strict 'refs';
-  unless (defined %{"$protocol_class\::Client::"} && UNIVERSAL::can("$protocol_class\::Client" => 'new')) {
-    eval "require $protocol_class";
-    die "Unsupported protocol '$protocol'\n" if $@ =~ m!^Can\'t locate SOAP/Transport/!;
-    die if $@;
-  }
-  $protocol_class .= "::Client";
-  return $self->{_proxy} = $protocol_class->new(endpoint => shift, @_);
+    my $class = ref $self;
+
+    return $self->{_proxy} unless @_;
+
+    $_[0] =~ /^(\w+):/ or die "proxy: transport protocol not specified\n";
+    my $protocol = uc "$1"; # untainted now
+
+    # HTTPS is handled by HTTP class
+    $protocol =~s/^HTTPS$/HTTP/;
+
+    (my $protocol_class = "${class}::$protocol") =~ s/-/_/g;
+
+    no strict 'refs';
+    unless (defined %{"$protocol_class\::Client::"} 
+        && UNIVERSAL::can("$protocol_class\::Client" => 'new')
+    ) {
+        eval "require $protocol_class";
+        die "Unsupported protocol '$protocol'\n" 
+            if $@ =~ m!^Can\'t locate SOAP/Transport/!;
+        die if $@;
+    }
+
+    $protocol_class .= "::Client";
+    return $self->{_proxy} = $protocol_class->new(endpoint => shift, @_);
 }
 
 sub AUTOLOAD {
-  my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::') + 2);
-  return if $method eq 'DESTROY';
+    my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::') + 2);
+    return if $method eq 'DESTROY';
 
-  no strict 'refs';
-  *$AUTOLOAD = sub { shift->proxy->$method(@_) };
-  goto &$AUTOLOAD;
+    no strict 'refs';
+    *$AUTOLOAD = sub { shift->proxy->$method(@_) };
+    goto &$AUTOLOAD;
 }
 
 # ======================================================================
@@ -590,29 +693,40 @@ sub new {
         SOAP::Trace::objects('()');
     }
 
+    Carp::carp "Odd (wrong?) number of parameters in new()" 
+        if $^W && (@_ & 1); 
+
     no strict qw(refs);
-    Carp::carp "Odd (wrong?) number of parameters in new()" if $^W && (@_ & 1); 
-    while (@_) { my $method = shift; $self->$method(shift) if $self->can($method) }
+    while (@_) { 
+        my $method = shift; 
+        $self->$method(shift) 
+            if $self->can($method) 
+    }
 
     return $self;
 }
 
 sub stringify {
-  my $self = shift;
-  return join ': ', $self->faultcode, $self->faultstring;
+    my $self = shift;
+    return join ': ', $self->faultcode, $self->faultstring;
 }
 
 sub BEGIN {
-  no strict 'refs';
-  for my $method (qw(faultcode faultstring faultactor faultdetail)) {
-    my $field = '_' . $method;
-    *$method = sub {
-      my $self = UNIVERSAL::isa($_[0] => __PACKAGE__) ? shift->new : __PACKAGE__->new;
-      if (@_) { $self->{$field} = shift; return $self }
-      return $self->{$field};
+    no strict 'refs';
+    for my $method (qw(faultcode faultstring faultactor faultdetail)) {
+        my $field = '_' . $method;
+        *$method = sub {
+            my $self = UNIVERSAL::isa($_[0] => __PACKAGE__) 
+                ? shift->new 
+                : __PACKAGE__->new;
+            if (@_) { 
+                $self->{$field} = shift; 
+                return $self 
+            }
+            return $self->{$field};
+        }
     }
-  }
-  *detail = \&faultdetail;
+    *detail = \&faultdetail;
 }
 
 # ======================================================================
@@ -3425,66 +3539,74 @@ sub AUTOLOAD {
 }
 
 sub call {
-  SOAP::Trace::trace('()');
-  my $self = shift;
-  # Why is this here? Can't call be null? Indicating that there are no input arguments?
-  #return $self->{_call} unless @_;
-  die "A service address has not been specified either by using SOAP::Lite->proxy() or a service description)\n"
-    unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
+    SOAP::Trace::trace('()');
+    my $self = shift;
 
-  $self->init_context();
-  my $serializer = $self->serializer;
-  $serializer->on_nonserialized($self->on_nonserialized);
-  my $response = $self->transport->send_receive(
-    context  => $self, # this is provided for context
-    endpoint => $self->endpoint,
-    action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
+    die "A service address has not been specified either by using SOAP::Lite->proxy() or a service description)\n"
+        unless defined $self->proxy && UNIVERSAL::isa($self->proxy => 'SOAP::Client');
+
+    $self->init_context();
+
+    my $serializer = $self->serializer;
+    $serializer->on_nonserialized($self->on_nonserialized);
+
+    my $response = $self->transport->send_receive(
+        context  => $self, # this is provided for context
+        endpoint => $self->endpoint,
+        action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
                 # leave only parameters so we can later update them if required
-    envelope => $serializer->envelope(method => shift, @_),
-#    envelope => $serializer->envelope(method => shift, @_),
-    encoding => $serializer->encoding,
-    parts    => @{$self->packager->parts} ? $self->packager->parts : undef,
-  );
+        envelope => $serializer->envelope(method => shift, @_),
+        encoding => $serializer->encoding,
+        parts    => @{$self->packager->parts} ? $self->packager->parts : undef,
+    );
 
-  return $response if $self->outputxml;
+    return $response if $self->outputxml;
 
-  # deserialize and store result
-  # storing causes memory leaks - and _call is never retrieved.
-  my $result = eval { $self->deserializer->deserialize($response) } if $response;
-  # my $result = $self->{'_call'} = eval { $self->deserializer->deserialize($response) } if $response;
+    my $result = eval { $self->deserializer->deserialize($response) } 
+        if $response;
 
-  if (!$self->transport->is_success || # transport fault
-      $@ ||                            # not deserializible
-      # fault message even if transport OK
-      # or no transport error (for example, fo TCP, POP3, IO implementations)
-      UNIVERSAL::isa($result => 'SOAP::SOM') && $result->fault) {
-      # return $self->{'_call'} = ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
-      return ($self->on_fault->($self, $@ ? $@ . ($response || '') : $result) || $result);
-  }
-
-  return unless $response; # nothing to do for one-ways
-
-  # little bit tricky part that binds in/out parameters
-  if (UNIVERSAL::isa($result => 'SOAP::SOM') &&
-      ($result->paramsout || $result->headers) &&
-      $serializer->signature) {
-    my $num = 0;
-    my %signatures = map {$_ => $num++} @{$serializer->signature};
-    for ($result->dataof(SOAP::SOM::paramsout), $result->dataof(SOAP::SOM::headers)) {
-      my $signature = join $;, $_->name, $_->type || '';
-      if (exists $signatures{$signature}) {
-	my $param = $signatures{$signature};
-	my($value) = $_->value; # take first value
-          UNIVERSAL::isa($_[$param] => 'SOAP::Data') ? $_[$param]->SOAP::Data::value($value) :
-          UNIVERSAL::isa($_[$param] => 'ARRAY')      ? (@{$_[$param]} = @$value) :
-          UNIVERSAL::isa($_[$param] => 'HASH')       ? (%{$_[$param]} = %$value) :
-          UNIVERSAL::isa($_[$param] => 'SCALAR')     ? (${$_[$param]} = $$value) :
-                                                       ($_[$param] = $value)
-						     }
+    if (!$self->transport->is_success || # transport fault
+        $@ ||                            # not deserializible
+        # fault message even if transport OK
+        # or no transport error (for example, fo TCP, POP3, IO implementations)
+        UNIVERSAL::isa($result => 'SOAP::SOM') && $result->fault) {
+        return ($self->on_fault->($self, $@ 
+            ? $@ . ($response || '') 
+            : $result) 
+                || $result
+        );
+        # ? # trick editors  
     }
-  }
-  $self->destroy_context();
-  return $result;
+    # this might be trouble for connection close...
+    return unless $response; # nothing to do for one-ways
+
+    # little bit tricky part that binds in/out parameters
+    if (UNIVERSAL::isa($result => 'SOAP::SOM') 
+        && ($result->paramsout || $result->headers) 
+        && $serializer->signature) {
+        my $num = 0;
+        my %signatures = map {$_ => $num++} @{$serializer->signature};
+        for ($result->dataof(SOAP::SOM::paramsout), $result->dataof(SOAP::SOM::headers)) {
+            my $signature = join $;, $_->name, $_->type || '';
+            if (exists $signatures{$signature}) {
+    	        my $param = $signatures{$signature};
+    	        my($value) = $_->value; # take first value
+                
+                # fillup parameters
+                UNIVERSAL::isa($_[$param] => 'SOAP::Data') 
+                    ? $_[$param]->SOAP::Data::value($value) 
+                    : UNIVERSAL::isa($_[$param] => 'ARRAY')      
+                        ? (@{$_[$param]} = @$value) 
+                        : UNIVERSAL::isa($_[$param] => 'HASH')
+                            ? (%{$_[$param]} = %$value) 
+                            : UNIVERSAL::isa($_[$param] => 'SCALAR')
+                                ? (${$_[$param]} = $$value)
+                                : ($_[$param] = $value)
+            }
+        }
+    }
+    $self->destroy_context();
+    return $result;
 } # end of call()
 
 # ======================================================================

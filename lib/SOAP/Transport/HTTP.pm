@@ -233,6 +233,8 @@ sub send_receive {
 
             $self->SUPER::env_proxy if $ENV{'HTTP_proxy'};
 
+            # send and receive the stuff.
+            # TODO maybe eval this? what happens on connection close? 
             $self->http_response($self->SUPER::request($self->http_request));
             SOAP::Trace::transport($self->http_response);
             SOAP::Trace::debug($self->http_response->as_string);
@@ -249,7 +251,7 @@ sub send_receive {
 	            $envelope = Compress::Zlib::memGunzip($envelope);
                 $self->http_request
                     ->headers->remove_header('Content-Encoding');
-	           redo COMPRESS; # try again without compression
+	            redo COMPRESS; # try again without compression
             } 
             else {
 	            last;
@@ -274,7 +276,8 @@ sub send_receive {
 	    : ($self->http_response->content_encoding || '') =~ /\S/
 		      ? die "Can't understand returned Content-Encoding (@{[$self->http_response->content_encoding]})\n"
 		      : $self->http_response->content;
-    $self->http_response->content_type =~ m!^multipart/!i 
+    
+    return $self->http_response->content_type =~ m!^multipart/!i 
         ? join("\n", $self->http_response->headers_as_string, $content) 
         : $content;
 }
