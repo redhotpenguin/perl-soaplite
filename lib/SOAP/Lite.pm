@@ -9,7 +9,8 @@
 # ======================================================================
 
 # Formatting hint:
-# Target is the source code format laid out in Prel Best Practices.
+# Target is the source code format laid out in Perl Best Practices (4 spaces
+# indent, opening brace on condition line, no cuddled else).
 # Not all code is formatted yet.
 # I don't trust perltidy, but rather format by hand, so please be patient.
 #
@@ -161,6 +162,7 @@ BEGIN {
         recurringDate recurringDay language
         base64 hex string boolean
     );
+    # TODO: replace by symbol table operations...
     # predeclare subs, so ->can check will be positive 
     foreach (@EXPORT) { eval "sub as_$_" } 
 }
@@ -171,6 +173,22 @@ sub anyTypeValue { 'ur-type' }
 
 sub as_base64 {
     my ($self, $value, $name, $type, $attr) = @_;
+
+    # Fixes #30271 for 5.8 and above.
+    # Won't fix for 5.6 and below - perl can't handle unicode before 
+    # 5.8, and applying pack() to everything is just a slowdown.
+    if (eval "require Encode; 1") {
+        if (Encode::is_utf8($value)) {
+            if (Encode->can('_utf8_off')) { # the quick way, but it may change in future Perl versions.
+                Encode::_utf8_off($value);
+            }
+            else {
+                $value = pack('C*',unpack('C*',$value)); # the slow but safe way, 
+                # but this fallback works always.
+            }
+        }
+    }
+    
     require MIME::Base64;
     return [
         $name, 
@@ -374,6 +392,22 @@ sub as_hexBinary {
 
 sub as_base64Binary {
     my ($self, $value, $name, $type, $attr) = @_;
+    
+    # Fixes #30271 for 5.8 and above.
+    # Won't fix for 5.6 and below - perl can't handle unicode before 
+    # 5.8, and applying pack() to everything is just a slowdown.
+    if (eval "require Encode; 1") {
+        if (Encode::is_utf8($value)) {
+            if (Encode->can('_utf8_off')) { # the quick way, but it may change in future Perl versions.
+                Encode::_utf8_off($value);
+            }
+            else {
+                $value = pack('C*',unpack('C*',$value)); # the slow but safe way, 
+                # but this fallback works always.
+            }
+        }
+    }
+    
     require MIME::Base64;
     return [
         $name, 
