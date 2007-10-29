@@ -268,6 +268,10 @@ sub send_receive {
     $self->is_success($self->http_response->is_success);
     $self->status($self->http_response->status_line);
 
+    # Pull out any cookies from the response headers
+    $self->{'_cookie_jar'}->extract_cookies($self->http_response) if
+        $self->{'_cookie_jar'};
+
     my $content = 
         ($self->http_response->content_encoding || '') 
             =~ /\b$SOAP::Transport::HTTP::Client::COMPRESS\b/o &&
