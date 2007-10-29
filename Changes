@@ -16,6 +16,7 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.70_02 
+  ! Fixed #22730 test failure on bleedperl
   ! Fixed #30271 Don't give strings with utf8 flag set to 
   	MIME::Base64::encode_base64().
   ! Fixed [ 1816907 ] t/01_core.t fails on 5.6.x

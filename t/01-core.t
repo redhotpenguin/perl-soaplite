@@ -19,7 +19,7 @@ my($a, $s, $r, $serialized, $deserialized);
 { # check 'use ...'
   print "'use SOAP::Lite ...' test(s)...\n";
   eval 'use SOAP::Lite 99.99'; # hm, definitely should fail
-  ok($@ =~ /99\.99 required/);
+  ok(scalar $@ =~ /99.+required/);
 }
 
 # These tests are for backwards compatibility

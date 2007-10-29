@@ -73,6 +73,7 @@ print "# encoding/decoding Euro symbol in base64\n";
 if ($] < 5.008) {
     print "# Skippng unicode test on perl <5.8 ($])\n";
     ok(1);
+    ok(1);
 } 
 else {
     eval {
