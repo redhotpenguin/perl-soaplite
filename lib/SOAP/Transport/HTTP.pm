@@ -479,9 +479,12 @@ sub handle {
             print "HTTP/1.1 100 Continue\r\n\r\n";
         }
         
-        my $content; 
+        my $content = q{};
+        my $buffer; 
         binmode(STDIN); 
-        read(STDIN,$content,$length);
+        while (read(STDIN,$buffer,$length)) {
+            $content .= $buffer;
+        }
         
         $self->request(HTTP::Request->new(
             $ENV{'REQUEST_METHOD'} || '' => $ENV{'SCRIPT_NAME'},
