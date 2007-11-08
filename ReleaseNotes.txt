@@ -12,7 +12,7 @@ please consider using a tool like XML Spy, or CapeClear's WSDL Editor.
 
 NO ENTITY DECODING
 SOAP::Lite uses XML::Parser::Lite which relies on Unicode support in Perl and
-therefore doesn't perform XML ENTITY decoding. 
+doesn't perform XML ENTITY decoding. 
 
 LIMITED SUPPORT FOR MUSTUNDERSTAND and ACTOR ATTRIBUTES
 SOAP::Lite does not currently heed the soap:mustUnderstand XML attribute, or
@@ -22,10 +22,14 @@ DOCUMENT-LITERAL SUPPORT
 All literal encoding support for SOAP::Lite is marked EXPERIMENTAL, and it is
 incomplete. Developers are encouraged to use this capability but should be
 fore-warned.
+As an alternative, SOAP::WSDL or XML::Compiled::SOAP may be used for 
+document/literal bindings derived from WSDL definitions.
 
 CLIENT SIDE WSDL SUPPORT
 SOAP::Lites ability to consume a WSDL and generate the necessary message based
 on that WSDL is improving, but it does not work with complex types.
+As an alternative, SOAP::WSDL or XML::Compiled::SOAP may be used for 
+document/literal bindings derived from WSDL definitions.
 
 SERVICE SIDE WSDL SUPPORT
 Perl is a loosely typed language making it extraordinarily difficult to generate
