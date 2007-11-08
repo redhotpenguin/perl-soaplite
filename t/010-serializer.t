@@ -22,7 +22,7 @@ my @types2001 = qw(
     positiveInteger date time dateTime
 );
 
-plan tests => ( scalar(@types1999) + scalar(@types2001) ) * 3 + 14;
+plan tests => ( scalar(@types1999) + scalar(@types2001) ) * 3 + 15;
 
 test_serializer('SOAP::XMLSchema1999::Serializer', @types1999);
 test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
