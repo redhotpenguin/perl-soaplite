@@ -104,3 +104,11 @@ eval { SOAP::XMLSchema1999::Serializer->as_anyURI([], 'test', 'string', {}) };
 ok $@ =~m{ \A String \s value \s expected }xms;
 
 ok ! SOAP::XMLSchema1999::Serializer->DESTROY();
+
+my $serializer = SOAP::Serializer->new();
+my $fault_envelope = $serializer->envelope( 
+    fault => 'Code', 'string', 'Detail', 'Actor'
+);
+
+# Test fault serialization order
+ok $fault_envelope =~m{ .+(faultcode).+(faultstring).+(faultactor).+(detail)}x;

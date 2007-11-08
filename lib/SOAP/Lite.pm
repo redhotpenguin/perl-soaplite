@@ -1690,11 +1690,12 @@ sub envelope {
     # commented on 2001/03/28 because of failing in ApacheSOAP
     # need to find out more about it
     # -> attr({'xmlns' => ''})
+    # Parameter order fixed thanks to Tom Fischer
       -> value(\SOAP::Data->set_value(
         SOAP::Data->name(faultcode => SOAP::Utils::qualify($self->envprefix => $parameters[0]))->type(""),
         SOAP::Data->name(faultstring => SOAP::Utils::encode_data($parameters[1]))->type(""),
-        defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
         defined($parameters[3]) ? SOAP::Data->name(faultactor => $parameters[3])->type("") : (),
+        defined($parameters[2]) ? SOAP::Data->name(detail => do{my $detail = $parameters[2]; ref $detail ? \$detail : $detail}) : (),
       ));
   } elsif ($type eq 'freeform') {
     SOAP::Trace::freeform(@parameters);
