@@ -16,8 +16,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.70_02 
+  ! Fixed  [ 1828412 ] SOAP::Lite serializes faults with wrong element order,
+    thanks to Tom Fischer.
   ! Fixed [ 1073360 ] Failure to read() long requests under mod_perl (fixed 
-  for mod_perl before thanks to JT Justman, now fixed for CGI, too). 
+    for mod_perl before thanks to JT Justman, now fixed for CGI, too). 
   ! Fixed #30339: envelope subroutine() in XMLRPC/Lite.pm incorrectly 
     requires method parameter for a response envelope
   ! Fixed #26408: SOAP::Transport::HTTP needs to call extract_cookies when 
