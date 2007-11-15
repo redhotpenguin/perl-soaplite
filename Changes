@@ -15,6 +15,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
+0.70_03
+  ! Fixed #16897: SOAP::Lite 0.66 fails with UNIVERSAL::use
+  ! Fixed #30741: SOAP::Transport::HTTP::Apache
+
 0.70_02 
   ! Fixed  [ 1828412 ] SOAP::Lite serializes faults with wrong element order,
     thanks to Tom Fischer.
