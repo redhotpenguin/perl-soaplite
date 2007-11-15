@@ -626,6 +626,7 @@ sub new {
    if(defined $ENV{MOD_PERL_API_VERSION} && $ENV{MOD_PERL_API_VERSION} >= 2) { 
         require Apache2::RequestRec;
         require Apache2::RequestIO;
+        require Apache2::RequestUtil;
         require Apache2::Const;
         require APR::Table;
         Apache2::Const->import(-compile => 'OK'); 
