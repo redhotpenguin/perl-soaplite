@@ -2242,7 +2242,9 @@ sub decode_value {
   $self->xmlschema($schema) if $schema && $schema =~ /XMLSchema/;
 
   # don't use class/type if anyType/ur-type is specified on wire
-  undef $class if $schemaclass->can('anyTypeValue') && $schemaclass->anyTypeValue eq $class;
+  undef $class 
+        if $schemaclass->can('anyTypeValue')
+            && $schemaclass->anyTypeValue eq $class;
 
   my $method = 'as_' . ($class || '-'); # dummy type if not defined
   $class =~ s/__|\./::/g if $class;
