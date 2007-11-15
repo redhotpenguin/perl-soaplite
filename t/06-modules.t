@@ -24,6 +24,6 @@ foreach (qw(SOAP::Lite SOAP::Transport::HTTP SOAP::Transport::MAILTO
   if ($@ =~ /(Can\'t locate)|(XML::Parser::Lite requires)|(this is only version)|(load mod_perl)/) {
     skip($@ => $@, '');
   } else {
-    ok($@, '') or warn "\nError while loading $_\n";
+    ok(!$@) or warn "\nError while loading $_\n";
   }
 }
