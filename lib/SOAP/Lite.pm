@@ -917,35 +917,36 @@ use vars qw(@ISA);
 @ISA = qw(SOAP::Cloneable SOAP::XMLSchema::Serializer);
 
 BEGIN {
-  # namespaces and anonymous data structures
-  my $ns   = 0; 
-  my $name = 0; 
-  my $prefix = 'c-';
-  sub gen_ns { 'namesp' . ++$ns } 
-  sub gen_name { join '', $prefix, 'gensym', ++$name } 
-  sub prefix { $prefix =~ s/^[^\-]+-/$_[1]-/; $_[0]; }
+    # namespaces and anonymous data structures
+    my $ns   = 0; 
+    my $name = 0; 
+    my $prefix = 'c-';
+    sub gen_ns { 'namesp' . ++$ns } 
+    sub gen_name { join '', $prefix, 'gensym', ++$name } 
+    sub prefix { $prefix =~ s/^[^\-]+-/$_[1]-/; $_[0]; }
 }
 
 sub BEGIN {
-  no strict 'refs';
-  for my $method (qw(readable level seen autotype typelookup attr maptype
-                     namespaces multirefinplace encoding signature
-                     on_nonserialized context 
-		     ns_uri ns_prefix use_default_ns)) {
+    no strict 'refs';
+    for my $method (qw(readable level seen autotype typelookup attr maptype
+        namespaces multirefinplace encoding signature on_nonserialized context 
+        ns_uri ns_prefix use_default_ns)) {
     my $field = '_' . $method;
     *$method = sub {
-      my $self = shift->new;
-      @_ ? ($self->{$field} = shift, return $self) : return $self->{$field};
+        my $self = shift->new;
+        @_ 
+            ? ($self->{$field} = shift, return $self) 
+            : return $self->{$field};
+        }
     }
-  }
-  for my $method (qw(method fault freeform)) { # aliases for envelope
-    *$method = sub { shift->envelope($method => @_) }
-  }
-  # Is this necessary? Seems like work for nothing when a user could just use
-  # SOAP::Utils directly.
-  # for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
-  #   *$method = \&{'SOAP::Utils::'.$method};
-  # }
+    for my $method (qw(method fault freeform)) { # aliases for envelope
+        *$method = sub { shift->envelope($method => @_) }
+    }
+    # Is this necessary? Seems like work for nothing when a user could just use
+    # SOAP::Utils directly.
+    # for my $method (qw(qualify overqualify disqualify)) { # import from SOAP::Utils
+    #   *$method = \&{'SOAP::Utils::'.$method};
+    # }
 }
 
 sub DESTROY { SOAP::Trace::objects('()') }
@@ -956,64 +957,64 @@ sub new {
 
     my $class = $self;
     $self = bless {
-      _level => 0,
-      _autotype => 1,
-      _readable => 0,
-      _ns_uri => '',
-      _ns_prefix => '',
-      _use_default_ns => 1,
-      _multirefinplace => 0,
-      _seen => {},
-      _typelookup => {
-          'base64Binary' => 
-	      [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/ }, 'as_base64Binary'],
-	      'zerostring' => 
-	      [12, sub { $_[0] =~ /^0\d+$/ }, 'as_string'],
-          'int'  => 
-	      [20, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 2147483648 && $1 >= -2147483648; }, 'as_int'],
-          'long' => 
-	      [25, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
-          'float'  => 
-	      [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
-          'gMonth' => 
-	      [35, sub { $_[0] =~ /^--\d\d--(-\d\d:\d\d)?$/; }, 'as_gMonth'],
-          'gDay' => 
-	      [40, sub { $_[0] =~ /^---\d\d(-\d\d:\d\d)?$/; }, 'as_gDay'],
-          'gYear' => 
-	      [45, sub { $_[0] =~ /^-?\d\d\d\d(-\d\d:\d\d)?$/; }, 'as_gYear'],
-          'gMonthDay' => 
-	      [50, sub { $_[0] =~ /^-\d\d-\d\d(-\d\d:\d\d)?$/; }, 'as_gMonthDay'],
-          'gYearMonth' => 
-	      [55, sub { $_[0] =~ /^-?\d\d\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_gYearMonth'],
-          'date' => 
-	      [60, sub { $_[0] =~ /^-?\d\d\d\d-\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_date'],
-          'time' => 
-	      [70, sub { $_[0] =~ /^\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_time'],
-          'dateTime' => 
-	      [75, sub { $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_dateTime'],
-          'duration' => 
-	      [80, sub { $_[0] =~ /^-?P(\d+Y)?(\d+M)?(\dD)?(T(\d+H)?(\d+M)?(\d+S)?)?$/; }, 'as_duration'],
-          'boolean' => 
-	      [90, sub { $_[0] =~ /^(true|false)$/i; }, 'as_boolean'],
-          'anyURI' => 
-	      [95, sub { $_[0] =~ /^(urn:|http:\/\/)/i; }, 'as_anyURI'],
-          'string' => 
-	      [100, sub {1}, 'as_string'],
-      },
-      _encoding => 'UTF-8',
-      _objectstack => {},
-      _signature => [],
-      _maptype => {},
-      _on_nonserialized => sub {Carp::carp "Cannot marshall @{[ref shift]} reference" if $^W; return},
-      _encodingStyle => $SOAP::Constants::NS_ENC,
-      _attr => {
-        "{$SOAP::Constants::NS_ENV}encodingStyle" => $SOAP::Constants::NS_ENC,
-      },
-      _namespaces => {
-#        $SOAP::Constants::NS_ENC => $SOAP::Constants::PREFIX_ENC,
-#        $SOAP::Constants::PREFIX_ENV ? ($SOAP::Constants::NS_ENV => $SOAP::Constants::PREFIX_ENV) : (),
-      },
-      _soapversion => SOAP::Lite->soapversion,
+        _level => 0,
+        _autotype => 1,
+        _readable => 0,
+        _ns_uri => '',
+        _ns_prefix => '',
+        _use_default_ns => 1,
+        _multirefinplace => 0,
+        _seen => {},
+        _typelookup => {
+           'base64Binary' => 
+	           [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/ }, 'as_base64Binary'],
+	       'zerostring' => 
+	           [12, sub { $_[0] =~ /^0\d+$/ }, 'as_string'],
+            'int'  => 
+	           [20, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 2147483648 && $1 >= -2147483648; }, 'as_int'],
+            'long' => 
+	           [25, sub {$_[0] =~ /^[+-]?(\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
+            'float'  => 
+	           [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
+            'gMonth' => 
+	           [35, sub { $_[0] =~ /^--\d\d--(-\d\d:\d\d)?$/; }, 'as_gMonth'],
+            'gDay' => 
+	           [40, sub { $_[0] =~ /^---\d\d(-\d\d:\d\d)?$/; }, 'as_gDay'],
+            'gYear' => 
+	           [45, sub { $_[0] =~ /^-?\d\d\d\d(-\d\d:\d\d)?$/; }, 'as_gYear'],
+            'gMonthDay' => 
+	           [50, sub { $_[0] =~ /^-\d\d-\d\d(-\d\d:\d\d)?$/; }, 'as_gMonthDay'],
+            'gYearMonth' => 
+	           [55, sub { $_[0] =~ /^-?\d\d\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_gYearMonth'],
+            'date' => 
+	           [60, sub { $_[0] =~ /^-?\d\d\d\d-\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_date'],
+            'time' => 
+	           [70, sub { $_[0] =~ /^\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_time'],
+            'dateTime' => 
+	           [75, sub { $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_dateTime'],
+            'duration' => 
+	           [80, sub { $_[0] =~ /^-?P(\d+Y)?(\d+M)?(\dD)?(T(\d+H)?(\d+M)?(\d+S)?)?$/; }, 'as_duration'],
+            'boolean' => 
+	           [90, sub { $_[0] =~ /^(true|false)$/i; }, 'as_boolean'],
+            'anyURI' => 
+	           [95, sub { $_[0] =~ /^(urn:|http:\/\/)/i; }, 'as_anyURI'],
+            'string' => 
+	           [100, sub {1}, 'as_string'],
+        },
+        _encoding => 'UTF-8',
+        _objectstack => {},
+        _signature => [],
+        _maptype => {},
+        _on_nonserialized => sub {Carp::carp "Cannot marshall @{[ref shift]} reference" if $^W; return},
+        _encodingStyle => $SOAP::Constants::NS_ENC,
+        _attr => {
+            "{$SOAP::Constants::NS_ENV}encodingStyle" => $SOAP::Constants::NS_ENC,
+        },
+        _namespaces => {
+#           $SOAP::Constants::NS_ENC => $SOAP::Constants::PREFIX_ENC,
+#           $SOAP::Constants::PREFIX_ENV ? ($SOAP::Constants::NS_ENV => $SOAP::Constants::PREFIX_ENV) : (),
+        },
+        _soapversion => SOAP::Lite->soapversion,
     } => $class;
     $self->register_ns($SOAP::Constants::NS_ENC,$SOAP::Constants::PREFIX_ENC);
     $self->register_ns($SOAP::Constants::NS_ENV,$SOAP::Constants::PREFIX_ENV)
@@ -2619,68 +2620,71 @@ sub BEGIN {
 }
 
 sub objects_by_reference { 
-  my $self = shift->new;
-#  my $self = shift;
-  @_ ? (SOAP::Server::Object->objects_by_reference(@_), return $self) 
-     : SOAP::Server::Object->objects_by_reference; 
+    my $self = shift;
+    $self = $self->new() if not ref $self;
+    @_ 
+        ? (SOAP::Server::Object->objects_by_reference(@_), return $self) 
+        : SOAP::Server::Object->objects_by_reference; 
 }
 
 sub dispatched {
-  my $self = shift->new;
-#  my $self = shift;
-  @_ ? (push(@{$self->{_dispatched}}, @_), return $self) 
-     : return @{$self->{_dispatched}};
+    my $self = shift;
+    $self = $self->new() if not ref $self;
+    @_ 
+        ? (push(@{$self->{_dispatched}}, @_), return $self) 
+        : return @{$self->{_dispatched}};
 }
 
 sub find_target {
-  my $self = shift;
-  my $request = shift;
+    my $self = shift;
+    my $request = shift;
 
-  # try to find URI/method from on_dispatch call first
-  my($method_uri, $method_name) = $self->on_dispatch->($request);
+    # try to find URI/method from on_dispatch call first
+    my($method_uri, $method_name) = $self->on_dispatch->($request);
 
-  # if nothing there, then get it from envelope itself
-  $request->match((ref $request)->method);
-  ($method_uri, $method_name) = ($request->namespaceuriof || '', $request->dataof->name)
-    unless $method_name;
+    # if nothing there, then get it from envelope itself
+    $request->match((ref $request)->method);
+    ($method_uri, $method_name) = ($request->namespaceuriof || '', $request->dataof->name)
+        unless $method_name;
 
-  $self->on_action->(my $action = $self->action, $method_uri, $method_name);
+    $self->on_action->(my $action = $self->action, $method_uri, $method_name);
 
-  # check to avoid security vulnerability: Protected->Unprotected::method(@parameters)
-  # see for more details: http://www.phrack.org/phrack/58/p58-0x09
-  die "Denied access to method ($method_name)\n" unless $method_name =~ /^\w+$/;
+    # check to avoid security vulnerability: Protected->Unprotected::method(@parameters)
+    # see for more details: http://www.phrack.org/phrack/58/p58-0x09
+    die "Denied access to method ($method_name)\n" unless $method_name =~ /^\w+$/;
 
-  my($class, $static);
-  # try to bind directly
-  if (defined($class = $self->dispatch_with->{$method_uri}
-                    || $self->dispatch_with->{$action || ''}
-	            || ($action =~ /^"(.+)"$/ ? $self->dispatch_with->{$1} : undef))) {
-    # return object, nothing else to do here
-    return ($class, $method_uri, $method_name) if ref $class;
-    $static = 1;
-  } else {
-    die "URI path shall map to class" unless defined ($class = URI->new($method_uri)->path);
+    my ($class, $static);
+    # try to bind directly
+    if (defined($class = $self->dispatch_with->{$method_uri}
+            || $self->dispatch_with->{$action || ''}
+	        || ($action =~ /^"(.+)"$/ 
+	            ? $self->dispatch_with->{$1} 
+	            : undef))) {
+        # return object, nothing else to do here
+        return ($class, $method_uri, $method_name) if ref $class;
+        $static = 1;
+    } 
+    else {
+        die "URI path shall map to class" unless defined ($class = URI->new($method_uri)->path);
 
-    for ($class) { s!^/|/$!!g; s!/!::!g; s/^$/main/; } 
-    die "Failed to access class ($class)" unless $class =~ /^(\w[\w:]*)$/;
+        for ($class) { s!^/|/$!!g; s!/!::!g; s/^$/main/; } 
+        die "Failed to access class ($class)" unless $class =~ /^(\w[\w:]*)$/;
 
-    my $fullname = "$class\::$method_name";
-    foreach ($self->dispatch_to) {
-      return ($_, $method_uri, $method_name) if ref eq $class; # $OBJECT
-      next if ref;                                   # skip other objects
-      # will ignore errors, because it may complain on 
-      # d:\foo\bar, which is PATH and not regexp
-      eval {
-        $static ||= 
-          $class =~ /^$_$/ ||                          # MODULE
-          $fullname =~ /^$_$/ ||                       # MODULE::method
-          $method_name =~ /^$_$/ && ($class eq 'main') # method ('main' assumed)
-        ;
-      };
+        my $fullname = "$class\::$method_name";
+        foreach ($self->dispatch_to) {
+            return ($_, $method_uri, $method_name) if ref eq $class; # $OBJECT
+            next if ref;                                   # skip other objects
+            # will ignore errors, because it may complain on 
+            # d:\foo\bar, which is PATH and not regexp
+            eval {
+                $static ||= $class =~ /^$_$/           # MODULE
+                    || $fullname =~ /^$_$/             # MODULE::method
+                    || $method_name =~ /^$_$/ && ($class eq 'main'); # method ('main' assumed)
+            };
+        }
     }
-  }
 
-  no strict 'refs';
+    no strict 'refs';
 
 # TODO - sort this mess out:
 # SOAP::Lite 0.60:
@@ -2689,18 +2693,19 @@ sub find_target {
 # The following patch does not work for packages defined within a BEGIN block
 #  unless (exists($INC{join '/', split /::/, $class.'.pm'})) {
 # Combination of 0.60 and patch:
-  unless (defined(%{"${class}::"}) || exists($INC{join '/', split /::/, $class.'.pm'})) {
-    # allow all for static and only specified path for dynamic bindings
-    local @INC = (($static ? @INC : ()), grep {!ref && m![/\\.]!} $self->dispatch_to);
-    eval 'local $^W; ' . "require $class";
-    die "Failed to access class ($class): $@" if $@;
-    $self->dispatched($class) unless $static;
-  } 
+    unless (defined(%{"${class}::"}) 
+        || exists($INC{join '/', split /::/, $class . '.pm'})) {
+        # allow all for static and only specified path for dynamic bindings
+        local @INC = (($static ? @INC : ()), grep {!ref && m![/\\.]!} $self->dispatch_to);
+        eval 'local $^W; ' . "require $class";
+        die "Failed to access class ($class): $@" if $@;
+        $self->dispatched($class) unless $static;
+    } 
 
-  die "Denied access to method ($method_name) in class ($class)"  
-    unless $static || grep {/^$class$/} $self->dispatched;
+    die "Denied access to method ($method_name) in class ($class)"  
+        unless $static || grep {/^$class$/} $self->dispatched;
 
-  return ($class, $method_uri, $method_name);
+    return ($class, $method_uri, $method_name);
 }
 
 sub handle {
@@ -4721,7 +4726,7 @@ If you want to change this behavior for B<all> instances of SOAP::Lite, just
 substitute C<as_string()> method with C<as_base64Binary()> somewhere in your 
 code B<after> C<use SOAP::Lite> and B<before> actual processing/sending:
 
-  *SOAP::Serializer::as_string = \&SOAP::Serializer::as_base64Binary;
+  *SOAP::Serializer::as_string = \&SOAP::XMLSchema2001::Serializer::as_base64Binary;
 
 Be warned that last two methods will affect B<all> strings and convert them
 into base64 encoded. It doesn't make any difference for SOAP::Lite, but it
