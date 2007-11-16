@@ -16,6 +16,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.70_03
+  ! Fixes #21113: sending xml files using SOAP::Transport::HTTP::CGI
+  (actually trapped a documentation error)
+  ! Fixes #3677: Line > 1000 characters breaks perl parser
+  ! Fixes #11797: SOAP::Transport::HTTP::CGI returns HTTP response headers terminated by "\n" instead of "\r\n"
   ! Fixed #24211: strings with leading zero mistreated as int
   ! Fixed #25668: cannot build SOAP::Lite with mod_perl 1.29 
   ! Fixed #16897: SOAP::Lite 0.66 fails with UNIVERSAL::use
