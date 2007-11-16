@@ -44,6 +44,9 @@ Following modules will be loaded on demand only, and are considered optional:
   DIME::Tools       DIME attachment support
   Compress::Zlib    HTTP compression support
 
+It has been reportet that recent versions of MIME::Tools also need a 
+recent IO::ScalarArray in order to work with SOAP::Lite. 
+
 These modules should be available from CPAN (http://search.cpan.org/).
 
 INSTALLATION ON UNIX
