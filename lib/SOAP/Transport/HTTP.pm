@@ -1,6 +1,6 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2007 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2004 Paul Kulchenko (paulclinger@yahoo.com)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -280,10 +280,9 @@ sub send_receive {
 	    : ($self->http_response->content_encoding || '') =~ /\S/
 		      ? die "Can't understand returned Content-Encoding (@{[$self->http_response->content_encoding]})\n"
 		      : $self->http_response->content;
-
-    # The HTTP RFC2616 mandates the use of CRLF for line separation    
+    
     return $self->http_response->content_type =~ m!^multipart/!i 
-        ? join("\r\n", $self->http_response->headers_as_string("\r\n"), $content) 
+        ? join("\n", $self->http_response->headers_as_string, $content) 
         : $content;
 }
 
@@ -383,9 +382,8 @@ sub handle {
         : $self->request->content;
     
     my $response = $self->SUPER::handle(
-        # The HTTP RFC2616 mandates the use of CRLF for line separation
         $self->request->content_type =~ m!^multipart/! 
-            ? join("\r\n", $self->request->headers_as_string("\r\n"), $content) 
+            ? join("\n", $self->request->headers_as_string, $content) 
             : $content
     ) 
         or return;
@@ -628,7 +626,6 @@ sub new {
    if(defined $ENV{MOD_PERL_API_VERSION} && $ENV{MOD_PERL_API_VERSION} >= 2) { 
         require Apache2::RequestRec;
         require Apache2::RequestIO;
-        require Apache2::RequestUtil;
         require Apache2::Const;
         require APR::Table;
         Apache2::Const->import(-compile => 'OK'); 
