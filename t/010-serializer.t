@@ -22,7 +22,8 @@ my @types2001 = qw(
     positiveInteger date time dateTime
 );
 
-plan tests => ( scalar(@types1999) + scalar(@types2001) ) * 3 + 15;
+# types * 3 + extra tests + autotype tests
+plan tests => ( scalar(@types1999) + scalar(@types2001) ) * 3 + 15 + 4;
 
 test_serializer('SOAP::XMLSchema1999::Serializer', @types1999);
 test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
@@ -112,3 +113,22 @@ my $fault_envelope = $serializer->envelope(
 
 # Test fault serialization order
 ok $fault_envelope =~m{ .+(faultcode).+(faultstring).+(faultactor).+(detail)}x;
+
+
+$serializer = SOAP::Serializer->new();
+
+print "# autotype tests\n";
+$serializer->autotype(1);
+
+my %type_of = (
+    '012345' => 'xsd:string',
+    'Hello World' => 'xsd:string',
+    'http://example.org' => 'xsd:anyURI',
+    '12345' => 'xsd:int',
+);
+
+while (my ($value, $type) = each %type_of) {
+    my $result = $serializer->encode_scalar($value, 'test', undef, {});
+    print "# $value => $type (result: $result->[1]->{'xsi:type'})\n";
+    ok ( $result->[1]->{'xsi:type'} eq $type );
+}

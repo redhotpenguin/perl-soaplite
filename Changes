@@ -16,6 +16,8 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.70_03
+  ! Fixed #24211: strings with leading zero mistreated as int
+  ! Fixed #25668: cannot build SOAP::Lite with mod_perl 1.29 
   ! Fixed #16897: SOAP::Lite 0.66 fails with UNIVERSAL::use
   ! Fixed #30741: SOAP::Transport::HTTP::Apache
 
