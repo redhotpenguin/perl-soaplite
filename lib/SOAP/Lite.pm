@@ -217,7 +217,7 @@ sub as_long {
     my($self, $value, $name, $type, $attr) = @_;
     return [
         $name, 
-        {'xsi:type' => 'xsd:long', %$attr}, 
+        {'xsi:type' => 'xsd:long', %$attr},
         $value
     ];
 }
@@ -229,11 +229,11 @@ sub as_dateTime {
 
 sub as_string {
     my ($self, $value, $name, $type, $attr) = @_;
-    die "String value expected instead of @{[ref $value]} reference\n" 
+    die "String value expected instead of @{[ref $value]} reference\n"
         if ref $value;
     return [
-        $name, 
-        {'xsi:type' => 'xsd:string', %$attr}, 
+        $name,
+        {'xsi:type' => 'xsd:string', %$attr},
         SOAP::Utils::encode_data($value)
     ];
 }
@@ -242,15 +242,15 @@ sub as_anyURI {
     my($self, $value, $name, $type, $attr) = @_;
     die "String value expected instead of @{[ref $value]} reference\n" if ref $value;
     return [
-        $name, 
-        {'xsi:type' => 'xsd:anyURI', %$attr}, 
+        $name,
+        {'xsi:type' => 'xsd:anyURI', %$attr},
         SOAP::Utils::encode_data($value)
     ];
 }
 
 sub as_undef { $_[1] ? '1' : '0' }
 
-# The 1999 XML schema spec says that (true|false) are allowed values - 
+# The 1999 XML schema spec says that (true|false) are allowed values -
 # so this is wrong.
 #
 #sub as_boolean {
@@ -267,16 +267,16 @@ sub as_boolean {
     # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
     # fix [ 1204279 ] Boolean serialization error
     return [
-        $name, 
-        {'xsi:type' => 'xsd:boolean', %$attr}, 
-        ( $value ne 'false' && $value ) ? 'true' : 'false' 
+        $name,
+        {'xsi:type' => 'xsd:boolean', %$attr},
+        ( $value ne 'false' && $value ) ? 'true' : 'false'
     ];
 }
 
 sub as_float {
     my($self, $value, $name, $type, $attr) = @_;
     return [
-        $name, 
+        $name,
         {'xsi:type' => 'xsd:float', %$attr}, 
         $value 
     ];
@@ -491,10 +491,10 @@ BEGIN {
               $FAULT_CLIENT $FAULT_SERVER $FAULT_VERSION_MISMATCH
               $HTTP_ON_FAULT_CODE $HTTP_ON_SUCCESS_CODE $FAULT_MUST_UNDERSTAND
               $NS_XSI_ALL $NS_XSI_NILS %XML_SCHEMAS $DEFAULT_XML_SCHEMA
-    	      $DEFAULT_HTTP_CONTENT_TYPE
+              $DEFAULT_HTTP_CONTENT_TYPE
               $SOAP_VERSION %SOAP_VERSIONS $WRONG_VERSION
               $NS_SL_HEADER $NS_SL_PERLTYPE $PREFIX_ENV $PREFIX_ENC
-              $DO_NOT_USE_XML_PARSER $DO_NOT_CHECK_MUSTUNDERSTAND 
+              $DO_NOT_USE_XML_PARSER $DO_NOT_CHECK_MUSTUNDERSTAND
               $DO_NOT_USE_CHARSET $DO_NOT_PROCESS_XML_IN_MIME
               $DO_NOT_USE_LWP_LENGTH_HACK $DO_NOT_CHECK_CONTENT_TYPE
               $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE $DEFAULT_PACKAGER
@@ -531,7 +531,7 @@ BEGIN {
     },
   );
 
-  # schema namespaces                                    
+  # schema namespaces
   %XML_SCHEMAS = ( # The '()' is necessary to put constants in SCALAR form
     URI_1999_SCHEMA_XSD() => 'SOAP::XMLSchema1999',
     URI_2001_SCHEMA_XSD() => 'SOAP::XMLSchema2001',
