@@ -16,6 +16,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.70_03
+  ! Fixes [ 1816906 ] 7/06_modules.t fails with Apache 1.27
+  ! Fixes [ 1414914 ] longs are serialized into xsd:int by default
+- ! Fixes [ 1833803 ] int numbers serialized as long
   ! Fixes #21113: sending xml files using SOAP::Transport::HTTP::CGI
   (actually trapped a documentation error)
   ! Fixes #3677: Line > 1000 characters breaks perl parser
