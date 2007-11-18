@@ -80,6 +80,8 @@ Outputs a short help message.
 
 Outputs the current version of stubmaker.pl.
 
+=back
+
 =cut
 
 =head1 STUB FILES
@@ -105,6 +107,8 @@ When set to 1, SOAP::Lite will return SOAP::SOM objects to the user upon
 invoking a method on a remote service. This is very helpful when you need
 to check to see if the return value is a SOAP::Fault or not. When set to 0,
 SOAP::Lite will return the return value of the method.
+
+=back
 
 =cut
 

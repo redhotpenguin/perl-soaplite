@@ -301,14 +301,14 @@ sub as_hex {
 
 sub as_ur_type { $_[1] }
 
-sub as_undef { 
-    shift; 
-    my $value = shift; 
-    $value eq '1' || $value eq 'true' 
+sub as_undef {
+    shift;
+    my $value = shift;
+    $value eq '1' || $value eq 'true'
         ? 1 
-        : $value eq '0' || $value eq 'false' 
+        : $value eq '0' || $value eq 'false'
             ? 0 
-            : die "Wrong null/nil value '$value'\n" 
+            : die "Wrong null/nil value '$value'\n";
 }
 
 BEGIN {
@@ -317,11 +317,11 @@ BEGIN {
         float double decimal timeDuration recurringDuration uriReference
         integer nonPositiveInteger negativeInteger long int short byte
         nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-        positiveInteger timeInstant time timePeriod date month year century 
+        positiveInteger timeInstant time timePeriod date month year century
         recurringDate recurringDay language
-    )) { 
-        my $name = 'as_' . $method; 
-        *$name = sub { $_[1] }; 
+    )) {
+        my $name = 'as_' . $method;
+        *$name = sub { $_[1] };
     }
 }
 
@@ -332,13 +332,13 @@ package SOAP::XMLSchema2001::Serializer;
 use vars qw(@EXPORT);
 
 # no more warnings about "used only once"
-*AUTOLOAD if 0; 
+*AUTOLOAD if 0;
 
 *AUTOLOAD = \&SOAP::XMLSchema1999::Serializer::AUTOLOAD;
 
 BEGIN {
   @EXPORT = qw(anyType anySimpleType float double decimal dateTime
-               timePeriod gMonth gYearMonth gYear century 
+               timePeriod gMonth gYearMonth gYear century
                gMonthDay gDay duration recurringDuration anyURI
                language integer nonPositiveInteger negativeInteger
                long int short byte nonNegativeInteger unsignedLong
@@ -347,8 +347,8 @@ BEGIN {
                QName
   );
   # Add QName to @EXPORT
-  # predeclare subs, so ->can check will be positive 
-  foreach (@EXPORT) { eval "sub as_$_" } 
+  # predeclare subs, so ->can check will be positive
+  foreach (@EXPORT) { eval "sub as_$_" }
 }
 
 sub nilValue { 'nil' }
@@ -375,15 +375,15 @@ sub as_timeInstant; *as_timeInstant = \&as_dateTime;
 # only 0 and 1 allowed - that's easy...
 sub as_undef { 
     $_[1] 
-    ? 'true' 
-    : 'false' 
+    ? 'true'
+    : 'false'
 }
 
-sub as_hexBinary { 
+sub as_hexBinary {
     my ($self, $value, $name, $type, $attr) = @_;
     return [
-        $name, 
-        {'xsi:type' => 'xsd:hexBinary', %$attr}, 
+        $name,
+        {'xsi:type' => 'xsd:hexBinary', %$attr},
         join '', map {
                 uc sprintf "%02x", ord
             } split '', $value
@@ -394,7 +394,7 @@ sub as_base64Binary {
     my ($self, $value, $name, $type, $attr) = @_;
     
     # Fixes #30271 for 5.8 and above.
-    # Won't fix for 5.6 and below - perl can't handle unicode before 
+    # Won't fix for 5.6 and below - perl can't handle unicode before
     # 5.8, and applying pack() to everything is just a slowdown.
     if (eval "require Encode; 1") {
         if (Encode::is_utf8($value)) {
@@ -402,7 +402,7 @@ sub as_base64Binary {
                 Encode::_utf8_off($value);
             }
             else {
-                $value = pack('C*',unpack('C*',$value)); # the slow but safe way, 
+                $value = pack('C*',unpack('C*',$value)); # the slow but safe way,
                 # but this fallback works always.
             }
         }
@@ -423,11 +423,11 @@ sub as_boolean {
     # return [$name, {'xsi:type' => 'xsd:boolean', %$attr}, $value ? 'true' : 'false'];
     # fix [ 1204279 ] Boolean serialization error
     return [
-        $name, 
+        $name,
         {
             'xsi:type' => 'xsd:boolean', %$attr
         }, 
-        ( $value ne 'false' && $value ) 
+        ( $value ne 'false' && $value )
             ? 'true' 
             : 'false' 
     ];
@@ -447,17 +447,19 @@ sub as_hexBinary; *as_hexBinary = \&SOAP::XMLSchema1999::Deserializer::as_hex;
 sub as_undef; *as_undef = \&SOAP::XMLSchema1999::Deserializer::as_undef;
 
 BEGIN {
-  no strict 'refs';
-  for my $method (qw(
-    anyType anySimpleType
-    float double decimal dateTime timePeriod gMonth gYearMonth gYear century 
-    gMonthDay gDay duration recurringDuration
-    language integer nonPositiveInteger negativeInteger long int short byte
-    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger date time dateTime
-    QName
-  )) { my $name = 'as_' . $method; *$name = sub { $_[1] } }
-  # put QName in @EXPORT
+    no strict 'refs';
+    for my $method (qw(
+        anyType anySimpleType
+        float double decimal dateTime timePeriod gMonth gYearMonth gYear 
+        century gMonthDay gDay duration recurringDuration
+        language integer nonPositiveInteger negativeInteger long int short 
+        byte nonNegativeInteger unsignedLong unsignedInt unsignedShort 
+        unsignedByte positiveInteger date time dateTime
+        QName
+    )) {
+        my $name = 'as_' . $method;
+        *$name = sub { $_[1] }
+    }
 }
 
 # ======================================================================
@@ -466,28 +468,28 @@ package SOAP::Constants;
 
 BEGIN {
 
-  use constant URI_1999_SCHEMA_XSD  => "http://www.w3.org/1999/XMLSchema";
-  use constant URI_1999_SCHEMA_XSI  => "http://www.w3.org/1999/XMLSchema-instance";
-  use constant URI_2000_SCHEMA_XSD  => "http://www.w3.org/2000/10/XMLSchema";
-  use constant URI_2000_SCHEMA_XSI  => "http://www.w3.org/2000/10/XMLSchema-instance";
-  use constant URI_2001_SCHEMA_XSD  => "http://www.w3.org/2001/XMLSchema";
-  use constant URI_2001_SCHEMA_XSI  => "http://www.w3.org/2001/XMLSchema-instance";
+    use constant URI_1999_SCHEMA_XSD  => "http://www.w3.org/1999/XMLSchema";
+    use constant URI_1999_SCHEMA_XSI  => "http://www.w3.org/1999/XMLSchema-instance";
+    use constant URI_2000_SCHEMA_XSD  => "http://www.w3.org/2000/10/XMLSchema";
+    use constant URI_2000_SCHEMA_XSI  => "http://www.w3.org/2000/10/XMLSchema-instance";
+    use constant URI_2001_SCHEMA_XSD  => "http://www.w3.org/2001/XMLSchema";
+    use constant URI_2001_SCHEMA_XSI  => "http://www.w3.org/2001/XMLSchema-instance";
 
-  use constant URI_LITERAL_ENC       => "";
-  use constant URI_SOAP11_ENC        => "http://schemas.xmlsoap.org/soap/encoding/";
-  use constant URI_SOAP11_ENV        => "http://schemas.xmlsoap.org/soap/envelope/";
-  use constant URI_SOAP11_NEXT_ACTOR => "http://schemas.xmlsoap.org/soap/actor/next";
-  use constant URI_SOAP12_ENC        => "http://www.w3.org/2003/05/soap-encoding";
-  use constant URI_SOAP12_ENV        => "http://www.w3.org/2003/05/soap-envelope";
-  use constant URI_SOAP12_NOENC      => "http://www.w3.org/2003/05/soap-envelope/encoding/none";
-  use constant URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2003/05/soap-envelope/role/next";
+    use constant URI_LITERAL_ENC       => "";
+    use constant URI_SOAP11_ENC        => "http://schemas.xmlsoap.org/soap/encoding/";
+    use constant URI_SOAP11_ENV        => "http://schemas.xmlsoap.org/soap/envelope/";
+    use constant URI_SOAP11_NEXT_ACTOR => "http://schemas.xmlsoap.org/soap/actor/next";
+    use constant URI_SOAP12_ENC        => "http://www.w3.org/2003/05/soap-encoding";
+    use constant URI_SOAP12_ENV        => "http://www.w3.org/2003/05/soap-envelope";
+    use constant URI_SOAP12_NOENC      => "http://www.w3.org/2003/05/soap-envelope/encoding/none";
+    use constant URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2003/05/soap-envelope/role/next";
 
-  use vars qw($NSMASK $ELMASK);
+    use vars qw($NSMASK $ELMASK);
 
-  $NSMASK = '[a-zA-Z_:][\w.\-:]*'; 
-  $ELMASK = '^(?![xX][mM][lL])[a-zA-Z_][\w.\-]*$';
+    $NSMASK = '[a-zA-Z_:][\w.\-:]*'; 
+    $ELMASK = '^(?![xX][mM][lL])[a-zA-Z_][\w.\-]*$';
 
-  use vars qw($NEXT_ACTOR $NS_ENV $NS_ENC $NS_APS
+    use vars qw($NEXT_ACTOR $NS_ENV $NS_ENC $NS_APS
               $FAULT_CLIENT $FAULT_SERVER $FAULT_VERSION_MISMATCH
               $HTTP_ON_FAULT_CODE $HTTP_ON_SUCCESS_CODE $FAULT_MUST_UNDERSTAND
               $NS_XSI_ALL $NS_XSI_NILS %XML_SCHEMAS $DEFAULT_XML_SCHEMA
@@ -500,77 +502,78 @@ BEGIN {
               $MAX_CONTENT_SIZE $PATCH_HTTP_KEEPALIVE $DEFAULT_PACKAGER
               @SUPPORTED_ENCODING_STYLES $OBJS_BY_REF_KEEPALIVE
               $DEFAULT_CACHE_TTL
-  );
+    );
 
-  $FAULT_CLIENT           = 'Client';
-  $FAULT_SERVER           = 'Server';
-  $FAULT_VERSION_MISMATCH = 'VersionMismatch';
-  $FAULT_MUST_UNDERSTAND  = 'MustUnderstand';
+    $FAULT_CLIENT           = 'Client';
+    $FAULT_SERVER           = 'Server';
+    $FAULT_VERSION_MISMATCH = 'VersionMismatch';
+    $FAULT_MUST_UNDERSTAND  = 'MustUnderstand';
 
-  $HTTP_ON_SUCCESS_CODE = 200; # OK
-  $HTTP_ON_FAULT_CODE   = 500; # INTERNAL_SERVER_ERROR
+    $HTTP_ON_SUCCESS_CODE = 200; # OK
+    $HTTP_ON_FAULT_CODE   = 500; # INTERNAL_SERVER_ERROR
 
-  @SUPPORTED_ENCODING_STYLES = ( URI_LITERAL_ENC,URI_SOAP11_ENC,URI_SOAP12_ENC,URI_SOAP12_NOENC );
+    @SUPPORTED_ENCODING_STYLES = ( URI_LITERAL_ENC,URI_SOAP11_ENC,URI_SOAP12_ENC,URI_SOAP12_NOENC );
 
-  $WRONG_VERSION = 'Wrong SOAP version specified.';
+    $WRONG_VERSION = 'Wrong SOAP version specified.';
 
-  %SOAP_VERSIONS = (
-    ($SOAP_VERSION = 1.1) => {
-      NEXT_ACTOR                => URI_SOAP11_NEXT_ACTOR,
-      NS_ENV                    => URI_SOAP11_ENV,
-      NS_ENC                    => URI_SOAP11_ENC,
-      DEFAULT_XML_SCHEMA        => URI_2001_SCHEMA_XSD,
-      DEFAULT_HTTP_CONTENT_TYPE => 'text/xml',
-    },
-    1.2 => {
-      NEXT_ACTOR                => URI_SOAP12_NEXT_ACTOR,
-      NS_ENV                    => URI_SOAP12_ENV,
-      NS_ENC                    => URI_SOAP12_ENC,
-      DEFAULT_XML_SCHEMA        => URI_2001_SCHEMA_XSD,
-      DEFAULT_HTTP_CONTENT_TYPE => 'application/soap',
-    },
-  );
+    $SOAP_VERSION = '1.1';
+    %SOAP_VERSIONS = (
+        1.1 => {
+            NEXT_ACTOR                => URI_SOAP11_NEXT_ACTOR,
+            NS_ENV                    => URI_SOAP11_ENV,
+            NS_ENC                    => URI_SOAP11_ENC,
+            DEFAULT_XML_SCHEMA        => URI_2001_SCHEMA_XSD,
+            DEFAULT_HTTP_CONTENT_TYPE => 'text/xml',
+        },
+        1.2 => {
+            NEXT_ACTOR                => URI_SOAP12_NEXT_ACTOR,
+            NS_ENV                    => URI_SOAP12_ENV,
+            NS_ENC                    => URI_SOAP12_ENC,
+            DEFAULT_XML_SCHEMA        => URI_2001_SCHEMA_XSD,
+            DEFAULT_HTTP_CONTENT_TYPE => 'application/soap',
+        },
+    );
 
-  # schema namespaces
-  %XML_SCHEMAS = ( # The '()' is necessary to put constants in SCALAR form
-    URI_1999_SCHEMA_XSD() => 'SOAP::XMLSchema1999',
-    URI_2001_SCHEMA_XSD() => 'SOAP::XMLSchema2001',
-    URI_SOAP11_ENC()      => 'SOAP::XMLSchemaSOAP1_1',
-    URI_SOAP12_ENC()      => 'SOAP::XMLSchemaSOAP1_2',
-  );
-  
-  $NS_XSI_ALL = join join('|', map {"$_-instance"} grep {/XMLSchema/} keys %XML_SCHEMAS), '(?:', ')';
-  $NS_XSI_NILS = join join('|', map { my $class = $XML_SCHEMAS{$_} . '::Serializer'; "\{($_)-instance\}" . $class->nilValue
+    # schema namespaces
+    %XML_SCHEMAS = ( # The '()' is necessary to put constants in SCALAR form
+        URI_1999_SCHEMA_XSD() => 'SOAP::XMLSchema1999',
+        URI_2001_SCHEMA_XSD() => 'SOAP::XMLSchema2001',
+        URI_SOAP11_ENC()      => 'SOAP::XMLSchemaSOAP1_1',
+        URI_SOAP12_ENC()      => 'SOAP::XMLSchemaSOAP1_2',
+    );
+
+    $NS_XSI_ALL = join join('|', map {"$_-instance"} grep {/XMLSchema/} keys %XML_SCHEMAS), '(?:', ')';
+    $NS_XSI_NILS = join join('|', map { my $class = $XML_SCHEMAS{$_} . '::Serializer'; "\{($_)-instance\}" . $class->nilValue
                                     } grep {/XMLSchema/} keys %XML_SCHEMAS),
                       '(?:', ')';
-  
-  # ApacheSOAP namespaces
-  $NS_APS = 'http://xml.apache.org/xml-soap';
-  
-  # SOAP::Lite namespace
-  $NS_SL_HEADER   = 'http://namespaces.soaplite.com/header';
-  $NS_SL_PERLTYPE = 'http://namespaces.soaplite.com/perl';
 
-  # default prefixes
-  # $PREFIX_ENV = 'SOAP-ENV';
-  # $PREFIX_ENC = 'SOAP-ENC';
-  $PREFIX_ENV = 'soap';
-  $PREFIX_ENC = 'soapenc';
-  
-  # others
-  $DO_NOT_USE_XML_PARSER = 0;
-  $DO_NOT_CHECK_MUSTUNDERSTAND = 0;
-  $DO_NOT_USE_CHARSET = 0;
-  $DO_NOT_PROCESS_XML_IN_MIME = 0;
-  $DO_NOT_USE_LWP_LENGTH_HACK = 0;
-  $DO_NOT_CHECK_CONTENT_TYPE = 0;
-  $PATCH_HTTP_KEEPALIVE = 1;
-  $OBJS_BY_REF_KEEPALIVE = 600; # seconds
-  # TODO - use default packager constant somewhere 
-  $DEFAULT_PACKAGER = "SOAP::Packager::MIME";
-  $DEFAULT_CACHE_TTL = 0;
+    # ApacheSOAP namespaces
+    $NS_APS = 'http://xml.apache.org/xml-soap';
+
+    # SOAP::Lite namespace
+    $NS_SL_HEADER   = 'http://namespaces.soaplite.com/header';
+    $NS_SL_PERLTYPE = 'http://namespaces.soaplite.com/perl';
+
+    # default prefixes
+    # $PREFIX_ENV = 'SOAP-ENV';
+    # $PREFIX_ENC = 'SOAP-ENC';
+    $PREFIX_ENV = 'soap';
+    $PREFIX_ENC = 'soapenc';
+
+    # others
+    $DO_NOT_USE_XML_PARSER = 0;
+    $DO_NOT_CHECK_MUSTUNDERSTAND = 0;
+    $DO_NOT_USE_CHARSET = 0;
+    $DO_NOT_PROCESS_XML_IN_MIME = 0;
+    $DO_NOT_USE_LWP_LENGTH_HACK = 0;
+    $DO_NOT_CHECK_CONTENT_TYPE = 0;
+    $PATCH_HTTP_KEEPALIVE = 1;
+    $OBJS_BY_REF_KEEPALIVE = 600; # seconds
+    # TODO - use default packager constant somewhere 
+    $DEFAULT_PACKAGER = "SOAP::Packager::MIME";
+    $DEFAULT_CACHE_TTL = 0;
 }
-  
+
 # ======================================================================
 
 package SOAP::Utils;
