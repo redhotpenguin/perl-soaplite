@@ -13,7 +13,7 @@ package SOAP::Transport::HTTP;
 use strict;
 use vars qw($VERSION);
 #$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
-$VERSION = $SOAP::Lite::VERSION;
+$VERSION = '0.70_04';
 
 use SOAP::Lite;
 use SOAP::Packager;
@@ -102,12 +102,12 @@ sub new {
         
         die "SOAP::Transport::HTTP::Client must inherit from LWP::UserAgent, or one of its subclasses"
             if !$self->isa("LWP::UserAgent");
-    
+
         $self->agent(join '/', 'SOAP::Lite', 'Perl', SOAP::Transport::HTTP->VERSION);
         $self->options({});
         $self->http_request(HTTP::Request->new);
         $self->http_request->headers(HTTP::Headers->new);
-    
+
         # TODO - add application/dime
         $self->http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
         while (@methods) { 
@@ -123,7 +123,7 @@ sub send_receive {
     my ($self, %parameters) = @_;
     my ($context, $envelope, $endpoint, $action, $encoding, $parts) =
         @parameters{qw(context envelope endpoint action encoding parts)};
-  
+
     $endpoint ||= $self->endpoint;
 
     my $method = 'POST';
@@ -188,40 +188,42 @@ sub send_receive {
 
             $self->http_request
                 ->proxy_authorization_basic($ENV{'HTTP_proxy_user'},
-						     $ENV{'HTTP_proxy_pass'})
-	           if ($ENV{'HTTP_proxy_user'} && $ENV{'HTTP_proxy_pass'});
+                     $ENV{'HTTP_proxy_pass'})
+               if ($ENV{'HTTP_proxy_user'} && $ENV{'HTTP_proxy_pass'});
       
             # by Murray Nesbitt
             if ($method eq 'M-POST') {
-	           my $prefix = sprintf '%04d', int(rand(1000));
-	           $self->http_request->header(
-	               Man => qq!"$SOAP::Constants::NS_ENV"; ns=$prefix!);
-	           $self->http_request->header("$prefix-SOAPAction" => $action) 
-	               if defined $action;
+               my $prefix = sprintf '%04d', int(rand(1000));
+               $self->http_request->header(
+                   Man => qq!"$SOAP::Constants::NS_ENV"; ns=$prefix!);
+               $self->http_request->header("$prefix-SOAPAction" => $action) 
+                   if defined $action;
             } 
             else {
-	           $self->http_request->header(SOAPAction => $action) 
-	               if defined $action;
+               $self->http_request->header(SOAPAction => $action) 
+                   if defined $action;
             }
+
+#            $self->http_request->header(Expect => '100-Continue');
 
             # allow compress if present and let server know we could handle it
             $self->http_request->header('Accept-Encoding' => 
-		        [$SOAP::Transport::HTTP::Client::COMPRESS])
-	               if $self->options->{is_compress};
+                [$SOAP::Transport::HTTP::Client::COMPRESS])
+                   if $self->options->{is_compress};
 
             $self->http_request->content_encoding($SOAP::Transport::HTTP::Client::COMPRESS)
-	           if $compressed;
+               if $compressed;
 
             if(!$self->http_request->content_type) {
-	            $self->http_request->content_type(join '; ',
-			         $SOAP::Constants::DEFAULT_HTTP_CONTENT_TYPE,
-			         !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding 
-			             ? 'charset=' . lc($encoding) 
-			             : ()
-			    );
+                $self->http_request->content_type(join '; ',
+                     $SOAP::Constants::DEFAULT_HTTP_CONTENT_TYPE,
+                     !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding 
+                         ? 'charset=' . lc($encoding) 
+                         : ()
+                );
             } 
             elsif (!$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ) {
-	            my $tmpType = $self->http_request->headers->header('Content-type');
+                my $tmpType = $self->http_request->headers->header('Content-type');
                 #	$self->http_request->content_type($tmpType.'; charset=' . lc($encoding));
                 my $addition = '; charset=' . lc($encoding);
                 $self->http_request->content_type($tmpType.$addition) if ($tmpType !~ /$addition/);
@@ -243,18 +245,18 @@ sub send_receive {
             if (($self->http_response->code == 510 
                 || $self->http_response->code == 501) 
                     && $method ne 'M-POST') {
-	           $mpost{$endpoint} = 1;
+               $mpost{$endpoint} = 1;
             } 
             elsif ($self->http_response->code == 415 && $compressed) { 
-	            # 415 Unsupported Media Type
-	            $nocompress{$endpoint} = 1;
-	            $envelope = Compress::Zlib::memGunzip($envelope);
+                # 415 Unsupported Media Type
+                $nocompress{$endpoint} = 1;
+                $envelope = Compress::Zlib::memGunzip($envelope);
                 $self->http_request
                     ->headers->remove_header('Content-Encoding');
-	            redo COMPRESS; # try again without compression
+                redo COMPRESS; # try again without compression
             } 
             else {
-	            last;
+                last;
             }
         }
     }
@@ -275,11 +277,11 @@ sub send_receive {
     my $content = 
         ($self->http_response->content_encoding || '') 
             =~ /\b$SOAP::Transport::HTTP::Client::COMPRESS\b/o &&
-	           $self->options->{is_compress} 
-	    ? Compress::Zlib::memGunzip($self->http_response->content)
-	    : ($self->http_response->content_encoding || '') =~ /\S/
-		      ? die "Can't understand returned Content-Encoding (@{[$self->http_response->content_encoding]})\n"
-		      : $self->http_response->content;
+               $self->options->{is_compress} 
+        ? Compress::Zlib::memGunzip($self->http_response->content)
+        : ($self->http_response->content_encoding || '') =~ /\S/
+              ? die "Can't understand returned Content-Encoding (@{[$self->http_response->content_encoding]})\n"
+              : $self->http_response->content;
     
     return $self->http_response->content_type =~ m!^multipart/!i 
         ? join("\n", $self->http_response->headers_as_string, $content) 
@@ -423,12 +425,12 @@ sub make_response {
     $self->response(HTTP::Response->new(
         $code => undef,
         HTTP::Headers->new(
-			'SOAPServer' => $self->product_tokens,
-			$compressed ? ('Content-Encoding' => $COMPRESS) : (),
-			'Content-Type' => join('; ', 'text/xml',
-					       !$SOAP::Constants::DO_NOT_USE_CHARSET &&
-					       $encoding ? 'charset=' . lc($encoding) : ()),
-			'Content-Length' => SOAP::Utils::bytelength $response
+            'SOAPServer' => $self->product_tokens,
+            $compressed ? ('Content-Encoding' => $COMPRESS) : (),
+            'Content-Type' => join('; ', 'text/xml',
+               !$SOAP::Constants::DO_NOT_USE_CHARSET &&
+                   $encoding ? 'charset=' . lc($encoding) : ()),
+            'Content-Length' => SOAP::Utils::bytelength $response
         ),
         $response,
     ));
@@ -472,7 +474,7 @@ sub handle {
     } 
     elsif (defined $SOAP::Constants::MAX_CONTENT_SIZE && $length > $SOAP::Constants::MAX_CONTENT_SIZE) {
         $self->response(HTTP::Response->new(413)) # REQUEST ENTITY TOO LARGE
-    } 
+    }
     else {
 
         if (exists $ENV{EXPECT} && $ENV{EXPECT} =~ /\b100-Continue\b/i) {
@@ -545,11 +547,11 @@ sub new {
     eval "require $http_daemon" 
         or Carp::croak $@ 
             unless UNIVERSAL::can($http_daemon => 'new');
-    
+
     $self->{_daemon} = $http_daemon->new(@params) 
         or Carp::croak "Can't create daemon: $!";
     # End SSL patch
-    
+
     $self->myuri(URI->new($self->url)->canonical->as_string);
     
     while (@methods) { 
@@ -627,6 +629,7 @@ sub new {
         require Apache2::RequestRec;
         require Apache2::RequestIO;
         require Apache2::Const;
+        require Apache2::RequestUtil;
         require APR::Table;
         Apache2::Const->import(-compile => 'OK'); 
         $self->{'MOD_PERL_VERSION'} = 2;
@@ -634,23 +637,23 @@ sub new {
     } 
     else { # mod_perl 1.xx
         die "Could not find or load mod_perl"
-    	    unless (eval "require mod_perl");
+            unless (eval "require mod_perl");
         die "Could not detect your version of mod_perl"
-    	    if (!defined($mod_perl::VERSION));
+            if (!defined($mod_perl::VERSION));
         if ($mod_perl::VERSION < 1.99) {
-    	   require Apache;
-    	   require Apache::Constants;
-    	   Apache::Constants->import('OK');
-    	   $self->{'MOD_PERL_VERSION'} = 1;
-    	   $self->{OK} = &Apache::Constants::OK;
+           require Apache;
+           require Apache::Constants;
+           Apache::Constants->import('OK');
+           $self->{'MOD_PERL_VERSION'} = 1;
+           $self->{OK} = &Apache::Constants::OK;
         } 
         else {
-    	   require Apache::RequestRec;
-    	   require Apache::RequestIO;
-    	   require Apache::Const;
-    	   Apache::Const->import(-compile => 'OK');
-    	   $self->{'MOD_PERL_VERSION'} = 1.99;
-    	   $self->{OK} = &Apache::OK;
+           require Apache::RequestRec;
+           require Apache::RequestIO;
+           require Apache::Const;
+           Apache::Const->import(-compile => 'OK');
+           $self->{'MOD_PERL_VERSION'} = 1.99;
+           $self->{OK} = &Apache::OK;
         }
     }  
 
@@ -664,22 +667,19 @@ sub handler {
     # Begin patch from JT Justman
     if (!$r) {
         if ( $self->{'MOD_PERL_VERSION'} < 2 ) { 
-	        $r = Apache->request();
+            $r = Apache->request();
         } 
         else { 
-	        $r = Apache2::RequestUtil->request();
+            $r = Apache2::RequestUtil->request();
         }
     }
-  
+
     my $cont_len;
-    if ( $self->{'MOD_PERL_VERSION'} == 1 ) { 
+    if ( $self->{'MOD_PERL_VERSION'} < 2 ) { 
         $cont_len = $r->header_in ('Content-length');
-    } 
-    else { 
-        $cont_len = $r->headers_in->get('Content-length'); 
     }
-    if ($r->headers_in->{'Expect'} =~ /\b100-Continue\b/i) {
-        $r->print("HTTP/1.1 100 Continue\r\n\r\n");
+    else {
+        $cont_len = $r->headers_in->get('Content-length'); 
     }
     # End patch from JT Justman
 
@@ -687,11 +687,11 @@ sub handler {
         $r->method() => $r->uri,
         HTTP::Headers->new($r->headers_in),
         do { 
-	       my ($c,$buf); 
-	       while ($r->read($buf,$cont_len)) { 
-	          $c .= $buf; 
-	       } 
-	       $c; 
+           my ($c,$buf); 
+           while ($r->read($buf,$cont_len)) { 
+              $c .= $buf; 
+           } 
+           $c; 
         }
     ));
     $self->SUPER::handle;
@@ -718,6 +718,8 @@ sub handler {
     return $self->{OK};
     # End JT Justman patch
 }
+
+
 
 sub configure {
     my $self = shift->new;
