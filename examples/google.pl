@@ -16,7 +16,9 @@ my $key = '0'; # <<< put your key here
 my $query = shift || 'soap';
 
 # use GoogleSearch.wsdl file from Google developer's kit
-my $google = SOAP::Lite->service('file:./GoogleSearch.wsdl');
+# update path to file to make it work
+# GoogleSearch.wsdl is NOT included
+my $google = SOAP::Lite->service('file://GoogleSearch.wsdl');
 my $result = $google->doGoogleSearch(
   $key, $query, 0, 10, 'false', '', 'false', '', 'latin1', 'latin1');
 
