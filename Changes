@@ -16,7 +16,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.70_04
+  ! Fixes [ 1855575 ] "P" autotyped as xsd:duration
   ! Fixes [ 1842314 ] Expect: 100-Continue does not work with Apache::SOAP
+  ! Fixes #13140 unable to use local file as WSDL service description file 
+    Acually there is no bug, but just a missing comment in the examples...
 
 0.70_03 Nov 18 2007
   ! Fixes [ 1816906 ] 7/06_modules.t fails with Apache 1.27

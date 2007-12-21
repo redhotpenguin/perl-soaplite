@@ -970,40 +970,53 @@ sub new {
         _seen => {},
         _typelookup => {
            'base64Binary' => 
-	           [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/ }, 'as_base64Binary'],
-	       'zerostring' => 
-	           [12, sub { $_[0] =~ /^0\d+$/ }, 'as_string'],
+              [10, sub {$_[0] =~ /[^\x09\x0a\x0d\x20-\x7f]/ }, 'as_base64Binary'],
+           'zerostring' => 
+               [12, sub { $_[0] =~ /^0\d+$/ }, 'as_string'],
             # int (and actually long too) are subtle: the negative range is one greater...
             'int'  => 
-	           [20, sub {$_[0] =~ /^([+-]?\d+)$/ && ($1 <= 2147483647) && ($1 >= -2147483648); }, 'as_int'],
+               [20, sub {$_[0] =~ /^([+-]?\d+)$/ && ($1 <= 2147483647) && ($1 >= -2147483648); }, 'as_int'],
             'long' => 
-	           [25, sub {$_[0] =~ /^([+-]?\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
+               [25, sub {$_[0] =~ /^([+-]?\d+)$/ && $1 <= 9223372036854775807;}, 'as_long'],
             'float'  => 
-	           [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
+               [30, sub {$_[0] =~ /^(-?(?:\d+(?:\.\d*)?|\.\d+|NaN|INF)|([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)$/}, 'as_float'],
             'gMonth' => 
-	           [35, sub { $_[0] =~ /^--\d\d--(-\d\d:\d\d)?$/; }, 'as_gMonth'],
+               [35, sub { $_[0] =~ /^--\d\d--(-\d\d:\d\d)?$/; }, 'as_gMonth'],
             'gDay' => 
-	           [40, sub { $_[0] =~ /^---\d\d(-\d\d:\d\d)?$/; }, 'as_gDay'],
+               [40, sub { $_[0] =~ /^---\d\d(-\d\d:\d\d)?$/; }, 'as_gDay'],
             'gYear' => 
-	           [45, sub { $_[0] =~ /^-?\d\d\d\d(-\d\d:\d\d)?$/; }, 'as_gYear'],
+               [45, sub { $_[0] =~ /^-?\d\d\d\d(-\d\d:\d\d)?$/; }, 'as_gYear'],
             'gMonthDay' => 
-	           [50, sub { $_[0] =~ /^-\d\d-\d\d(-\d\d:\d\d)?$/; }, 'as_gMonthDay'],
+               [50, sub { $_[0] =~ /^-\d\d-\d\d(-\d\d:\d\d)?$/; }, 'as_gMonthDay'],
             'gYearMonth' => 
-	           [55, sub { $_[0] =~ /^-?\d\d\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_gYearMonth'],
+               [55, sub { $_[0] =~ /^-?\d\d\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_gYearMonth'],
             'date' => 
-	           [60, sub { $_[0] =~ /^-?\d\d\d\d-\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_date'],
+               [60, sub { $_[0] =~ /^-?\d\d\d\d-\d\d-\d\d(Z|([+-]\d\d:\d\d))?$/; }, 'as_date'],
             'time' => 
-	           [70, sub { $_[0] =~ /^\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_time'],
+               [70, sub { $_[0] =~ /^\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_time'],
             'dateTime' => 
-	           [75, sub { $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_dateTime'],
+               [75, sub { $_[0] =~ /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d\d\d)?(Z|([+-]\d\d:\d\d))?$/; }, 'as_dateTime'],
             'duration' => 
-	           [80, sub { $_[0] =~ /^-?P(\d+Y)?(\d+M)?(\dD)?(T(\d+H)?(\d+M)?(\d+S)?)?$/; }, 'as_duration'],
+               [80, sub { $_[0] !~m{^-?PT?$} && $_[0] =~ m{^
+                        -?   # a optional - sign
+                        P
+                        (:? \d+Y )?
+                        (:? \d+M )?
+                        (:? \d+D )?
+                        (:?
+                            T(:?\d+H)?
+                            (:?\d+M)?
+                            (:?\d+S)?
+                        )?
+                        $
+                    }x; 
+               }, 'as_duration'],
             'boolean' => 
-	           [90, sub { $_[0] =~ /^(true|false)$/i; }, 'as_boolean'],
+               [90, sub { $_[0] =~ /^(true|false)$/i; }, 'as_boolean'],
             'anyURI' => 
-	           [95, sub { $_[0] =~ /^(urn:|http:\/\/)/i; }, 'as_anyURI'],
+               [95, sub { $_[0] =~ /^(urn:|http:\/\/)/i; }, 'as_anyURI'],
             'string' => 
-	           [100, sub {1}, 'as_string'],
+               [100, sub {1}, 'as_string'],
         },
         _encoding => 'UTF-8',
         _objectstack => {},

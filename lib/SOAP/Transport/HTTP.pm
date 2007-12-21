@@ -683,16 +683,23 @@ sub handler {
     }
     # End patch from JT Justman
 
+    my $content = "";
+    if ($cont_len > 0) {
+        my $buf;
+        # attempt to slurp in the content at once...
+        $content .= $buf while ($r->read($buf,$cont_len) > 0);
+    }
+    else {
+        # throw appropriate error for mod_perl 2
+        return Apache2::Const::HTTP_BAD_REQUEST()
+            if ($self->{'MOD_PERL_VERSION'} >= 2);
+        return Apache::Constant::BAD_REQUEST();
+    }
+
     $self->request(HTTP::Request->new( 
         $r->method() => $r->uri,
         HTTP::Headers->new($r->headers_in),
-        do { 
-           my ($c,$buf); 
-           while ($r->read($buf,$cont_len)) { 
-              $c .= $buf; 
-           } 
-           $c; 
-        }
+        $content 
     ));
     $self->SUPER::handle;
 

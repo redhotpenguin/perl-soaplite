@@ -6,6 +6,7 @@ license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.36
 distribution_type:   module
 requires:     
+    LWP::UserAgent                 0
     Compress::Zlib:                0
     Crypt::SSLeay:                 0
     FCGI:                          0

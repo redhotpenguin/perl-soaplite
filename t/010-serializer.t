@@ -23,7 +23,7 @@ my @types2001 = qw(
 );
 
 # types * 3 + extra tests + autotype tests
-plan tests => 222;
+plan tests => 225;
 
 test_serializer('SOAP::XMLSchema1999::Serializer', @types1999);
 test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
@@ -133,6 +133,9 @@ my %type_of = (
     '2147483647' => 'xsd:int',
     '2147483648' => 'xsd:long',
     '5999927619709920' => 'xsd:long',
+    'P' => 'xsd:string',
+    'PT' => 'xsd:string',
+    'PT01S' => 'xsd:duration',
 );
 
 while (my ($value, $type) = each %type_of) {
