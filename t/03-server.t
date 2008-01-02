@@ -151,8 +151,9 @@ Content-ID: <calc061400a.b@soaplite.com>
 EOM
 );
  
-eval "SOAP::Packager::MIME->new->initialize_parser";
-my $is_mimetools_installed = $@ ? 0 : 1;
+eval "SOAP::Packager::MIME->new->initialize_parser();";
+my $is_mimetools_installed = ($@) ? 0 : 1;
+
 (my $reason = $@) =~ s/ at .+// unless $is_mimetools_installed;
 print "MIME tests will be skipped: $reason" if defined $reason;
 my $package = '
@@ -163,24 +164,26 @@ my $package = '
 1;';
 
 # TEST 1-4
-{
+HANDLER: {
   print "Server handler test(s)...\n";
 
   my $server = SOAP::Server->dispatch_to('Calculator');
 
-  foreach (sort keys %tests) {
+   for (reverse sort keys %tests) {
+   # for ('message with headers', 'XML only') {
     my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
     skip(($_ =~ /XML/ || !$is_mimetools_installed),
-	 ($result->faultstring || '') =~ /Failed to access class \(Calculator\)/);
+        ($result->faultstring || '') =~ /Failed to access class \(Calculator\)/);
   }
-
+  # last HANDLER;
   eval $package or die;
 
-  foreach (sort keys %tests) {
-    my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-    skip(($_ =~ /XML/ || !$is_mimetools_installed),
-	 ($result->result || 0) == 7);
-  }
+    for (reverse sort keys %tests) {
+    #for ('message with headers', 'XML only') {
+        my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
+        skip(($_ =~ /XML/ || !$is_mimetools_installed),
+            ($result->result || 0) == 7);
+    }
 }
 
 {

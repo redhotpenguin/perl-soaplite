@@ -150,12 +150,6 @@ lib/XMLRPC/Transport/POP3.pm
 lib/XMLRPC/Transport/TCP.pm
 Makefile.PL
 MANIFEST
-patches/03-server-test.patch
-patches/complexTypes.patch
-patches/doclit-array-serialization.patch
-patches/encode-data.patch
-patches/soap-lite-0.69-arraydeserialization.patch
-patches/SoapURIpatch.patch
 README
 ReleaseNotes.txt
 t/01-core.t
