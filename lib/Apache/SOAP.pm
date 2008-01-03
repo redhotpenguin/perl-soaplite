@@ -19,6 +19,10 @@ $VERSION = '0.69_01';
 
 my $server = __PACKAGE__->new;
 
+sub server {
+    return $server;
+}
+
 sub handler {
   $server->configure(@_);
   $server->SUPER::handler(@_);
@@ -105,6 +109,20 @@ SOAP::Transport::HTTP documentation for other options.
   PerlSetVar options "compress_threshold => 10000"
 
 =back
+
+=head1 METHODS/SUBROUTINES
+
+=head2 server
+
+ my $server = Apache::XMLRPC::Lite->server();
+
+Returns the server object.
+
+Useful if you need to manipulate the server object from your code.
+
+=head2 handle
+
+Request handler. Called by apache.
 
 =head1 DEPENDENCIES
 
