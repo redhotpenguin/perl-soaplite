@@ -1,6 +1,7 @@
 # ======================================================================
 #
-# Copyright (C) 2000-2001 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2000-2007 Paul Kulchenko (paulclinger@yahoo.com)
+# Copyright (C) 2008 Martin Kutter (martin.kutter@fen-net.de)
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
@@ -12,15 +13,13 @@ package XML::Parser::Lite;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
-$VERSION = '0.70_4';
+$VERSION = '0.70_5';
 
 sub new { 
-    my $self = shift;
-    my $class = ref($self) || $self;
-    return $self if ref $self;
+    my $class = shift;
 
-    $self = bless {} => $class;
+    return $class if ref $class;
+    my $self = bless {} => $class;
 
     my %parameters = @_;
     $self->setHandlers(); # clear first 
@@ -51,7 +50,7 @@ sub setHandlers {
     return $self;
 }
 
-sub regexp {
+sub _regexp {
     my $patch = shift || '';
     my $package = __PACKAGE__;
 
@@ -86,9 +85,9 @@ sub regexp {
     my $PI_CE = "$Name(?:$PI_Tail)?";
 
     # these expressions were modified for backtracking and events
-    my $EndTagCE = "($Name)(?{${package}::end(\$2)})(?:$S)?>";
+    my $EndTagCE = "($Name)(?{${package}::_end(\$2)})(?:$S)?>";
     my $AttValSE = "\"([^<\"]*)\"|'([^<']*)'";
-    my $ElemTagCE = "($Name)(?:$S($Name)(?:$S)?=(?:$S)?(?:$AttValSE)(?{[\@{\$^R||[]},\$4=>defined\$5?\$5:\$6]}))*(?:$S)?(/)?>(?{${package}::start( \$3,\@{\$^R||[]})})(?{\${7} and ${package}::end(\$3)})";
+    my $ElemTagCE = "($Name)(?:$S($Name)(?:$S)?=(?:$S)?(?:$AttValSE)(?{[\@{\$^R||[]},\$4=>defined\$5?\$5:\$6]}))*(?:$S)?(/)?>(?{${package}::_start( \$3,\@{\$^R||[]})})(?{\${7} and ${package}::_end(\$3)})";
     my $MarkupSPE = "<(?:!(?:$DeclCE)?|\\?(?:$PI_CE)?|/(?:$EndTagCE)?|(?:$ElemTagCE)?)";
 
     # Next expression is under "black magic".
@@ -99,67 +98,56 @@ sub regexp {
     # and what's the reason for all this magic. 
     # Seems like a problem related to (?:....)? rather than to ?{} feature.
     # Tests are in t/31-xmlparserlite.t if you decide to play with it.
-    "(?{[]})(?:($TextSE)(?{${package}::char(\$1)}))$patch|$MarkupSPE";
+    "(?{[]})(?:($TextSE)(?{${package}::_char(\$1)}))$patch|$MarkupSPE";
 }
 
 setHandlers();
-use Data::Dumper;
-my $REGEXP = regexp('??');
 
-sub parse_re { 
+# Try 5.6 and 5.10 regex first
+my $REGEXP = _regexp('??');
+
+sub _parse_re { 
     use re "eval"; 
     1 while $_[0] =~ m{$REGEXP}go 
 };
 
-if (not eval { parse_re('<foo>bar</foo>'); 1; } ) {
-    $REGEXP = regexp('??');
+# fixup regex if it does not work...
+if (not eval { _parse_re('<soap:foo xmlns:soap="foo">bar</soap:foo>'); 1; } ) {
+    $REGEXP = _regexp();
+    local $^W;  # switch off warnings;
+    *_parse_re = sub {
+            use re "eval"; 
+            1 while $_[0] =~ m{$REGEXP}go 
+        };
 }
 
-#sub compile { local $^W; 
-#  # try regexp as it should be, apply patch if doesn't work
-#  foreach (regexp(), regexp('??')) {
-#    eval qq{
-#        sub parse_re { 
-#            use re "eval"; 
-#            1 while \$_[0] =~ m{$_}go 
-#        };
-#        1;
-#    } or die;
-#    last if eval { parse_re('<foo>bar</foo>'); 1 }
-#  };
-#
-#  *compile = sub {};
-#}
-
-# compile();
-
 sub parse { 
-    init(); 
-    parse_re($_[1]);
-    final(); 
+    _init(); 
+    _parse_re($_[1]);
+    _final(); 
 }
 
 my(@stack, $level);
 
-sub init { 
+sub _init { 
     @stack = ();
     $level = 0;
     Init(__PACKAGE__, @_);  
 }
 
-sub final { 
+sub _final { 
     die "not properly closed tag '$stack[-1]'\n" if @stack;
     die "no element found\n" unless $level;
     Final(__PACKAGE__, @_) 
 } 
 
-sub start { 
+sub _start { 
     die "multiple roots, wrong element '$_[0]'\n" if $level++ && !@stack;
     push(@stack, $_[0]);
     Start(__PACKAGE__, @_); 
 }
 
-sub char { 
+sub _char { 
     Char(__PACKAGE__, $_[0]), return if @stack;
 
     # check for junk before or after element
@@ -172,7 +160,7 @@ sub char {
     }
 }
 
-sub end { 
+sub _end { 
     pop(@stack) eq $_[0] or die "mismatched tag '$_[0]'\n";
     End(__PACKAGE__, $_[0]);
 }
@@ -214,7 +202,80 @@ This Perl module gives you access to an XML parser with a interface similar to
 XML::Parser. Though only basic calls are supported (init, final,
 start, char, and end) you should be able to use it in the same way you use
 XML::Parser. Due to using experimantal regexp features it'll work only on
-Perl 5.6 and may behave differently on different platforms.
+Perl 5.6 and above and may behave differently on different platforms.
+
+=head1 SUBROUTINES/METHODS
+
+=head2 new
+
+Constructor.
+
+As (almost) all SOAP::Lite constructors, new() returns the object called on
+when called as object method. This means that the following effectifely is
+a no-op if $obj is a object:
+
+ $obj = $obj->new();
+
+New accepts a single named parameter, C<Handlers> with a hash ref as value:
+
+ my $parser = XML::Parser::Lite->new(
+    Handlers => {
+        Start => sub { shift; print "start: @_\n" },
+        Char => sub { shift; print "char: @_\n" },
+        End => sub { shift; print "end: @_\n" },
+    }
+ );
+
+The handlers given will be passed to setHandlers.
+
+=head2 setHandlers
+
+Sets (or resets) the parsing handlers. Accepts a hash with the handler names
+and handler code references as parameters. Passing C<undef> instead of a
+code reference replaces the handler by a no-op.
+
+The following handlers can be set:
+
+ Init
+ Start
+ Char
+ End
+ Final
+
+All other handlers are ignored.
+
+Calling setHandlers without parameters resets all handlers to no-ops.
+
+=head2 parse
+
+Parses the XML given. In contrast to L<XML::Parser|XML::Parser>'s parse
+method, parse() only parses strings.
+
+=head1 Handler methods
+
+=head2 Init
+
+Called before parsing starts. You should perform any necessary initializations
+in Init.
+
+=head2 Start
+
+Called at the start of each XML node. See L<XML::Parser> for details.
+
+=head2 Char
+
+Called for each character sequence. May be called multiple times for the
+characters contained in an XML node (even for every single character).
+Your implementation has to make sure that it captures all characters.
+
+=head2 End
+
+Called at the end of each XML node. See L<XML::Parser> for details
+
+=head2 Final
+
+Called at the end of the parsing process. You should perform any neccessary
+cleanup here.
 
 =head1 SEE ALSO
 
@@ -222,7 +283,9 @@ Perl 5.6 and may behave differently on different platforms.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000-2001 Paul Kulchenko. All rights reserved.
+Copyright (C) 2000-2007 Paul Kulchenko. All rights reserved.
+
+Copyright (C) 2008- Martin Kutter. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
