@@ -1,18 +1,19 @@
 #!/bin/env perl 
 
 BEGIN {
-  unless(grep /blib/, @INC) {
-    chdir 't' if -d 't';
-    unshift @INC, '../lib' if -d '../lib';
-  }
+    unless(grep /blib/, @INC) {
+        chdir 't' if -d 't';
+        unshift @INC, '../lib' if -d '../lib';
+    }
 }
 
 use strict;
+use diagnostics;
 use Test;
 
 unless (eval { require XML::Parser::Lite }) {
-  print "1..0 # Skip: ", $@, "\n"; 
-  exit;
+    print "1..0 # Skip: ", $@, "\n"; 
+    exit;
 }
 
 plan tests => 17;
@@ -20,14 +21,15 @@ plan tests => 17;
 my($s, $c, $e, $a);
 
 ($s, $c, $e) = (0) x 3;
-my $p1 = new XML::Parser::Lite;
-$p1->setHandlers(
-  Start => sub { shift; $s++; print "start: @_\n" },
-  Char => sub { shift; $c++; print "char: @_\n" },
-  End => sub { shift; $e++; print "end: @_\n" },
-);
-$p1->parse('<foo id="me">Hello World!</foo>');
+my $p1 = XML::Parser::Lite->new();
 ok(1 => 1);
+$p1->setHandlers(
+    Start => sub { shift; $s++; print "start: @_\n" },
+    Char => sub { shift; $c++; print "char: @_\n" },
+    End => sub { shift; $e++; print "end: @_\n" },
+);
+$p1->parse('<foo>Hello World!</foo>');
+
 ok($s == 1);
 ok($c == 1);
 ok($e == 1);

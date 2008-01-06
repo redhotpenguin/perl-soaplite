@@ -1,24 +1,24 @@
 #!/bin/env perl 
 
 BEGIN {
-  unless(grep /blib/, @INC) {
-    chdir 't' if -d 't';
-    unshift @INC, '../lib' if -d '../lib';
-  }
+    unless(grep /blib/, @INC) {
+        chdir 't' if -d 't';
+        unshift @INC, '../lib' if -d '../lib';
+    }
 }
 
 use strict;
 use Test;
 
 use SOAP::Lite
-  on_fault => sub {
-    my $soap = shift;
-    my $res = shift;
-    ref $res ? warn(join " ", "SOAP FAULT:", $res->faultstring, "\n") 
-             : warn(join " ", "TRANSPORT ERROR:", $soap->transport->status, "\n");
-    return new SOAP::SOM;
-  },
-;
+    on_fault => sub {
+        my $soap = shift;
+        my $res = shift;
+        ref $res
+            ? warn(join " ", "SOAP FAULT:", $res->faultstring, "\n") 
+            : warn(join " ", "TRANSPORT ERROR:", $soap->transport->status, "\n");
+        return new SOAP::SOM;
+    };
 
 $SOAP::Constants::DO_NOT_USE_CHARSET = 1;
 
@@ -28,12 +28,14 @@ my($a, $s, $r, $serialized, $deserialized);
 use SOAP::Test;
 
 $s = SOAP::Lite->uri('http://something/somewhere')->proxy('http://services.xmethods.net/soap/servlet/rpcrouter')->on_fault(sub{});
-eval { $s->transport->timeout($SOAP::Test::TIMEOUT = $SOAP::Test::TIMEOUT) };
+eval { 
+    $s->transport->timeout($SOAP::Test::TIMEOUT = $SOAP::Test::TIMEOUT)
+};
 $r = $s->test_connection;
 
 unless (defined $r && defined $r->envelope) {
-  print "1..0 # Skip: ", $s->transport->status, "\n"; 
-  exit;
+    print "1..0 # Skip: ", $s->transport->status, "\n"; 
+    exit;
 }
 # ------------------------------------------------------
 
@@ -41,21 +43,19 @@ plan tests => 21;
 
 {
 # Public test server with Frontier implementation (http://soap.weblogs.com/)
-  print "Frontier server test(s)...\n";
-  $s = SOAP::Lite 
-    -> uri('/examples')
-    -> on_action(sub { sprintf '"%s"', @_ })
-    -> proxy('http://superhonker.userland.com/', timeout => $SOAP::Test::TIMEOUT)
-  ;
+    print "Frontier server test(s)...\n";
+    $s = SOAP::Lite 
+        -> uri('/examples')
+        -> on_action(sub { sprintf '"%s"', @_ })
+        -> proxy('http://superhonker.userland.com/', timeout => $SOAP::Test::TIMEOUT);
 
-  ok($s->getCurrentTime()->result); 
-  ok($s->getStateName(SOAP::Data->name(statenum => 1))->result eq 'Alabama'); 
+    ok($s->getCurrentTime()->result); 
+    ok($s->getStateName(SOAP::Data->name(statenum => 1))->result eq 'Alabama'); 
 
-  print "SOAP::Lite server test(s)...\n";
-  $s = SOAP::Lite 
-    -> uri('http://www.soaplite.com/My/Examples')
-    -> proxy('http://services.soaplite.com/examples.cgi', timeout => $SOAP::Test::TIMEOUT)
-  ;
+    print "SOAP::Lite server test(s)...\n";
+    $s = SOAP::Lite 
+        -> uri('http://www.soaplite.com/My/Examples')
+        -> proxy('http://services.soaplite.com/examples.cgi', timeout => $SOAP::Test::TIMEOUT);
   ok($s->getStateNames(1,4,6,13)->result =~ /^Alabama\s+Arkansas\s+Colorado\s+Illinois\s*$/); 
 
   $r = $s->getStateList([1,2,3,4])->result;
@@ -70,52 +70,51 @@ plan tests => 21;
     -> uri('http://simon.fell.com/calc')
     -> proxy('http://soap.4s4c.com/ssss4c/soap.asp', timeout => $SOAP::Test::TIMEOUT)
   ;
+beta
+    $r = $s->doubler(name SOAP::Data nums => [10,20,30,50,100])->result;
+    ok(ref $r && $r->[1] == 40);
 
-  $r = $s->doubler(name SOAP::Data nums => [10,20,30,50,100])->result;
-  ok(ref $r && $r->[1] == 40);
+    # Real server with ASP implementation (http://www.soap-wrc.com/webservices/)
+    print "ASP server test(s)...\n";
+    $s = SOAP::Lite 
+        -> uri('www.soap-wrc.com')
+        -> proxy('http://www.soap-wrc.com/webservices/soapv11.asp', timeout => $SOAP::Test::TIMEOUT)
+        -> on_fault(sub{ref$_[1]?return$_[1]:return});
 
-# Real server with ASP implementation (http://www.soap-wrc.com/webservices/)
-  print "ASP server test(s)...\n";
-  $s = SOAP::Lite 
-    -> uri('www.soap-wrc.com')
-    -> proxy('http://www.soap-wrc.com/webservices/soapv11.asp', timeout => $SOAP::Test::TIMEOUT)
-    -> on_fault(sub{ref$_[1]?return$_[1]:return})
-  ;
+    import SOAP::Data 'name'; # no import by default
 
-  import SOAP::Data 'name'; # no import by default
-
-  $r = $s->addResource(
-    name(Login => 'login'),
-    name(Password => 'password'),
-    name(Caption => 'caption'),
-    name(Description => 'description'),
-    name(URL => 'http://yahoo.com'),
-  );
-  ok(ref $r && $r->faultcode eq 'SOAP-ENV:Client');
-  # Password should be wrong. Put yours if you have it. 
-  # Remember: this is the real server
+    $r = $s->addResource(
+        name(Login => 'login'),
+        name(Password => 'password'),
+        name(Caption => 'caption'),
+        name(Description => 'description'),
+        name(URL => 'http://yahoo.com'),
+    );
+    ok(ref $r && $r->faultcode eq 'SOAP-ENV:Client');
+    # Password should be wrong. Put yours if you have it. 
+    # Remember: this is the real server
 
 if (0) { # doesn't seem to be working on 2001/01/31
-  print "DevelopMentor's Perl server test(s)...\n";
-  ok((SOAP::Lite                             
+    print "DevelopMentor's Perl server test(s)...\n";
+    ok((SOAP::Lite
         -> uri('urn:soap-perl-test')                
         -> proxy('http://soapl.develop.com/soap?class=SPTest', timeout => $SOAP::Test::TIMEOUT)
         -> add(SOAP::Data->name(a => 3), SOAP::Data->name(b => 4))
-        -> result or 0) == 7);
+        -> result or 0) == 7);beta
 }
 
-# Public server with Microsoft implementation (http://beta.search.microsoft.com/search/MSComSearchService.asmx)
+# Public server with Microsoft implementation (http://search.microsoft.com/search/MSComSearchService.asmx)
   print "Microsoft's server test(s)...\n";
   ok((SOAP::Lite 
     -> uri('http://tempuri.org/')
-    -> proxy('http://beta.search.microsoft.com/search/MSComSearchService.asmx', timeout => $SOAP::Test::TIMEOUT)
+    -> proxy('http://search.microsoft.com/search/MSComSearchService.asmx', timeout => $SOAP::Test::TIMEOUT)
     -> on_action(sub{join'',@_})
     -> GetVocabulary(SOAP::Data->name(Query => 'something_very_unusual')->uri('http://tempuri.org/'))
     -> valueof('//Found') || '') eq 'false');
 
   $r = SOAP::Lite 
     -> uri('http://tempuri.org/')
-    -> proxy('http://beta.search.microsoft.com/search/MSComSearchService.asmx', timeout => $SOAP::Test::TIMEOUT)
+    -> proxy('http://search.microsoft.com/search/MSComSearchService.asmx', timeout => $SOAP::Test::TIMEOUT)
     -> on_action(sub{join'',@_})
     -> GetBestBets(SOAP::Data->name(Query => 'data')->uri('http://tempuri.org/'))
     -> result;
@@ -237,8 +236,8 @@ if (0) { # Tony brought it down as of 2001/06/11
         -> proxy('http://services.xmethods.net/perl/soaplite.cgi', timeout => $SOAP::Test::TIMEOUT)
         -> pingHost(name SOAP::Data hostname => 'www.yahoo.com')
         -> result or 0) == 1);
-}
 
+  skip 'xmethods is unavailable', 1;
   print "BabelFish translator server test(s)...\n";
   ok((SOAP::Lite                             
         -> uri('urn:xmethodsBabelFish')                
@@ -246,6 +245,7 @@ if (0) { # Tony brought it down as of 2001/06/11
         -> BabelFish(SOAP::Data->name(translationmode => 'en_it'), 
                      SOAP::Data->name(sourcedata => 'I want to work'))
         -> result or '') =~ /^Desidero lavorare$/);
+}
 }
 
 if (0) { # Kafka response has xsi:type="string" response which is invalid
