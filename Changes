@@ -15,6 +15,12 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
+0.70_05 Jan 
+  ! Fixes [ 1864481 ]       XML::Parser::Lite documentation is incomplete
+  + Fixes [ 747302 ]        Make tainting work with XML::Parser::Lite
+  + Fixes [ 1864480 ]       Make XML::Parser::Lite's private subs private
+  ! Fixes [ uncategorized ] bad XML::Parser::Lite behaviour under perl 5.8
+
 0.70_04 Jan 02 2008
   ! Fixes #32008: Failed t/03-server.t tests 2-5 under Perl 5.10 on Mac OS X 10.3.9
   ! Fixes [ 1855575 ] "P" autotyped as xsd:duration

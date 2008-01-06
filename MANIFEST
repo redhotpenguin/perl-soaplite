@@ -115,10 +115,15 @@ lib/OldDocs/SOAP/Transport/MAILTO.pm
 lib/OldDocs/SOAP/Transport/MQ.pm
 lib/OldDocs/SOAP/Transport/POP3.pm
 lib/OldDocs/SOAP/Transport/TCP.pm
+lib/SOAP/Lite/Utils.pm
 lib/SOAP/Client.pod
 lib/SOAP/Constants.pod
 lib/SOAP/Data.pod
 lib/SOAP/Deserializer.pod
+lib/SOAP/Lite/Deserializer/XMLSchema1999.pm
+lib/SOAP/Lite/Deserializer/XMLSchema2001.pm
+lib/SOAP/Lite/Deserializer/XMLSchemaSOAP1_1.pm
+lib/SOAP/Lite/Deserializer/XMLSchemaSOAP1_2.pm
 lib/SOAP/Fault.pod
 lib/SOAP/Header.pod
 lib/SOAP/Lite.pm

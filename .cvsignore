@@ -9,3 +9,5 @@ pod2htm*
 test
 test.sh
 test_perls.pl
+.externalToolBuilders
+mails
