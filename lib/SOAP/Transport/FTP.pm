@@ -22,57 +22,60 @@ use URI;
 # ======================================================================
 
 package SOAP::Transport::FTP::Client;
-
+use SOAP::Lite;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Client);
 
 sub new { 
-  my $self = shift;
-  my $class = ref($self) || $self;
+    my $class = shift;
+    return $class if ref $class;
 
-  unless (ref $self) {
-    my $class = ref($self) || $self;
-    my(@params, @methods);
-    while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
-    $self = bless {@params} => $class;
-    while (@methods) { my($method, $params) = splice(@methods,0,2);
-      $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+    my(@arg_from, @method_from);
+    while (@_) {
+        $class->can($_[0])
+            ? push(@method_from, shift() => shift)
+            : push(@arg_from, shift)
     }
-  }
-  return $self;
+    my $self = bless {@arg_from} => $class;
+    while (@method_from) {
+        my($method, $param_ref) = splice(@method_from,0,2);
+        $self->$method(ref $param_ref eq 'ARRAY' ? @$param_ref : $param_ref) 
+    }
+    return $self;
 }
 
 sub send_receive {
-  my($self, %parameters) = @_;
-  my($envelope, $endpoint, $action) = 
-    @parameters{qw(envelope endpoint action)};
+    my($self, %parameters) = @_;
+    my($envelope, $endpoint, $action) = 
+        @parameters{qw(envelope endpoint action)};
 
-  $endpoint ||= $self->endpoint; # ftp://login:password@ftp.something/dir/file
+    $endpoint ||= $self->endpoint; # ftp://login:password@ftp.something/dir/file
 
-  my $uri = URI->new($endpoint);
-  my($server, $auth) = reverse split /@/, $uri->authority;
-  my $dir = substr($uri->path, 1, rindex($uri->path, '/'));
-  my $file = substr($uri->path, rindex($uri->path, '/')+1);
+    my $uri = URI->new($endpoint);
+    my($server, $auth) = reverse split /@/, $uri->authority;
+    my $dir = substr($uri->path, 1, rindex($uri->path, '/'));
+    my $file = substr($uri->path, rindex($uri->path, '/')+1);
 
-  eval {
-    my $ftp = Net::FTP->new($server, %$self) or die "Can't connect to $server: $@\n";
-    $ftp->login(split /:/, $auth)            or die "Couldn't login\n";
-    $dir and ($ftp->cwd($dir) or
-              $ftp->mkdir($dir, 'recurse') and $ftp->cwd($dir) or die "Couldn't change directory to '$dir'\n");
-  
-    my $FH = IO::File->new_tmpfile; print $FH $envelope; $FH->flush; $FH->seek(0,0);
-    $ftp->put($FH => $file)                  or die "Couldn't put file '$file'\n";
-    $ftp->quit;
-  };
+    eval {
+        my $ftp = Net::FTP->new($server, %$self) or die "Can't connect to $server: $@\n";
+        $ftp->login(split /:/, $auth)            or die "Couldn't login\n";
+        $dir and ($ftp->cwd($dir)
+            or $ftp->mkdir($dir, 'recurse') and $ftp->cwd($dir)
+                or die "Couldn't change directory to '$dir'\n");
 
-  (my $code = $@) =~ s/\n$//;
+        my $FH = IO::File->new_tmpfile; print $FH $envelope; $FH->flush; $FH->seek(0,0);
+        $ftp->put($FH => $file)                  or die "Couldn't put file '$file'\n";
+        $ftp->quit;
+    };
 
-  $self->code($code);
-  $self->message($code);
-  $self->is_success(!defined $code || $code eq '');
-  $self->status($code);
+    (my $code = $@) =~ s/\n$//;
 
-  return;
+    $self->code($code);
+    $self->message($code);
+    $self->is_success(!defined $code || $code eq '');
+    $self->status($code);
+
+    return;
 }
 
 # ======================================================================

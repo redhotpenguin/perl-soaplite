@@ -12,7 +12,6 @@ package SOAP::Transport::IO;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $SOAP::Lite::VERSION;
 
 use IO::File;
@@ -28,44 +27,52 @@ use vars qw(@ISA);
 @ISA = qw(SOAP::Server);
 
 sub new {
-  my $self = shift;
-    
-  unless (ref $self) {
-    my $class = ref($self) || $self;
-    $self = $class->SUPER::new(@_);
-  }
-  return $self;
+    my $class = shift;
+
+    return $class if ref $class;
+    my $self = $class->SUPER::new(@_);
+
+    return $self;
 }
 
-sub BEGIN {
-  no strict 'refs';
-  my %modes = (in => '<', out => '>');
-  for my $method (keys %modes) {
-    my $field = '_' . $method;
-    *$method = sub {
-      my $self = shift->new;
-      return $self->{$field} unless @_;
+sub in {
+    my $self = shift;
+    $self = $self->new() if not ref $self;
 
-      my $file = shift;
-      if (defined $file && !ref $file && !defined fileno($file)) {
-        my $name = $file;
-        open($file = new IO::File, $modes{$method} . $name) or Carp::croak "$name: $!";
-      }
-      $self->{$field} = $file;
-      return $self;
-    }
-  }
+    return $self->{ _in } if not @_;
+
+    my $file = shift;
+    $self->{_in} = (defined $file && !ref $file && !defined fileno($file))
+        ? IO::File->new($file, 'r')
+        : $file;
+    return $self;
+}
+
+sub out {
+    my $self = shift;
+    $self = $self->new() if not ref $self;
+
+    return $self->{ _out } if not @_;
+
+    my $file = shift;
+    $self->{_out} = (defined $file && !ref $file && !defined fileno($file))
+        ? IO::File->new($file, 'w')
+        : $file;
+    return $self;
 }
 
 sub handle {
-  my $self = shift->new;
+    my $self = shift->new;
 
-  $self->in(*STDIN)->out(*STDOUT) unless defined $self->in;
-  my $in = $self->in;
-  my $out = $self->out;
+    $self->in(*STDIN)->out(*STDOUT) unless defined $self->in;
+    my $in = $self->in;
+    my $out = $self->out;
 
-  my $result = $self->SUPER::handle(join '', <$in>);
-  no strict 'refs'; print {$out} $result if defined $out;
+    my $result = $self->SUPER::handle(join '', <$in>);
+    no strict 'refs';
+    print {$out} $result
+        if defined $out;
+    return;
 }
 
 # ======================================================================

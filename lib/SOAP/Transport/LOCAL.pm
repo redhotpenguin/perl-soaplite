@@ -19,36 +19,42 @@ $VERSION = $SOAP::Lite::VERSION;
 
 package SOAP::Transport::LOCAL::Client;
 
+use SOAP::Lite;
+
 use vars qw(@ISA);
 @ISA = qw(SOAP::Client SOAP::Server);
 
 sub new { 
-  my $self = shift;
-
-  unless (ref $self) {
-    my $class = ref($self) || $self;
-    my(@params, @methods);
-    while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
-    $self = $class->SUPER::new(@params);
+    my $class = shift;
+    return $class if ref $class;
+    my(@arg_from, @method_from);
+    while (@_) {
+        $class->can($_[0])
+            ? push(@method_from, shift() => shift)
+            : push(@arg_from, shift)
+    }
+    my $self = $class->SUPER::new(@arg_from);
     $self->is_success(1);     # it's difficult to fail in this module
     $self->dispatch_to(@INC);
-    while (@methods) { my($method, $params) = splice(@methods,0,2);
-      $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+    while (@method_from) {
+        my($method, $param_ref) = splice(@method_from,0,2);
+        $self->$method(ref $param_ref eq 'ARRAY'
+            ? @$param_ref
+            : $param_ref) 
     }
-  }
-  return $self;
+    return $self;
 }
 
 sub send_receive {
-  my($self, %parameters) = @_;
-  my($envelope, $endpoint, $action) = 
-    @parameters{qw(envelope endpoint action)};
+    my($self, %parameters) = @_;
+    my($envelope, $endpoint, $action) = 
+        @parameters{qw(envelope endpoint action)};
 
-  SOAP::Trace::debug($envelope);
-  my $response = $self->SUPER::handle($envelope);
-  SOAP::Trace::debug($response);
+    SOAP::Trace::debug($envelope);
+    my $response = $self->SUPER::handle($envelope);
+    SOAP::Trace::debug($response);
 
-  $response;
+    return $response;
 }
 
 # ======================================================================

@@ -12,7 +12,6 @@ package SOAP::Transport::HTTP;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = '0.70_04';
 
 use SOAP::Lite;
@@ -25,7 +24,6 @@ package SOAP::Transport::HTTP::Client;
 use vars qw(@ISA $COMPRESS $USERAGENT_CLASS);
 $USERAGENT_CLASS = 'LWP::UserAgent';
 @ISA = qw(SOAP::Client);
-#@ISA = ("SOAP::Client",$USERAGENT_CLASS);
 
 $COMPRESS = 'deflate';
 
@@ -34,7 +32,9 @@ my(%redirect, %mpost, %nocompress);
 # hack for HTTP connection that returns Keep-Alive 
 # miscommunication (?) between LWP::Protocol and LWP::Protocol::http
 # dies after timeout, but seems like we could make it work
+my $_patched = 0;
 sub patch {
+    return if $_patched;
     BEGIN { local ($^W) = 0; }
     no warnings "redefine";
     { 
@@ -59,7 +59,7 @@ sub patch {
             goto &$collect; 
         };
     }
-    *patch = sub {};
+    $_patched++;
 };
 
 sub DESTROY { SOAP::Trace::objects('()') }
@@ -77,45 +77,45 @@ sub http_response {
 }
 
 sub new {
-    my $self = shift;
+    my $class = shift;
     
-    return $self if ref $self;  # skip if we're already object...
-  
+    return $class if ref $class;  # skip if we're already object...
+
     push @ISA,$USERAGENT_CLASS;
     eval("require $USERAGENT_CLASS") 
-        or die "Could not load UserAgent class $USERAGENT_CLASS: $@"; 
+        or die "Could not load UserAgent class $USERAGENT_CLASS: $@";
 
     require HTTP::Request; 
     require HTTP::Headers; 
-  
+
     patch() if $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
-  
-    unless (ref $self) {
-        my $class = ref($self) || $self;
-        my(@params, @methods);
-        while (@_) { 
-            $class->can($_[0]) 
-                ? push(@methods, shift() => shift) 
-                : push(@params, shift) 
-        }
-        $self = $class->SUPER::new(@params);
-        
-        die "SOAP::Transport::HTTP::Client must inherit from LWP::UserAgent, or one of its subclasses"
-            if !$self->isa("LWP::UserAgent");
 
-        $self->agent(join '/', 'SOAP::Lite', 'Perl', SOAP::Transport::HTTP->VERSION);
-        $self->options({});
-        $self->http_request(HTTP::Request->new);
-        $self->http_request->headers(HTTP::Headers->new);
-
-        # TODO - add application/dime
-        $self->http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
-        while (@methods) { 
-            my($method, $params) = splice(@methods,0,2);
-            $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
-        }
-        SOAP::Trace::objects('()');
+    my(@params, @methods);
+    while (@_) {
+        $class->can($_[0])
+            ? push(@methods, shift() => shift)
+            : push(@params, shift) 
     }
+    my $self = $class->SUPER::new(@params);
+
+    die "SOAP::Transport::HTTP::Client must inherit from LWP::UserAgent, or one of its subclasses"
+        if !$self->isa("LWP::UserAgent");
+
+    $self->agent(join '/', 'SOAP::Lite', 'Perl', SOAP::Transport::HTTP->VERSION);
+    $self->options({});
+    $self->http_request(HTTP::Request->new);
+    $self->http_request->headers(HTTP::Headers->new);
+
+    # TODO - add application/dime
+    $self->http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
+
+    while (@methods) {
+        my($method, $params) = splice(@methods,0,2);
+        $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+    }
+
+    SOAP::Trace::objects('()');
+
     return $self;
 }
 
@@ -140,8 +140,8 @@ sub send_receive {
     no strict 'refs';
     if ($parts) {
         my $packager = $context->packager;
-        $envelope = $packager->package($envelope,$context);    
-        foreach my $hname (keys %{$packager->headers_http}) {
+        $envelope = $packager->package($envelope,$context);
+        for my $hname (keys %{$packager->headers_http}) {
             $self->http_request->headers->header(
                 $hname => $packager->headers_http->{$hname}
             );
@@ -306,7 +306,7 @@ sub new {
     my $self = shift;
     return $self if ref $self;  # we're already an object
 
-    my $class = ref($self) || $self;
+    my $class = $self;
     $self = $class->SUPER::new(@_);
     $self->{'_on_action'} = sub {
         (my $action = shift || '') =~ s/^(\"?)(.*)\1$/$2/;
@@ -465,7 +465,8 @@ sub make_response {
 }
 
 sub handle {
-    my $self = shift->new;
+    my $self =
+     shift->new;
 
     my $length = $ENV{'CONTENT_LENGTH'} || 0;
 
@@ -528,9 +529,9 @@ sub DESTROY { SOAP::Trace::objects('()') }
 #sub new { require HTTP::Daemon; 
 sub new {
     my $self = shift;
-    return $self if  (ref $self);
+    return $self if (ref $self);
     
-    my $class = ref($self) || $self;
+    my $class = $self;
 
     my(@params, @methods);
     while (@_) { 
@@ -726,28 +727,32 @@ sub handler {
     # End JT Justman patch
 }
 
-
-
 sub configure {
     my $self = shift->new;
     my $config = shift->dir_config;
-    foreach (%$config) {
+    for (%$config) {
         $config->{$_} =~ /=>/
             ? $self->$_({split /\s*(?:=>|,)\s*/, $config->{$_}})
             : ref $self->$_() 
                 ? () # hm, nothing can be done here
-                : $self->$_(split /\s+|\s*,\s*/, $config->{$_})
+                : $self->$_(split /\s+|\s*,\s*/, $config->{$_}) 
             if $self->can($_);
     }
     return $self;
 }
 
-{ sub handle; *handle = \&handler } # just create alias
+{
+    # just create alias
+    sub handle;
+    *handle = \&handler
+}
 
 # ======================================================================
 #
 # Copyright (C) 2001 Single Source oy (marko.asplund@kronodoc.fi)
 # a FastCGI transport class for SOAP::Lite.
+# Updated formatting and removed dead code in new() in 2008
+# by Martin Kutter
 #
 # ======================================================================
 
@@ -758,15 +763,18 @@ use vars qw(@ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { require FCGI; Exporter::require_version('FCGI' => 0.47); # requires thread-safe interface
-    my $self = shift;
+sub new {
 
-    if (!ref($self)) {
-        my $class = ref($self) || $self;
-        $self = $class->SUPER::new(@_);
-        $self->{_fcgirq} = FCGI::Request(\*STDIN, \*STDOUT, \*STDERR);
-        SOAP::Trace::objects('()');
-    }
+    require FCGI;
+    Exporter::require_version('FCGI' => 0.47); # requires thread-safe interface
+
+    my $class = shift;
+    return $class if ref $class;
+
+    my $self = $class->SUPER::new(@_);
+    $self->{_fcgirq} = FCGI::Request(\*STDIN, \*STDOUT, \*STDERR);
+    SOAP::Trace::objects('()');
+
     return $self;
 }
 
