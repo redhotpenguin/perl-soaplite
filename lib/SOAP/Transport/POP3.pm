@@ -30,23 +30,25 @@ use vars qw(@ISA $AUTOLOAD);
 sub DESTROY { my $self = shift; $self->quit if $self->{_pop3server} }
 
 sub new {
-  my $self = shift;
-    
-  unless (ref $self) {
-    my $class = ref($self) || $self;
+    my $class = shift;
+    return $class if ref $class;
+
     my $address = shift;
     Carp::carp "URLs without 'pop://' scheme are deprecated. Still continue" 
       if $address =~ s!^(pop://)?!pop://!i && !$1;
     my $server = URI->new($address);
-    $self = $class->SUPER::new(@_);
-    $self->{_pop3server} = Net::POP3->new($server->host_port) or Carp::croak "Can't connect to '@{[$server->host_port]}': $!";
-    my $method = !$server->auth || $server->auth eq '*' ? 'login' : 
-                  $server->auth eq '+APOP' ? 'apop' : 
-                  Carp::croak "Unsupported authentication scheme '@{[$server->auth]}'";
-    $self->{_pop3server}->$method(split /:/, $server->user) or Carp::croak "Can't authenticate to '@{[$server->host_port]}' with '$method' method"
-      if defined $server->user;
-  }
-  return $self;
+    my $self = $class->SUPER::new(@_);
+    $self->{_pop3server} = Net::POP3->new($server->host_port)
+        or Carp::croak "Can't connect to '@{[$server->host_port]}': $!";
+    my $method = ! $server->auth || $server->auth eq '*'
+        ? 'login'
+        : $server->auth eq '+APOP'
+            ? 'apop'
+            : Carp::croak "Unsupported authentication scheme '@{[$server->auth]}'";
+    $self->{_pop3server}->$method( split m{:}, $server->user() )
+        or Carp::croak "Can't authenticate to '@{[$server->host_port]}' with '$method' method"
+            if defined $server->user;
+    return $self;
 }
 
 sub AUTOLOAD {
