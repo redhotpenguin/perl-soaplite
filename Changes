@@ -9,13 +9,15 @@ a '!'.
 Numbers in square brackets are sourceforge tracker IDs from
 https://sourceforge.net/tracker/?group_id=66000&atid=513017
 
-Numbers with # are CPANRT tracker IDs from 
+Numbers with # are CPANRT tracker IDs from
 http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
-0.70_05 Jan 
+0.70_05 Jan
+  ! Fixes [ 1867264 ]       [PATCH] handle empty complexTypes correctly
+  ! Fixes #32810:           [PATCH] handle empty complexTypes correctly (duplicate)
   ! Fixes [ 1864481 ]       XML::Parser::Lite documentation is incomplete
   + Fixes [ 747302 ]        Make tainting work with XML::Parser::Lite
   + Fixes [ 1864480 ]       Make XML::Parser::Lite's private subs private
@@ -25,7 +27,7 @@ THIS RELEASE
   ! Fixes #32008: Failed t/03-server.t tests 2-5 under Perl 5.10 on Mac OS X 10.3.9
   ! Fixes [ 1855575 ] "P" autotyped as xsd:duration
   ! Fixes [ 1842314 ] Expect: 100-Continue does not work with Apache::SOAP
-  ! Fixes #13140 unable to use local file as WSDL service description file 
+  ! Fixes #13140 unable to use local file as WSDL service description file
     Acually there is no bug, but just a missing comment in the examples...
 
 0.70_03 Nov 18 2007
@@ -37,21 +39,21 @@ THIS RELEASE
   ! Fixes #3677: Line > 1000 characters breaks perl parser
   ! Fixes #11797: SOAP::Transport::HTTP::CGI returns HTTP response headers terminated by "\n" instead of "\r\n"
   ! Fixed #24211: strings with leading zero mistreated as int
-  ! Fixed #25668: cannot build SOAP::Lite with mod_perl 1.29 
+  ! Fixed #25668: cannot build SOAP::Lite with mod_perl 1.29
   ! Fixed #16897: SOAP::Lite 0.66 fails with UNIVERSAL::use
   ! Fixed #30741: SOAP::Transport::HTTP::Apache
 
 0.70_02 Nov 08 2007
   ! Fixed  [ 1828412 ] SOAP::Lite serializes faults with wrong element order,
     thanks to Tom Fischer.
-  ! Fixed [ 1073360 ] Failure to read() long requests under mod_perl (fixed 
-    for mod_perl before thanks to JT Justman, now fixed for CGI, too). 
-  ! Fixed #30339: envelope subroutine() in XMLRPC/Lite.pm incorrectly 
+  ! Fixed [ 1073360 ] Failure to read() long requests under mod_perl (fixed
+    for mod_perl before thanks to JT Justman, now fixed for CGI, too).
+  ! Fixed #30339: envelope subroutine() in XMLRPC/Lite.pm incorrectly
     requires method parameter for a response envelope
-  ! Fixed #26408: SOAP::Transport::HTTP needs to call extract_cookies when 
+  ! Fixed #26408: SOAP::Transport::HTTP needs to call extract_cookies when
     dealing with a cookie jar
   ! Fixed #22730 test failure on bleedperl
-  ! Fixed #30271 Don't give strings with utf8 flag set to 
+  ! Fixed #30271 Don't give strings with utf8 flag set to
     MIME::Base64::encode_base64().
   ! Fixed [ 1816907 ] t/01_core.t fails on 5.6.x
   ! Fixed #24810 missing prerequisite LWP::UserAgent
@@ -183,12 +185,12 @@ THIS RELEASE
   ! Fixed bug 749636 - changed a croak to a warn to enable socket
     timeouts in SOAP::Transport::TCP::Server
   + Added support for UDDI 2/3
-  + Majorly revamped product documentation thanks to the kind 
+  + Majorly revamped product documentation thanks to the kind
     contribution made by O'Reilly. Appendix B from "Programming Web
     Services with Perl" has been completely integrated.
   + To better segment SOAP::Lite documentation, many modules have been
     added that contain documentation only. For those who loved the old
-    documentation, it can be found in lib/OldDocs/SOAP/*.pm and 
+    documentation, it can be found in lib/OldDocs/SOAP/*.pm and
     lib/OldDocs/SOAP/Transport/*.pm
   ! Fix a bug in which doclit style arrays were not being deserialized
     properly. IOW, Repeated elements were not made into an array, only
@@ -257,7 +259,7 @@ PREVIOUS RELEASES
     continually be presented with their preferences until they
     explicity choose to accept them and continue (bug 747295)
   + Differentiate between xsd:int and xsd:long to fix interoperability
-    bug with Java Web services 
+    bug with Java Web services
   ! Fixed MIME interoperability bug with Apache Axis - Axis' MIME
     parser requires that MIME boundaries are terminiated by a CRLF
     character where the MIME::Tools package only outputs a CR
@@ -271,7 +273,7 @@ PREVIOUS RELEASES
     "channels" (bug 747310)
   ! Disabled SOAPStruct (bug 747316)
   ! Fixed XML::Parser::Expat vulnerability (bug 747265)
-  ! Added item in TROUBLESHOOTING section explaining that there is a 
+  ! Added item in TROUBLESHOOTING section explaining that there is a
     bug in Perl 5.8 that prevents +autodispatch from working properly.
     The workaround is to use dispatch_from instead (bug 747290)
   ! Fixed warning when autodispatched call has no parameters
@@ -296,7 +298,7 @@ PREVIOUS RELEASES
     (thanks to Chris Davies)
   + added check for TCP transport on Mac (thanks to Robin Fuller)
   + added check for shutdown() method on AIX (thanks to Jos Clijmans)
-  + added check for blocking() method in TCP transport 
+  + added check for blocking() method in TCP transport
     (thanks to Jos Clijmans)
   + optimized parsing strings with entity encoding (thanks to Mathieu
     Longtin)
@@ -306,29 +308,29 @@ PREVIOUS RELEASES
   + updated tests and examples with new endpoints
 
 0.52 Mon Oct 18 21:20:19 2001
-  ! fixed content_type returned under mod_perl with 500 SERVER ERROR 
+  ! fixed content_type returned under mod_perl with 500 SERVER ERROR
     status (thanks to Geoffrey Young and Scott Hutton)
-  ! fixed problem with multiple bindings in WSDL file generated by 
+  ! fixed problem with multiple bindings in WSDL file generated by
     MS SOAP toolkit
-  ! fixed handling of boolean type in 1999 Schema and hexBinary type 
+  ! fixed handling of boolean type in 1999 Schema and hexBinary type
     in 2001 Schema
   ! fixed warning and problem with WOULDBLOCK state in IO::SessionData
     (thanks to Marty Pauley)
   ! fixed miscalculation in position within sparse arrays
   ! fixed problem with URI when methods of SOAP::Data are called in
     certain order (thanks to Taras Shkvarchuk)
-  ! fixed CRLF problem in CGI module on Windows platform under IIS 
+  ! fixed CRLF problem in CGI module on Windows platform under IIS
     (thanks to Werner Ackerl)
   ! fixed hex and hexBinary datatypes generation
   ! fixed content-length calculation when payload has multibyte utf8
     characters
   ! fixed problem with XMLRPC and nested packages with more than two
     levels (thanks to Leonid Gernovski)
-  ! fixed (again) memory leak in SOAP::Parser (thanks to Craig 
+  ! fixed (again) memory leak in SOAP::Parser (thanks to Craig
     Johnston)
   + updated Jabber interface for new format of 'use Net::Jabber ...'
     does not work with Net::Jabber 1.022 and later
-  + updated XMLRPC::Lite to not detect value as float for 'NaN' and 
+  + updated XMLRPC::Lite to not detect value as float for 'NaN' and
     'INF' strings
   + updated XMLRPC::Lite to return 200OK on errors
   + updated XMLRPC do not specify charset in content-type
@@ -342,22 +344,22 @@ PREVIOUS RELEASES
     (thanks to Stephen Shortland)
   + added XMLRPC support in COM interface. XMLRPC client and server
     can be created using COM interface
-  + added DO_NOT_PROCESS_XML_IN_MIME option for MIME parts with 
+  + added DO_NOT_PROCESS_XML_IN_MIME option for MIME parts with
     text/xml content type
-  + modified deserialization algorithm that allows to properly 
-    deserialize SOAP1.2 messages when default is set to SOAP1.1 and 
+  + modified deserialization algorithm that allows to properly
+    deserialize SOAP1.2 messages when default is set to SOAP1.1 and
     vice versa
-  + added fault in XMLRPC::Lite for incorrect datatypes specified by 
+  + added fault in XMLRPC::Lite for incorrect datatypes specified by
     user (thanks to Paul Prescod)
   + added option to not generate XML declaration
   + added encoding for ']]>' (thanks to Matt Sergeant and James
     Amrhein)
   + added '\r' => '&#xd;' conversion in strings
   + added complaint on incorrect simple types
-  + added byNameOrOrder and byName functions for 
+  + added byNameOrOrder and byName functions for
     SOAP::Server::Parameters (thanks to Matt Stum)
   + added handling relative locations in <import> in WSDL
-  + added stringification of SOAP::Fault (thanks to Tim Jenness) 
+  + added stringification of SOAP::Fault (thanks to Tim Jenness)
   + added documentation for SSL certificate authentication
   + added more examples (terraserver.pl, joke.pl, weblog.pl)
   + added more tests
@@ -412,8 +414,8 @@ PREVIOUS RELEASES
     Davies)
   + modified dispatch for XMLRPC server to work exactly as for SOAP
     server examples included in examples/XMLRPC directory
-  + added example with Inline::C module (inline.daemon). 
-    Dispatch to C, C++, assembler, Java, Python and Tcl :). 
+  + added example with Inline::C module (inline.daemon).
+    Dispatch to C, C++, assembler, Java, Python and Tcl :).
     Thanks to Brian Ingerson for his Inline module.
   + all transport are available for both SOAP::Lite and XMLRPC::Lite:
     HTTP (daemon, CGI, mod_perl), SMTP/POP3, TCP, IO, JABBER, MQ
@@ -445,7 +447,7 @@ PREVIOUS RELEASES
   + added SOAP::Fault class for customization of returning Fault
     message
   + added charset in HTTP header for requests
-  + added check for namespace and types resolving 
+  + added check for namespace and types resolving
   + added namespaces declarations from WSDL interface
   + added INCOMPATIBILITY section in README file
   + added live tests/examples for UDDI publishing interface
@@ -454,12 +456,12 @@ PREVIOUS RELEASES
   + added more examples, tests and documentation
 
 0.47 Wed Feb 21 17:11:12 2001
-  ! fixed lack of parameter in MAILTO transport 
+  ! fixed lack of parameter in MAILTO transport
   ! fixed minimal version of COM interface to not require absent
     modules
   + added compression for HTTP transport
   + added mod_soap interface, add SOAP server functionality
-    with couple of lines in .htaccess or httpd.conf file 
+    with couple of lines in .htaccess or httpd.conf file
   + added proper serialization of circular multiple references
   + significantly redesigned handling types and URIs
     ! incompatibilities with ApacheSOAP clients may occur
@@ -498,7 +500,7 @@ PREVIOUS RELEASES
   + added interoperability tests for Apache SOAP
   + added interoperability tests with MS SOAP, 4s4c and Lucin
     implementations
-  + added attachment parsing (singlepart/multipart MIME) 
+  + added attachment parsing (singlepart/multipart MIME)
     Content-ID and Content-Location are supported
     text/xml fragments are supported and parsed
     all implementations support MIME encoded messages
@@ -532,7 +534,7 @@ PREVIOUS RELEASES
 0.43 Tue Nov 28 01:47:02 2000
   ! fixed bug in UDDI interface that made UDDI client almost useless
   ! fixed Makefile.PL
-  ! tests confirmed that memory leak is gone 
+  ! tests confirmed that memory leak is gone
   + changed syntax for UDDI client to more flexible/convenient
   + added limited support for WSDL schemas. Dynamic and stub access
     supported
@@ -542,7 +544,7 @@ PREVIOUS RELEASES
     consistently
   + allowed manipulation of method's attributes and namespaces
   + added attributes encoding ('&', '<' and '"' are encoded)
-  + updated documentation 
+  + updated documentation
     (thanks to Robert Barta who basically did this work)
   + added more examples and tests (154 for now)
 
@@ -633,7 +635,7 @@ PREVIOUS RELEASES
   + added global class settings with 'use SOAP::Lite ...'
   + added code for returning application errors on server
   + added autodispatch
-  + added SOAP prefix to method calls 
+  + added SOAP prefix to method calls
   + added more documentation
   + added more tests (54 for now)
   + added more examples (Chatbot::Eliza, My::PingPong)
@@ -643,7 +645,7 @@ PREVIOUS RELEASES
   ! fixed blessed reference serialization. Assigned type has top
     priority
   + added working with current node in SOAP::SOM
-  + SOAP::SOM::valueof returns nodeset 
+  + SOAP::SOM::valueof returns nodeset
   + SOAP::SOM::match returns boolean in boolean context
   + added raw xml accepting and output
   + added UserAgent parameters to SOAP::Transport (understands timeout)
@@ -651,7 +653,7 @@ PREVIOUS RELEASES
   + added 'method', 'fault', 'freeform' types of Envelope
   + added server implementation
   + added CGI interface to server implementation
-  + added My::Examples.pm as example of loaded class for SOAP server 
+  + added My::Examples.pm as example of loaded class for SOAP server
   + added more tests (47 for now)
 
 0.31 Wed Sep  6 00:36:15 2000
