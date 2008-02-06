@@ -15,7 +15,8 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
-0.70_05 Jan
+0.70_05 Feb
+  ! Fixes #32971 Undefined subroutine &Apache::Constant::BAD_REQUEST called
   ! Fixes [ 1867264 ]       [PATCH] handle empty complexTypes correctly
   ! Fixes #32810:           [PATCH] handle empty complexTypes correctly (duplicate)
   ! Fixes [ 1864481 ]       XML::Parser::Lite documentation is incomplete
