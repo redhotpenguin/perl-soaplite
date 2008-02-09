@@ -36,7 +36,6 @@ my $_patched = 0;
 sub patch {
     return if $_patched;
     BEGIN { local ($^W) = 0; }
-    no warnings "redefine";
     {
         sub LWP::UserAgent::redirect_ok; *LWP::UserAgent::redirect_ok = sub {1}
     }
