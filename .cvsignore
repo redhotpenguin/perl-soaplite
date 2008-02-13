@@ -11,3 +11,4 @@ test.sh
 test_perls.pl
 .externalToolBuilders
 mails
+sfupload.pl
