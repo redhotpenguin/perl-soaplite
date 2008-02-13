@@ -2146,8 +2146,11 @@ sub decode_value {
     my $schemaclass = defined($schema) && $self->xmlschemas->{$schema}
         || $self;
 
-    if (! defined(%{"${schemaclass}::"}) ) {
-        eval "require $schemaclass" or die $@ if not ref $schemaclass;
+    {
+        no strict qw(refs);
+        if (! defined(%{"${schemaclass}::"}) ) {
+            eval "require $schemaclass" or die $@ if not ref $schemaclass;
+        }
     }
 
     # store schema that is used in parsed message

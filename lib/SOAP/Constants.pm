@@ -12,27 +12,24 @@ package SOAP::Constants;
 use strict;
 use SOAP::Lite;
 
-use constant {
-    URI_1999_SCHEMA_XSD  => "http://www.w3.org/1999/XMLSchema",
-    URI_1999_SCHEMA_XSI  => "http://www.w3.org/1999/XMLSchema-instance",
-    URI_2000_SCHEMA_XSD  => "http://www.w3.org/2000/10/XMLSchema",
-    URI_2000_SCHEMA_XSI  => "http://www.w3.org/2000/10/XMLSchema-instance",
-    URI_2001_SCHEMA_XSD  => "http://www.w3.org/2001/XMLSchema",
-    URI_2001_SCHEMA_XSI  => "http://www.w3.org/2001/XMLSchema-instance",
-
-    URI_LITERAL_ENC       => "",
-    URI_SOAP11_ENC        => "http://schemas.xmlsoap.org/soap/encoding/",
-    URI_SOAP11_ENV        => "http://schemas.xmlsoap.org/soap/envelope/",
-    URI_SOAP11_NEXT_ACTOR => "http://schemas.xmlsoap.org/soap/actor/next",
-    URI_SOAP12_ENC        => "http://www.w3.org/2003/05/soap-encoding",
-    URI_SOAP12_ENV        => "http://www.w3.org/2003/05/soap-envelope",
-    URI_SOAP12_NOENC      => "http://www.w3.org/2003/05/soap-envelope/encoding/none",
-    URI_SOAP12_NEXT_ACTOR => "http://www.w3.org/2003/05/soap-envelope/role/next",
-};
+use constant    URI_1999_SCHEMA_XSD    => "http://www.w3.org/1999/XMLSchema";
+use constant    URI_1999_SCHEMA_XSI    => "http://www.w3.org/1999/XMLSchema-instance";
+use constant    URI_2000_SCHEMA_XSD    => "http://www.w3.org/2000/10/XMLSchema";
+use constant    URI_2000_SCHEMA_XSI    => "http://www.w3.org/2000/10/XMLSchema-instance";
+use constant    URI_2001_SCHEMA_XSD    => "http://www.w3.org/2001/XMLSchema";
+use constant    URI_2001_SCHEMA_XSI    => "http://www.w3.org/2001/XMLSchema-instance";
+use constant    URI_LITERAL_ENC        => "";
+use constant    URI_SOAP11_ENC         => "http://schemas.xmlsoap.org/soap/encoding/";
+use constant    URI_SOAP11_ENV         => "http://schemas.xmlsoap.org/soap/envelope/";
+use constant    URI_SOAP11_NEXT_ACTOR  => "http://schemas.xmlsoap.org/soap/actor/next";
+use constant    URI_SOAP12_ENC         => "http://www.w3.org/2003/05/soap-encoding";
+use constant    URI_SOAP12_ENV         => "http://www.w3.org/2003/05/soap-envelope";
+use constant    URI_SOAP12_NOENC       => "http://www.w3.org/2003/05/soap-envelope/encoding/none";
+use constant    URI_SOAP12_NEXT_ACTOR  => "http://www.w3.org/2003/05/soap-envelope/role/next";
 
 use vars qw($NSMASK $ELMASK);
 
-$NSMASK = '[a-zA-Z_:][\w.\-:]*'; 
+$NSMASK = '[a-zA-Z_:][\w.\-:]*';
 $ELMASK = '^(?![xX][mM][lL])[a-zA-Z_][\w.\-]*$';
 
 use vars qw($NEXT_ACTOR $NS_ENV $NS_ENC $NS_APS
@@ -124,7 +121,7 @@ $DO_NOT_CHECK_CONTENT_TYPE = 0;
 $PATCH_HTTP_KEEPALIVE = 1;
 $OBJS_BY_REF_KEEPALIVE = 600; # seconds
 
-# TODO - use default packager constant somewhere 
+# TODO - use default packager constant somewhere
 $DEFAULT_PACKAGER = "SOAP::Packager::MIME";
 $DEFAULT_CACHE_TTL = 0;
 
@@ -140,7 +137,7 @@ SOAP::Constants - SOAP::Lite provides several variables to allows programmers an
 
 =head1 DESCRIPTION
 
-A number of "constant" values are provided by means of this namespace. The values aren't constants in the strictest sense; the purpose of the values detailed here is to allow the application to change them if it desires to alter the specific behavior governed. 
+A number of "constant" values are provided by means of this namespace. The values aren't constants in the strictest sense; the purpose of the values detailed here is to allow the application to change them if it desires to alter the specific behavior governed.
 
 =head1 CONSTANTS
 
