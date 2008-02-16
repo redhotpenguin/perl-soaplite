@@ -24,7 +24,7 @@ SKIP: {
         },
     );
     my $client;
-    ok my $client = SOAP::Transport::HTTP::Client->new();
+    ok $client = SOAP::Transport::HTTP::Client->new();
     $client->send_receive();
     is $client->code(), '200';
     is $client->message(), '200 OK';
@@ -84,9 +84,16 @@ undef $transport;
 # package SOAP::Transport::HTTP::Apache is untestable under mod_perl 1.x
 # due to missing exports in Apache::Constant
 
-# package SOAP::Transport::HTTP::FCGI
-ok $transport = SOAP::Transport::HTTP::FCGI->new(), 'SOAP::Transport::HTTP::FCGI->new()';
-undef $transport;
+SKIP: {
+    eval "require FCGI;"
+        or skip "Can't test without FCGI", 1;
+
+    # package SOAP::Transport::HTTP::FCGI
+    ok $transport = SOAP::Transport::HTTP::FCGI->new(), 'SOAP::Transport::HTTP::FCGI->new()';
+    undef $transport;
+
+}
+
 
 sub test_make_fault {
     my $server = shift;
