@@ -21,7 +21,7 @@ package SOAP::Lite;
 use 5.004;
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.70_05';
+$VERSION = '0.70_06';
 
 # ======================================================================
 
