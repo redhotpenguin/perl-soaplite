@@ -1,6 +1,5 @@
 package SOAP::Lite::Utils;
 use strict;
-use warnings;
 
 sub import {
     my $caller = caller();

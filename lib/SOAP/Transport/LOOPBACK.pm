@@ -11,11 +11,9 @@
 
 package SOAP::Transport::LOOPBACK;
 use strict;
-use warnings;
 
 package SOAP::Transport::LOOPBACK::Client;
 use strict;
-use warnings;
 
 use vars qw(@ISA);
 @ISA = qw(SOAP::Client);
