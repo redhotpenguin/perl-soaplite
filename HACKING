@@ -3,12 +3,15 @@ HACKING
 
 Development of SOAP::Lite takes place on sourceforge.net.
 
-There's a CVS repository available
+There's a Subversion repository available at
 
-    cvs.sourceforge.net.
+    https://soaplite.svn.sourceforge.net/svnroot/soaplite/
 
+It's recommended to check out the trunk from
 
-Engagement in the further development of this module is highly encouraged - 
+   https://soaplite.svn.sourceforge.net/svnroot/soaplite/trunk
+
+Engagement in the further development of this module is highly encouraged -
 many people have already contributed, and many more probably will.
 
 SOAP::Lite CODING GUIDELINES
@@ -70,7 +73,7 @@ The following guidelines apply:
 
 - Strictness
     * always use strict. Switch off for the smallest block
-    possible, but switch of if there's a reason (don't let tools like
+    possible, but switch off if there's a reason (don't let tools like
     perlcritic fool you: no strict qw(refs); is often required.
 
 - Naming
@@ -79,7 +82,7 @@ The following guidelines apply:
     become port_type)
     * hashes should be named FOO_of, lists FOO_from, references FOO_ref.
     * package names are CamelCase, except when a XML, SOAP or WSDL name is
-    name-giving (don't force 'int' to become 'Int'. However, simpleType 
+    name-giving (don't force 'int' to become 'Int'. However, simpleType
     becomes SimpleType).
     Protocol names for transport modules are all UPPERCASE, like in
     SOAP::Transport::HTTP or in SOAP::Transport::MAILTO.
