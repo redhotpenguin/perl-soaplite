@@ -3763,6 +3763,15 @@ SOAP::Lite is a collection of Perl modules which provides a simple and
 lightweight interface to the Simple Object Access Protocol (SOAP) both on
 client and server side.
 
+=head1 PERL VERSION WARNING
+
+SOAP::Lite 0.71 will be the last version of SOAP::Lite running on perl 5.005
+
+Future versions of SOAP::Lite will require at least perl 5.6.0
+
+If you have not had the time to upgrad your perl, you should consider this
+now.
+
 =head1 OVERVIEW OF CLASSES AND PACKAGES
 
 =over
@@ -5345,6 +5354,8 @@ Win32 from the following sources:
  * CPAN:                http://search.cpan.org/search?dist=SOAP-Lite
  * Sourceforge:         http://sourceforge.net/projects/soaplite/
 
+PPM packages are also available from sourceforge.
+
 You are welcome to send e-mail to the maintainers of SOAP::Lite with your
 with your comments, suggestions, bug reports and complaints.
 
@@ -5362,6 +5373,14 @@ And special gratitude to all the developers who have contributed patches,
 ideas, time, energy, and help in a million different forms to the development
 of this software.
 
+=head1 HACKING
+
+SOAP::Lite's developement takes place on sourceforge.net.
+
+There's a subversion repository set up at
+
+ https://soaplite.svn.sourceforge.net/svnroot/soaplite/
+
 =head1 REPORTING BUGS
 
 Please report all suspected SOAP::Lite bugs using Sourceforge. This ensures
@@ -5369,9 +5388,6 @@ proper tracking of the issue and allows you the reporter to know when something
 gets fixed.
 
 http://sourceforge.net/tracker/?group_id=66000&atid=513017
-
-If under dire circumstances you need immediate assistance with the resolution of
-an issue, you are welcome to contact Byrne Reese at <byrne at majordojo dot com>.
 
 =head1 COPYRIGHT
 
