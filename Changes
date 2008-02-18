@@ -15,7 +15,17 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
-0.70_05 Feb 16 2008
+0.71 Feb 18 2008
+  ! Fixes failing test on 5.10. The mechanism for determining wheter
+  a class is loaded in SOAP::Server has been changed to the following:
+  Assume loaded if
+     - the class is main
+     - the class implements the required method
+     - the corresponding module (file) exists in %INC
+  This is still error prone - if you know a better algorithm, please help me
+  out.
+
+0.70_06 Feb 16 2008
   ! Fixes failing test without FCGI installed
 
 0.70_05 Feb 13 2008

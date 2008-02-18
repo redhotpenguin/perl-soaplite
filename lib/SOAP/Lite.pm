@@ -11,8 +11,6 @@
 # Formatting hint:
 # Target is the source code format laid out in Perl Best Practices (4 spaces
 # indent, opening brace on condition line, no cuddled else).
-# Not all code is formatted yet.
-# I don't trust perltidy, but rather format by hand, so please be patient.
 #
 # October 2007, Martin Kutter
 
@@ -21,7 +19,7 @@ package SOAP::Lite;
 use 5.005;
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.70_06';
+$VERSION = '0.71';
 
 # ======================================================================
 
@@ -2649,16 +2647,27 @@ sub find_target {
     no strict 'refs';
 
 # TODO - sort this mess out:
+# The task is to test whether the class in question has already been loaded.
+#
 # SOAP::Lite 0.60:
 #  unless (defined %{"${class}::"}) {
 # Patch to SOAP::Lite 0.60:
 # The following patch does not work for packages defined within a BEGIN block
 #  unless (exists($INC{join '/', split /::/, $class.'.pm'})) {
-# Combination of 0.60 and patch:
-    unless (defined(%{"${class}::"})
+# Combination of 0.60 and patch did not work reliably, either.
+#
+# Now we do the following: Check whether the class is main (always loaded)
+# or the class implements the method in question
+# or the package exists as file in %INC.
+#
+# This is still sort of a hack - but I don't know anything better
+# If you have some idea, please help me out...
+#
+    unless (($class eq 'main') || $class->can($method_name)
         || exists($INC{join '/', split /::/, $class . '.pm'})) {
+
         # allow all for static and only specified path for dynamic bindings
-        local @INC = (($static ? @INC : ()), grep {!ref && m![/\\.]!} $self->dispatch_to);
+        local @INC = (($static ? @INC : ()), grep {!ref && m![/\\.]!} $self->dispatch_to());
         eval 'local $^W; ' . "require $class";
         die "Failed to access class ($class): $@" if $@;
         $self->dispatched($class) unless $static;
