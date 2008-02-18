@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -19,10 +19,10 @@ my($a, $s, $r, $serialized, $deserialized);
 my %tests = (
   'XML only' => <<'EOM',
 <?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body>
 <namesp1:add xmlns:namesp1="http://www.soaplite.com/Calculator">
@@ -37,10 +37,10 @@ EOM
 Content-Type: text/xml
 
 <?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body>
 <namesp1:add xmlns:namesp1="http://www.soaplite.com/Calculator">
@@ -60,10 +60,10 @@ Content-Transfer-Encoding: 8bit
 Content-ID: <calc061400a.xml@soaplite.com>
 
 <?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body>
 <namesp1:add xmlns:namesp1="http://www.soaplite.com/Calculator">
@@ -85,10 +85,10 @@ Content-Transfer-Encoding: 8bit
 Content-ID: <calc061400a.xml@soaplite.com>
 
 <?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body>
 <namesp1:add xmlns:namesp1="http://www.soaplite.com/Calculator">
@@ -122,10 +122,10 @@ Content-Transfer-Encoding: 8bit
 Content-ID: <calc061400a.xml@soaplite.com>
 
 <?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body>
 <namesp1:add xmlns:namesp1="http://www.soaplite.com/Calculator">
@@ -150,7 +150,7 @@ Content-ID: <calc061400a.b@soaplite.com>
 --MIME_boundary--
 EOM
 );
- 
+
 eval "SOAP::Packager::MIME->new->initialize_parser();";
 my $is_mimetools_installed = ($@) ? 0 : 1;
 
@@ -165,24 +165,21 @@ my $package = '
 
 # TEST 1-4
 HANDLER: {
-  print "Server handler test(s)...\n";
+    print "Server handler test(s)...\n";
 
-  my $server = SOAP::Server->dispatch_to('Calculator');
-
-   for (reverse sort keys %tests) {
-   # for ('message with headers', 'XML only') {
-    my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-    skip(($_ =~ /XML/ || !$is_mimetools_installed),
-        ($result->faultstring || '') =~ /Failed to access class \(Calculator\)/);
-  }
-  # last HANDLER;
-  eval $package or die;
+    my $server = SOAP::Server->dispatch_to('Calculator');
 
     for (reverse sort keys %tests) {
-    #for ('message with headers', 'XML only') {
         my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
-        skip(($_ =~ /XML/ || !$is_mimetools_installed),
-            ($result->result || 0) == 7);
+        skip(($_ =~m/XML/ || !$is_mimetools_installed), 'skip')
+            if ($result->faultstring || '') =~ /Failed to access class \(Calculator\)/;
+    }
+    eval $package or die;
+
+    for (reverse sort keys %tests) {
+        my $result = SOAP::Deserializer->deserialize($server->handle($tests{$_}));
+        skip(($_ =~ /XML/ || !$is_mimetools_installed), 'skip')
+            if ($result->result || 0) == 7;
     }
 }
 
@@ -232,10 +229,10 @@ HANDLER: {
   $a = SOAP::Server->handle('<Envelope><Body><Add><a>1</a><b>1</b></Add></Body></Envelope>');
   ok($a =~ /Denied access to method/);
 
-  $a = SOAP::Server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+  $a = SOAP::Server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body></soap:Body></soap:Envelope>');
   ok($a =~ /Can't find method/);
@@ -254,10 +251,10 @@ HANDLER: {
   print "Different XML Schemas test(s)...\n";
 
   my $server = SOAP::Server->dispatch_to('Calculator');
-  $a = $server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+  $a = $server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/1999/XMLSchema">
 <soap:Body>
 <namesp1:schema xmlns:namesp1="http://www.soaplite.com/Calculator"/>
@@ -267,10 +264,10 @@ HANDLER: {
   ok($a =~ m!xsd="http://www.w3.org/2001/XMLSchema"!);
   ok($a =~ m!>http://www.w3.org/2001/XMLSchema<!);
 
-  $a = $server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+  $a = $server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 <soap:Body>
 <namesp1:schema xmlns:namesp1="http://www.soaplite.com/Calculator">
@@ -282,10 +279,10 @@ HANDLER: {
   ok($a =~ m!xsd="http://www.w3.org/2001/XMLSchema"!);
   ok($a =~ m!>http://www.w3.org/2001/XMLSchema<!);
 
-  $a = $server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+  $a = $server->handle('<soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                   soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 <soap:Body>
 <namesp1:schema xmlns:namesp1="http://www.soaplite.com/Calculator">
