@@ -15,36 +15,36 @@ use strict;
 use vars qw($VERSION);
 $VERSION = '0.70_5';
 
-sub new { 
+sub new {
     my $class = shift;
 
     return $class if ref $class;
     my $self = bless {} => $class;
 
     my %parameters = @_;
-    $self->setHandlers(); # clear first 
+    $self->setHandlers(); # clear first
     $self->setHandlers(%{$parameters{Handlers} || {}});
 
     return $self;
 }
 
 sub setHandlers {
-    my $self = shift; 
+    my $self = shift;
 
     # allow symbolic refs, avoid "subroutine redefined" warnings
     no strict 'refs'; local $^W;
     # clear all handlers if called without parameters
-    if (not @_) { 
-        for (qw(Start End Char Final Init)) { 
-            *$_ = sub {} 
+    if (not @_) {
+        for (qw(Start End Char Final Init Comment Doctype XMLDecl)) {
+            *$_ = sub {}
         }
     }
 
     # we could use each here, too...
-    while (@_) { 
-        my($name, $func) = splice(@_, 0, 2); 
-        *$name = defined $func 
-            ? $func 
+    while (@_) {
+        my($name, $func) = splice(@_, 0, 2);
+        *$name = defined $func
+            ? $func
             : sub {}
     }
     return $self;
@@ -54,19 +54,25 @@ sub _regexp {
     my $patch = shift || '';
     my $package = __PACKAGE__;
 
-    # This parser is based on "shallow parser" http://www.cs.sfu.ca/~cameron/REX.html 
+    # This parser is based on "shallow parser" http://www.cs.sfu.ca/~cameron/REX.html
 
     # Robert D. Cameron "REX: XML Shallow Parsing with Regular Expressions",
     # Technical Report TR 1998-17, School of Computing Science, Simon Fraser University, November, 1998.
-    # Copyright (c) 1998, Robert D. Cameron. 
+    # Copyright (c) 1998, Robert D. Cameron.
     # The following code may be freely used and distributed provided that
     # this copyright and citation notice remains intact and that modifications
     # or additions are clearly identified.
 
+    # Modifications may be tracked on SOAP::Lite's SVN at
+    # https://soaplite.svn.sourceforge.net/svnroot/soaplite/
+    #
+
     my $TextSE = "[^<]+";
     my $UntilHyphen = "[^-]*-";
-    my $Until2Hyphens = "$UntilHyphen(?:[^-]$UntilHyphen)*-";
-    my $CommentCE = "$Until2Hyphens>?";
+    my $Until2Hyphens = "([^-]*)-(?:[^-]$[^-]*-)*-";
+    my $CommentCE = "$Until2Hyphens(?{${package}::comment(\$2)})>?";
+#    my $Until2Hyphens = "$UntilHyphen(?:[^-]$UntilHyphen)*-";
+#    my $CommentCE = "$Until2Hyphens>?";
     my $UntilRSBs = "[^\\]]*](?:[^\\]]+])*]+";
     my $CDATA_CE = "$UntilRSBs(?:[^\\]>]$UntilRSBs)*>";
     my $S = "[ \\n\\t\\r]+";
@@ -74,31 +80,42 @@ sub _regexp {
     my $NameChar = "[A-Za-z0-9_:.-]|[^\\x00-\\x7F]";
     my $Name = "(?:$NameStrt)(?:$NameChar)*";
     my $QuoteSE = "\"[^\"]*\"|'[^']*'";
-    my $DT_IdentSE = "$S$Name(?:$S(?:$Name|$QuoteSE))*";
+    my $DT_IdentSE = "$Name(?:$S(?:$Name|$QuoteSE))*";
+#    my $DT_IdentSE = "$S$Name(?:$S(?:$Name|$QuoteSE))*";
     my $MarkupDeclCE = "(?:[^\\]\"'><]+|$QuoteSE)*>";
     my $S1 = "[\\n\\r\\t ]";
     my $UntilQMs = "[^?]*\\?+";
-    my $PI_Tail = "\\?>|$S1$UntilQMs(?:[^>?]$UntilQMs)*>";
-    my $DT_ItemSE = "<(?:!(?:--$Until2Hyphens>|[^-]$MarkupDeclCE)|\\?$Name(?:$PI_Tail))|%$Name;|$S";
-    my $DocTypeCE = "$DT_IdentSE(?:$S)?(?:\\[(?:$DT_ItemSE)*](?:$S)?)?>?";
+    my $PI_Tail = "\\?>|$S1$UntilQMs(?:[^>?]$UntilQMs)*";
+    my $DT_ItemSE = "<(?:!(?:--$Until2Hyphens>|[^-]$MarkupDeclCE)|\\?$Name(?:$PI_Tail>))|%$Name;|$S";
+    my $DocTypeCE = "$S($DT_IdentSE(?:$S)?(?:\\[(?:$DT_ItemSE)*](?:$S)?)?)>(?{${package}::_doctype(\$3)})?";
+#    my $PI_Tail = "\\?>|$S1$UntilQMs(?:[^>?]$UntilQMs)*>";
+#    my $DT_ItemSE = "<(?:!(?:--$Until2Hyphens>|[^-]$MarkupDeclCE)|\\?$Name(?:$PI_Tail))|%$Name;|$S";
+#    my $DocTypeCE = "$DT_IdentSE(?:$S)?(?:\\[(?:$DT_ItemSE)*](?:$S)?)?>?";
     my $DeclCE = "--(?:$CommentCE)?|\\[CDATA\\[(?:$CDATA_CE)?|DOCTYPE(?:$DocTypeCE)?";
-    my $PI_CE = "$Name(?:$PI_Tail)?";
-
+#    my $PI_CE = "$Name(?:$PI_Tail)?";
+    my $PI_CE = "($Name(?:$PI_Tail))>(?{${package}::_xmldecl(\$5)})?";
     # these expressions were modified for backtracking and events
-    my $EndTagCE = "($Name)(?{${package}::_end(\$2)})(?:$S)?>";
+#    my $EndTagCE = "($Name)(?{${package}::_end(\$2)})(?:$S)?>";
+    my $EndTagCE = "($Name)(?{${package}::_end(\$6)})(?:$S)?>";
     my $AttValSE = "\"([^<\"]*)\"|'([^<']*)'";
-    my $ElemTagCE = "($Name)(?:$S($Name)(?:$S)?=(?:$S)?(?:$AttValSE)(?{[\@{\$^R||[]},\$4=>defined\$5?\$5:\$6]}))*(?:$S)?(/)?>(?{${package}::_start( \$3,\@{\$^R||[]})})(?{\${7} and ${package}::_end(\$3)})";
+#    my $ElemTagCE = "($Name)(?:$S($Name)(?:$S)?=(?:$S)?(?:$AttValSE)(?{[\@{\$^R||[]},\$4=>defined\$5?\$5:\$6]}))*(?:$S)?(/)?>(?{${package}::_start( \$3,\@{\$^R||[]})})(?{\${7} and ${package}::_end(\$3)})";
+    my $ElemTagCE = "($Name)"
+        . "(?:$S($Name)(?:$S)?=(?:$S)?(?:$AttValSE)"
+        . "(?{[\@{\$^R||[]},\$8=>defined\$9?\$9:\$10]}))*(?:$S)?(/)?>"
+        . "(?{${package}::_start(\$7,\@{\$^R||[]})})(?{\$11 and ${package}::_end(\$7)})";
+
     my $MarkupSPE = "<(?:!(?:$DeclCE)?|\\?(?:$PI_CE)?|/(?:$EndTagCE)?|(?:$ElemTagCE)?)";
 
     # Next expression is under "black magic".
     # Ideally it should be '($TextSE)(?{${package}::char(\$1)})|$MarkupSPE',
     # but it doesn't work under Perl 5.005 and only magic with
-    # (?:....)?? solved the problem. 
-    # I would appreciate if someone let me know what is the right thing to do 
-    # and what's the reason for all this magic. 
+    # (?:....)?? solved the problem.
+    # I would appreciate if someone let me know what is the right thing to do
+    # and what's the reason for all this magic.
     # Seems like a problem related to (?:....)? rather than to ?{} feature.
     # Tests are in t/31-xmlparserlite.t if you decide to play with it.
-    "(?{[]})(?:($TextSE)(?{${package}::_char(\$1)}))$patch|$MarkupSPE";
+    #"(?{[]})(?:($TextSE)(?{${package}::_char(\$1)}))$patch|$MarkupSPE";
+    "(?:($TextSE)(?{${package}::_char(\$1)}))$patch|$MarkupSPE";
 }
 
 setHandlers();
@@ -106,9 +123,10 @@ setHandlers();
 # Try 5.6 and 5.10 regex first
 my $REGEXP = _regexp('??');
 
-sub _parse_re { 
-    use re "eval"; 
-    1 while $_[0] =~ m{$REGEXP}go 
+sub _parse_re {
+    use re "eval";
+    undef $^R;
+    1 while $_[0] =~ m{$REGEXP}go
 };
 
 # fixup regex if it does not work...
@@ -116,42 +134,42 @@ if (not eval { _parse_re('<soap:foo xmlns:soap="foo">bar</soap:foo>'); 1; } ) {
     $REGEXP = _regexp();
     local $^W;  # switch off warnings;
     *_parse_re = sub {
-            use re "eval"; 
-            1 while $_[0] =~ m{$REGEXP}go 
+            use re "eval";
+            1 while $_[0] =~ m{$REGEXP}go
         };
 }
 
-sub parse { 
-    _init(); 
+sub parse {
+    _init();
     _parse_re($_[1]);
-    _final(); 
+    _final();
 }
 
 my(@stack, $level);
 
-sub _init { 
+sub _init {
     @stack = ();
     $level = 0;
-    Init(__PACKAGE__, @_);  
+    Init(__PACKAGE__, @_);
 }
 
-sub _final { 
+sub _final {
     die "not properly closed tag '$stack[-1]'\n" if @stack;
     die "no element found\n" unless $level;
-    Final(__PACKAGE__, @_) 
-} 
-
-sub _start { 
-    die "multiple roots, wrong element '$_[0]'\n" if $level++ && !@stack;
-    push(@stack, $_[0]);
-    Start(__PACKAGE__, @_); 
+    Final(__PACKAGE__, @_)
 }
 
-sub _char { 
+sub _start {
+    die "multiple roots, wrong element '$_[0]'\n" if $level++ && !@stack;
+    push(@stack, $_[0]);
+    Start(__PACKAGE__, @_);
+}
+
+sub _char {
     Char(__PACKAGE__, $_[0]), return if @stack;
 
     # check for junk before or after element
-    # can't use split or regexp due to limitations in ?{} implementation, 
+    # can't use split or regexp due to limitations in ?{} implementation,
     # will iterate with loop, but we'll do it no more than two times, so
     # it shouldn't affect performance
     for (my $i=0; $i < length $_[0]; $i++) {
@@ -160,10 +178,29 @@ sub _char {
     }
 }
 
-sub _end { 
+sub _end {
     pop(@stack) eq $_[0] or die "mismatched tag '$_[0]'\n";
     End(__PACKAGE__, $_[0]);
 }
+
+sub comment {
+    Comment(__PACKAGE__, $_[0]);
+}
+
+sub end {
+     pop(@stack) eq $_[0] or die "mismatched tag '$_[0]'\n";
+     End(__PACKAGE__, $_[0]);
+ }
+
+sub _doctype {
+    Doctype(__PACKAGE__, $_[0]);
+}
+
+sub _xmldecl {
+    XMLDecl(__PACKAGE__, $_[0]);
+}
+
+
 
 # ======================================================================
 
@@ -178,7 +215,7 @@ XML::Parser::Lite - Lightweight regexp-based XML parser
 =head1 SYNOPSIS
 
   use XML::Parser::Lite;
-  
+
   $p1 = new XML::Parser::Lite;
   $p1->setHandlers(
     Start => sub { shift; print "start: @_\n" },
@@ -272,6 +309,18 @@ Your implementation has to make sure that it captures all characters.
 
 Called at the end of each XML node. See L<XML::Parser> for details
 
+=head2 Comment
+
+See L<XML::Parser> for details
+
+=head2 XMLDecl
+
+See L<XML::Parser> for details
+
+=head2 Doctype
+
+See L<XML::Parser> for details
+
 =head2 Final
 
 Called at the end of the parsing process. You should perform any neccessary
@@ -298,5 +347,7 @@ Copyright (c) 1998, Robert D. Cameron.
 Paul Kulchenko (paulclinger@yahoo.com)
 
 Martin Kutter (martin.kutter@fen-net.de)
+
+Additional handlers supplied by Adam Leggett.
 
 =cut

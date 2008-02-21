@@ -16,6 +16,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.71 Feb 18 2008
+  + Added additional callbacks to XML::Parser::Lite and made it work under
+  (at least) perl5.6.2, 5.8.7, 5.8.8 and 5.10.
+  Thanks to Adam Leggett.
   ! Fixes failing test on 5.10. The mechanism for determining whether
   a class is loaded in SOAP::Server has been changed to the following:
   Assume loaded if
