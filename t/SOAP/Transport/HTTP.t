@@ -34,6 +34,8 @@ SKIP: {
 my $client;
 ok $client = SOAP::Transport::HTTP::Client->new(), 'SOAP::Transport::HTTP::Client->new()';
 
+# just use twice to avoid warning
+undef $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
 undef $SOAP::Constants::PATCH_HTTP_KEEPALIVE;
 ok $client = SOAP::Transport::HTTP::Client->new(), 'SOAP::Transport::HTTP::Client->new() - PATCH_KEEPALIVE = undef';
 

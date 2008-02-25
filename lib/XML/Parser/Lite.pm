@@ -133,6 +133,7 @@ sub _parse_re {
 {
     if (not eval { _parse_re('<soap:foo xmlns:soap="foo">bar</soap:foo>'); 1; } ) {
         $REGEXP = _regexp();
+        local $^W;
         *_parse_re = sub {
                 use re "eval";
                 undef $^R;

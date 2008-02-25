@@ -187,7 +187,7 @@ HANDLER: {
             skip(1, 'skip');
             next SKIP;
         }
-        ok ($result->result || 0) == 7;
+        ok (($result->result || 0) == 7);
     }
 }
 
