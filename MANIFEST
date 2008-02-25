@@ -200,10 +200,12 @@ t/38-packager.t
 t/40-loopback.t
 t/IO/SessionData.t
 t/IO/SessionSet.t
+t/SOAP/Data.t
 t/SOAP/Lite/Deserializer/XMLSchema1999.t
 t/SOAP/Lite/Deserializer/XMLSchema2001.t
 t/SOAP/Lite/Deserializer/XMLSchemaSOAP1_1.t
 t/SOAP/Lite/Deserializer/XMLSchemaSOAP1_2.t
+t/SOAP/Lite/Packager.t
 t/SOAP/Schema/WSDL.t
 t/SOAP/Transport/FTP.t
 t/SOAP/Transport/HTTP.t
@@ -214,4 +216,5 @@ t/SOAP/Transport/MAILTO.t
 t/SOAP/Transport/MQ.t
 t/SOAP/Transport/POP3.t
 t/TEST.pl
+t/XML/Parser/adam.xml
 t/XML/Parser/Lite.t
