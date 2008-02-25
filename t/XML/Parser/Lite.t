@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 37;
+use Test::More tests => 38;
 
 use_ok qw(XML::Parser::Lite);
 
@@ -47,6 +47,18 @@ eval { $parser->parse('Foobar<foo>bar</foo><bar>bar</bar>') };
 like $@ , qr{ junk \s 'Foobar' \s before \s XML \s element}x, 'detect junk before XML';
 eval { $parser->parse('<foo>bar</foo>Foobar<bar>bar</bar>') };
 like $@ , qr{ junk \s 'Foobar' \s after \s XML \s element}x, 'detect junk after XML';
+
+SKIP: {
+    skip 'need File::Basename for resolveing filename', 1
+        if ( ! eval "require File::Basename");
+    my $dir = File::Basename::dirname( __FILE__ );
+    $parser = XML::Parser::Lite->new();
+    open my $fh, '<', "$dir/adam.xml";
+    my $xml = join ("\n", <$fh>);
+    close $fh;
+    $parser->parse($xml);
+    pass 'parse XML with doctype and processing instructions';
+};
 
 sub test_parse {
 

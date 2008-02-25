@@ -66,7 +66,7 @@ sub _regexp {
     # Modifications may be tracked on SOAP::Lite's SVN at
     # https://soaplite.svn.sourceforge.net/svnroot/soaplite/
     #
-
+    use re 'eval';
     my $TextSE = "[^<]+";
     my $UntilHyphen = "[^-]*-";
     my $Until2Hyphens = "([^-]*)-(?:[^-]$[^-]*-)*-";
@@ -84,16 +84,16 @@ sub _regexp {
 #    my $DT_IdentSE = "$S$Name(?:$S(?:$Name|$QuoteSE))*";
     my $MarkupDeclCE = "(?:[^\\]\"'><]+|$QuoteSE)*>";
     my $S1 = "[\\n\\r\\t ]";
-    my $UntilQMs = "[^?]*\\?+";
+    my $UntilQMs = "[^?]*\\?";
     my $PI_Tail = "\\?>|$S1$UntilQMs(?:[^>?]$UntilQMs)*";
     my $DT_ItemSE = "<(?:!(?:--$Until2Hyphens>|[^-]$MarkupDeclCE)|\\?$Name(?:$PI_Tail>))|%$Name;|$S";
-    my $DocTypeCE = "$S($DT_IdentSE(?:$S)?(?:\\[(?:$DT_ItemSE)*](?:$S)?)?)>(?{${package}::_doctype(\$3)})?";
+    my $DocTypeCE = "$S($DT_IdentSE(?:$S)?(?:\\[(?:$DT_ItemSE)*](?:$S)?)?)>(?{${package}::_doctype(\$3)})";
 #    my $PI_Tail = "\\?>|$S1$UntilQMs(?:[^>?]$UntilQMs)*>";
 #    my $DT_ItemSE = "<(?:!(?:--$Until2Hyphens>|[^-]$MarkupDeclCE)|\\?$Name(?:$PI_Tail))|%$Name;|$S";
 #    my $DocTypeCE = "$DT_IdentSE(?:$S)?(?:\\[(?:$DT_ItemSE)*](?:$S)?)?>?";
     my $DeclCE = "--(?:$CommentCE)?|\\[CDATA\\[(?:$CDATA_CE)?|DOCTYPE(?:$DocTypeCE)?";
 #    my $PI_CE = "$Name(?:$PI_Tail)?";
-    my $PI_CE = "($Name(?:$PI_Tail))>(?{${package}::_xmldecl(\$5)})?";
+    my $PI_CE = "($Name(?:$PI_Tail))>(?{${package}::_xmldecl(\$5)})";
     # these expressions were modified for backtracking and events
 #    my $EndTagCE = "($Name)(?{${package}::_end(\$2)})(?:$S)?>";
     my $EndTagCE = "($Name)(?{${package}::_end(\$6)})(?:$S)?>";
@@ -130,13 +130,15 @@ sub _parse_re {
 };
 
 # fixup regex if it does not work...
-if (not eval { _parse_re('<soap:foo xmlns:soap="foo">bar</soap:foo>'); 1; } ) {
-    $REGEXP = _regexp();
-    local $^W;  # switch off warnings;
-    *_parse_re = sub {
-            use re "eval";
-            1 while $_[0] =~ m{$REGEXP}go
-        };
+{
+    if (not eval { _parse_re('<soap:foo xmlns:soap="foo">bar</soap:foo>'); 1; } ) {
+        $REGEXP = _regexp();
+        *_parse_re = sub {
+                use re "eval";
+                undef $^R;
+                1 while $_[0] =~ m{$REGEXP}go
+            };
+    }
 }
 
 sub parse {
@@ -203,7 +205,6 @@ sub _xmldecl {
 
 
 # ======================================================================
-
 1;
 
 __END__
@@ -235,11 +236,15 @@ XML::Parser::Lite - Lightweight regexp-based XML parser
 
 =head1 DESCRIPTION
 
-This Perl module gives you access to an XML parser with a interface similar to
-XML::Parser. Though only basic calls are supported (init, final,
-start, char, and end) you should be able to use it in the same way you use
-XML::Parser. Due to using experimantal regexp features it'll work only on
-Perl 5.6 and above and may behave differently on different platforms.
+This Perl implements an XML parser with a interface similar to
+XML::Parser. Though not all callbacks are supported, you should be able to
+use it in the same way you use XML::Parser. Due to using experimantal regexp
+features it'll work only on Perl 5.6 and above and may behave differently on
+different platforms.
+
+Note that you cannot use regular expressions or split in callbacks. This is
+due to a limitation of perl's regular expression implementation (which is
+not re-entrant).
 
 =head1 SUBROUTINES/METHODS
 
@@ -351,3 +356,7 @@ Martin Kutter (martin.kutter@fen-net.de)
 Additional handlers supplied by Adam Leggett.
 
 =cut
+
+
+
+

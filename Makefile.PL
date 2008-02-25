@@ -1,7 +1,7 @@
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
-require 5.004;
+require 5.005;
 use strict;
 use ExtUtils::MakeMaker;
 use diagnostics;
@@ -85,6 +85,11 @@ GetOptions (
     "help|?" => \$help,
 );
 
+# don't prompt when run on a smoke test system.
+# See http://cpantest.grango.org/wiki/CPANAuthorNotes
+# Thanks to Andreas J Koenig && all CPAN testers !
+$noprompt++ if $ENV{AUTOMATED_TESTING};
+
 $help and print($helptext), exit;
 
 $intro = <<EOI;
@@ -137,12 +142,7 @@ do {
 # only run noncoretests if we have Test::More
 my $noncoretests;
 if (eval { require Test::More; }) {
-    # Warn the user about the testing that will occur
-    $noncoretests = !$noprompt ? ExtUtils::MakeMaker::prompt('
-    Do you want to run the extended test suite?
-    Running the extended test suite may take some time...', 
-        #$alltests ? 'yes' : 'no'
-    'yes' ) =~ /^\s*(y)/i : $alltests;
+    $noncoretests++;
 }
 
 my $tests;
