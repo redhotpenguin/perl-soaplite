@@ -37,7 +37,7 @@ sub new {
     bless {
         "_parts"         => [ ],
         "_parser"        => undef,
-        "_persist_parts" => 0,MIME::Tools
+        "_persist_parts" => 0,
     }, $class;
 }
 
