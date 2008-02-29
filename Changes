@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
+0.71.01
+   ! Version numbers updated
+   ! [1904955] Subclassing XMLRPC::Serializer broken
 0.71 Feb 2008
   - bumped up version. Just curious about commit e-mail.
 0.70_08 Feb 25 2008
