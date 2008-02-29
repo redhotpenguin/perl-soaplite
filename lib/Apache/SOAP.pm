@@ -15,7 +15,7 @@ use vars qw(@ISA $VERSION);
 use SOAP::Transport::HTTP;
 
 @ISA = qw(SOAP::Transport::HTTP::Apache);
-$VERSION = '0.69_01';
+$VERSION = '0.71';
 
 my $server = __PACKAGE__->new;
 
@@ -71,20 +71,20 @@ Apache::SOAP - mod_perl-based SOAP server with minimum configuration
 
 =head1 DESCRIPTION
 
-This Apache Perl module provides the ability to add support for SOAP (Simple 
-Object Access Protocol) protocol with easy configuration (either in .conf or 
+This Apache Perl module provides the ability to add support for SOAP (Simple
+Object Access Protocol) protocol with easy configuration (either in .conf or
 in .htaccess file). This functionality should give you lightweight option
 for hosting SOAP services and greatly simplify configuration aspects. This
 module inherites functionality from SOAP::Transport::HTTP::Apache component
 of SOAP::Lite module.
- 
+
 =head1 CONFIGURATION
 
 The module can be placed in <Location>, <Directory>, <Files>, <FilesMatch>
 directives in main server configuration areas or directly in .htaccess file.
 
-All parameters should be quoted and can be separated with commas or spaces 
-for lists ("a, b, c") and with 'wide arrows' and commas for hash parameters 
+All parameters should be quoted and can be separated with commas or spaces
+for lists ("a, b, c") and with 'wide arrows' and commas for hash parameters
 ("key1 => value1, key2 => value2").
 
 All options that you can find in SOAP::Transport::HTTP::Apache component
@@ -95,15 +95,15 @@ ones.
 
 =item dispatch_to (LIST)
 
-Specifies path to directory that contains Perl modules you'd like to give 
+Specifies path to directory that contains Perl modules you'd like to give
 access to, or just list of modules (for preloaded modules).
 
   PerlSetVar dispatch_to "/Your/Path/To/Deployed/Modules, Module::Name, Module::method"
 
 =item options (HASH)
 
-Specifies list of options for your module, for example threshold for 
-compression. Future versions will support more options. See 
+Specifies list of options for your module, for example threshold for
+compression. Future versions will support more options. See
 SOAP::Transport::HTTP documentation for other options.
 
   PerlSetVar options "compress_threshold => 10000"

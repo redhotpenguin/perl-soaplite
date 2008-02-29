@@ -2329,7 +2329,7 @@ package SOAP::Client;
 use vars qw($VERSION);
 use SOAP::Lite::Utils;
 
-$VERSION = '0.70';
+$VERSION = '0.71';
 sub BEGIN {
     __PACKAGE__->__mk_accessors(qw(endpoint code message
         is_success status options));

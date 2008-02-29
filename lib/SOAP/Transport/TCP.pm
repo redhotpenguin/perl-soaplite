@@ -12,7 +12,6 @@ package SOAP::Transport::TCP;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $SOAP::Lite::VERSION;
 
 use URI;
@@ -24,7 +23,7 @@ use SOAP::Lite;
 # ======================================================================
 
 package URI::tcp; # ok, let's do 'tcp://' scheme
-require URI::_server; 
+require URI::_server;
 @URI::tcp::ISA=qw(URI::_server);
 
 # ======================================================================
@@ -36,7 +35,7 @@ use vars qw(@ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { 
+sub new {
   my $self = shift;
 
   unless (ref $self) {
@@ -45,7 +44,7 @@ sub new {
     while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
     $self = bless {@params} => $class;
     while (@methods) { my($method, $params) = splice(@methods,0,2);
-      $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+      $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
     }
     # use SSL if there is any parameter with SSL_* in the name
     $self->SSL(1) if !$self->SSL && grep /^SSL_/, keys %$self;
@@ -106,7 +105,7 @@ sub sysread {
 
 sub send_receive {
   my($self, %parameters) = @_;
-  my($envelope, $endpoint, $action) = 
+  my($envelope, $endpoint, $action) =
     @parameters{qw(envelope endpoint action)};
 
   $endpoint ||= $self->endpoint;
@@ -115,7 +114,7 @@ sub send_receive {
   my $uri = URI->new($endpoint);
 
   local($^W, $@, $!);
-  my $socket = $self->io_socket_class; 
+  my $socket = $self->io_socket_class;
   eval "require $socket" or Carp::croak $@ unless UNIVERSAL::can($socket => 'new');
   my $sock = $socket->new (
     PeerAddr => $uri->host, PeerPort => $uri->port, Proto => $uri->scheme, %$self
@@ -125,13 +124,13 @@ sub send_receive {
 
   # bytelength hack. See SOAP::Transport::HTTP.pm for details.
   my $bytelength = SOAP::Utils::bytelength($envelope);
-  $envelope = pack('C0A*', $envelope) 
+  $envelope = pack('C0A*', $envelope)
     if !$SOAP::Constants::DO_NOT_USE_LWP_LENGTH_HACK && length($envelope) != $bytelength;
 
   my $result;
   if ($sock) {
     $sock->blocking(0);
-    $self->syswrite($sock, $envelope)  and 
+    $self->syswrite($sock, $envelope)  and
      $sock->shutdown(1)                and # stop writing
      $result = $self->sysread($sock);
   }
@@ -160,7 +159,7 @@ use vars qw($AUTOLOAD @ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { 
+sub new {
   my $self = shift;
 
   unless (ref $self) {
@@ -173,9 +172,9 @@ sub new {
     # use SSL if there is any parameter with SSL_* in the name
     $self->SSL(1) if !$self->SSL && grep /^SSL_/, @params;
 
-    my $socket = $self->io_socket_class; 
+    my $socket = $self->io_socket_class;
     eval "require $socket" or Carp::croak $@ unless UNIVERSAL::can($socket => 'new');
-    $self->{_socket} = $socket->new(Proto => 'tcp', @params) 
+    $self->{_socket} = $socket->new(Proto => 'tcp', @params)
       or Carp::croak "Can't open socket: $!";
 
     SOAP::Trace::objects('()');

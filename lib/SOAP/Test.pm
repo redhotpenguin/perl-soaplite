@@ -12,7 +12,7 @@ package SOAP::Test;
 
 use 5.004;
 use vars qw($VERSION $TIMEOUT);
-$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
+$VERSION = '0.71';
 
 $TIMEOUT = 5;
 
@@ -20,7 +20,7 @@ $TIMEOUT = 5;
 
 package My::PingPong; # we'll use this package in our tests
 
-sub new { 
+sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   bless {_num=>shift} => $class;
@@ -68,14 +68,14 @@ sub run_for {
     -> uri('urn:/My/Examples')
       -> proxy($proxy);
 
-  ok($s->getStateName(1)->result eq 'Alabama'); 
-  ok($s->getStateNames(1,4,6,13)->result =~ /^Alabama\s+Arkansas\s+Colorado\s+Illinois\s*$/); 
+  ok($s->getStateName(1)->result eq 'Alabama');
+  ok($s->getStateNames(1,4,6,13)->result =~ /^Alabama\s+Arkansas\s+Colorado\s+Illinois\s*$/);
 
   $r = $s->getStateList([1,2,3,4])->result;
-  ok(ref $r && $r->[0] eq 'Alabama'); 
+  ok(ref $r && $r->[0] eq 'Alabama');
 
   $r = $s->getStateStruct({item1 => 1, item2 => 4})->result;
-  ok(ref $r && $r->{item2} eq 'Arkansas'); 
+  ok(ref $r && $r->{item2} eq 'Arkansas');
 
   {
     my $autoresult = $s->autoresult;
@@ -90,16 +90,16 @@ sub run_for {
   my $param1 = 10;
   my $param2 = SOAP::Data->name('myparam' => 12);
   my $result = $s->autobind($param1, $param2)->result;
-  ok($result == $param1 && $param2->value == 24); 
+  ok($result == $param1 && $param2->value == 24);
 
   print STDERR "Header manipulation test(s)...\n";
-  $a = $s->addheader(2, SOAP::Header->name(my => 123)); 
-  ok(ref $a->header && $a->header->{my} eq '123123'); 
-  ok($a->headers eq '123123'); 
+  $a = $s->addheader(2, SOAP::Header->name(my => 123));
+  ok(ref $a->header && $a->header->{my} eq '123123');
+  ok($a->headers eq '123123');
 
   print STDERR "Echo untyped data test(s)...\n";
   $a = $s->echotwo(11, 12);
-  ok($a->result == 11); 
+  ok($a->result == 11);
 
   print STDERR "mustUnderstand test(s)...\n";
   $s->echo(SOAP::Header->name(somethingelse => 123)
@@ -157,15 +157,15 @@ sub run_for {
   ok(ref $p && $p->SOAP::next+1 == $p->value);
 
   # forget everything
-  SOAP::Lite->self(undef); 
+  SOAP::Lite->self(undef);
 
   $s = SOAP::Lite
-    -> uri('urn:/My/PingPong')                
+    -> uri('urn:/My/PingPong')
     -> proxy($proxy)
   ;
 
   # should return object EXACTLY as after My::PingPong->SOAP::new(10)
-  $p = $s->SOAP::new(10); 
+  $p = $s->SOAP::new(10);
   ok(ref $p && $s->SOAP::next($p)+1 == $p->value);
 
   print STDERR "VersionMismatch test(s)...\n";
@@ -173,7 +173,7 @@ sub run_for {
   {
     local $SOAP::Constants::NS_ENV = 'http://schemas.xmlsoap.org/new/envelope/';
     my $s = SOAP::Lite
-      -> uri('http://my.own.site.com/My/Examples')                
+      -> uri('http://my.own.site.com/My/Examples')
       -> proxy($proxy)
       -> on_fault(sub{})
     ;
@@ -187,7 +187,7 @@ sub run_for {
     uri => 'urn:', proxy => '$proxy'; 1" or die;
 
   print STDERR "Session iterator\n";
-  $r = My::SessionIterator->new(10); 
+  $r = My::SessionIterator->new(10);
   if (!ref $r || exists $r->{id}) {
     ok(ref $r && $r->next && $r->next == 11);
   } else {
@@ -195,9 +195,9 @@ sub run_for {
   }
 
   print STDERR "Persistent iterator\n";
-  $r = My::PersistentIterator->new(10); 
+  $r = My::PersistentIterator->new(10);
   if (!ref $r || exists $r->{id}) {
-    my $first = ($r->next, $r->next) if ref $r;   
+    my $first = ($r->next, $r->next) if ref $r;
 
     $r = My::PersistentIterator->new(10);
     ok(ref $r && $r->next && $r->next == $first+2);
@@ -209,12 +209,12 @@ sub run_for {
     print STDERR "Parameters-by-name test(s)...\n";
     print STDERR "You can see warning about AUTOLOAD for non-method...\n" if $^W;
 
-    eval "use SOAP::Lite +autodispatch => 
+    eval "use SOAP::Lite +autodispatch =>
       uri => 'http://my.own.site.com/My/Parameters', proxy => '$proxy'; 1" or die;
 
     my @parameters = (
-      SOAP::Data->name(b => 222), 
-      SOAP::Data->name(c => 333), 
+      SOAP::Data->name(b => 222),
+      SOAP::Data->name(c => 333),
       SOAP::Data->name(a => 111)
     );
 
@@ -235,14 +235,14 @@ sub run_for {
     for (1..2) {skip('No SOAPAction checks for tcp: protocol on server side' => undef)}
   } else {
     my $s = SOAP::Lite
-      -> uri('http://my.own.site.com/My/Examples')                
+      -> uri('http://my.own.site.com/My/Examples')
       -> proxy($proxy)
       -> on_action(sub{'""'})
     ;
-    ok($s->getStateName(1)->result eq 'Alabama'); 
+    ok($s->getStateName(1)->result eq 'Alabama');
 
     $s->on_action(sub{'"wrong_SOAPAction_here"'});
-    ok($s->getStateName(1)->faultstring =~ /SOAPAction shall match/); 
+    ok($s->getStateName(1)->faultstring =~ /SOAPAction shall match/);
   }
 
   print STDERR "UTF8 test(s)...\n";
@@ -250,10 +250,10 @@ sub run_for {
     for (1) {skip('No UTF8 test. No support for pack("U*") modifier' => undef)}
   } else {
     $s = SOAP::Lite
-      -> uri('http://my.own.site.com/My/Parameters')                
+      -> uri('http://my.own.site.com/My/Parameters')
       -> proxy($proxy);
 
-     my $latin1 = '¯à¨¢¥â';
+     my $latin1 = 'ï¿½à¨¢ï¿½ï¿½';
      my $utf8 = pack('U*', unpack('C*', $latin1));
      my $result = $s->echo(SOAP::Data->type(string => $utf8))->result;
 
@@ -266,7 +266,7 @@ sub run_for {
     my $on_fault_was_called = 0;
     print STDERR "Die in server method test(s)...\n";
     my $s = SOAP::Lite
-      -> uri('http://my.own.site.com/My/Parameters')                
+      -> uri('http://my.own.site.com/My/Parameters')
       -> proxy($proxy)
       -> on_fault(sub{$on_fault_was_called++;return})
     ;
@@ -287,7 +287,7 @@ sub run_for {
   print STDERR "Method with attributes test(s)...\n";
 
   $s = SOAP::Lite
-    -> uri('urn:/My/Examples')                
+    -> uri('urn:/My/Examples')
     -> proxy($proxy)
   ;
 
@@ -295,7 +295,7 @@ sub run_for {
 
   print STDERR "Call with empty uri test(s)...\n";
   $s = SOAP::Lite
-    -> uri('')                
+    -> uri('')
     -> proxy($proxy)
   ;
 
@@ -306,7 +306,7 @@ sub run_for {
   print STDERR "Number of parameters test(s)...\n";
 
   $s = SOAP::Lite
-    -> uri('http://my.own.site.com/My/Parameters')                
+    -> uri('http://my.own.site.com/My/Parameters')
     -> proxy($proxy)
   ;
   { my @all = $s->echo->paramsall; ok(@all == 0) }
@@ -315,9 +315,9 @@ sub run_for {
 
   print STDERR "Memory refresh test(s)...\n";
 
-  # Funny test. 
+  # Funny test.
   # Let's forget about ALL settings we did before with 'use SOAP::Lite...'
-  SOAP::Lite->self(undef); 
+  SOAP::Lite->self(undef);
   ok(!defined SOAP::Lite->self);
 
   print STDERR "Call without uri test(s)...\n";
@@ -353,7 +353,7 @@ sub run_for {
 
   ok($s->getStateName(1)->result eq 'Alabama');
 
-  eval "use SOAP::Lite 
+  eval "use SOAP::Lite
     uri => 'urn:/My/Examples', proxy => '$proxy'; 1" or die;
 
   print STDERR "Global settings test(s)...\n";
@@ -361,7 +361,7 @@ sub run_for {
 
   ok($s->getStateName(1)->result eq 'Alabama');
 
-  SOAP::Trace->import(transport => 
+  SOAP::Trace->import(transport =>
     sub {$_[0]->content_type('something/wrong') if UNIVERSAL::isa($_[0] => 'HTTP::Request')}
   );
 

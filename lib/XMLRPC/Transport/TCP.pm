@@ -12,7 +12,6 @@ package XMLRPC::Transport::TCP;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $XMLPRC::Lite::VERSION;
 
 use XMLRPC::Lite;
@@ -43,7 +42,7 @@ XMLRPC::Transport::TCP - Server/Client side TCP support for XMLRPC::Lite
   my $daemon = XMLRPC::Transport::TCP::Server
     -> new (LocalAddr => 'localhost', LocalPort => 82, Listen => 5, Reuse => 1)
     -> objects_by_reference(qw(My::PersistentIterator My::SessionIterator My::Chat))
-    -> dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method') 
+    -> dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method')
   ;
   print "Contact to XMLRPC server at ", join(':', $daemon->sockhost, $daemon->sockport), "\n";
   $daemon->handle;

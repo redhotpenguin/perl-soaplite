@@ -12,24 +12,23 @@ package SOAP::Transport::JABBER;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $SOAP::Lite::VERSION;
 
-use Net::Jabber 1.0021 qw(Client); 
-use URI::Escape; 
+use Net::Jabber 1.0021 qw(Client);
+use URI::Escape;
 use URI;
 use SOAP::Lite;
 
 my $NAMESPACE = "http://namespaces.soaplite.com/transport/jabber";
 
-{ local $^W; 
+{ local $^W;
   # fix problem with printData in 1.0021
   *Net::Jabber::printData = sub {'nothing'} if Net::Jabber->VERSION == 1.0021;
 
   # fix problem with Unicode encoding in EscapeXML. Jabber ALWAYS convert latin to utf8
   *Net::Jabber::EscapeXML = *Net::Jabber::EscapeXML = # that's Jabber 1.0021
   *XML::Stream::EscapeXML = *XML::Stream::EscapeXML = # that's Jabber 1.0022
-    \&SOAP::Utils::encode_data; 
+    \&SOAP::Utils::encode_data;
 
   # There is also an error in XML::Stream::UnescapeXML 1.12, but
   # we can't do anything there, except hack it also :(
@@ -38,7 +37,7 @@ my $NAMESPACE = "http://namespaces.soaplite.com/transport/jabber";
 # ======================================================================
 
 package URI::jabber; # ok, lets do 'jabber://' scheme
-require URI::_server; require URI::_userpass; 
+require URI::_server; require URI::_userpass;
 @URI::jabber::ISA=qw(URI::_server URI::_userpass);
 
   # jabber://soaplite_client:soapliteclient@jabber.org:5222/soaplite_server@jabber.org/Home
@@ -70,7 +69,7 @@ use vars qw(@ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { 
+sub new {
   my $self = shift;
 
   unless (ref $self) {
@@ -79,7 +78,7 @@ sub new {
     while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
     $self = $class->SUPER::new(@params);
     while (@methods) { my($method, $params) = splice(@methods,0,2);
-      $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+      $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
     }
     SOAP::Trace::objects('()');
   }
@@ -99,12 +98,12 @@ sub endpoint {
   my $uri = URI->new($endpoint);
   my($undef, $to, $resource) = split m!/!, $uri->path, 3;
   $self->Connect(
-    hostname => $uri->host, 
+    hostname => $uri->host,
     port => $uri->port,
   ) or Carp::croak "Can't connect to @{[$uri->host_port]}: $!";
 
   my @result = $self->AuthSend(
-    username => $uri->user, 
+    username => $uri->user,
     password => $uri->password,
     resource => 'soapliteClient',
   );
@@ -126,7 +125,7 @@ sub endpoint {
 
 sub send_receive {
   my($self, %parameters) = @_;
-  my($envelope, $endpoint, $encoding) = 
+  my($envelope, $endpoint, $encoding) =
     @parameters{qw(envelope endpoint encoding)};
 
   $self->endpoint($endpoint ||= $self->endpoint);
@@ -170,7 +169,7 @@ use vars qw(@ISA $AUTOLOAD);
 
 sub new {
   my $self = shift;
-    
+
   unless (ref $self) {
     my $class = ref($self) || $self;
     my $uri = URI->new(shift);
@@ -184,7 +183,7 @@ sub new {
 
     my($undef, $resource) = split m!/!, $uri->path, 2;
     my @result = $self->AuthSend(
-      username => $uri->user, 
+      username => $uri->user,
       password => $uri->password,
       resource => $resource || 'soapliteServer',
     );
@@ -218,7 +217,7 @@ sub new {
       parenttype => 'query',
       delegate   => 'SOAP::Transport::JABBER::Query',
     );
-  
+
     $self->RosterGet();
     $self->PresenceSend();
   }

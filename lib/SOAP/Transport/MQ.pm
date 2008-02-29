@@ -12,16 +12,15 @@ package SOAP::Transport::MQ;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $SOAP::Lite::VERSION;
 
-use MQClient::MQSeries; 
+use MQClient::MQSeries;
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Message;
 
 use URI;
-use URI::Escape; 
+use URI::Escape;
 use SOAP::Lite;
 
 sub requestqueue {
@@ -48,7 +47,7 @@ sub replyqueue {
 
 package URI::mq; # ok, lets do 'mq://' scheme
 require URI::_server;
-require URI::_userpass; 
+require URI::_userpass;
 
 @URI::mq::ISA=qw(URI::_server URI::_userpass);
 
@@ -68,7 +67,7 @@ sub DESTROY {
     SOAP::Trace::objects('()');
 }
 
-sub new { 
+sub new {
     my $class = shift;
 
     return $class if ref $class;
@@ -82,7 +81,7 @@ sub new {
     my $self = bless {@params} => $class;
     while (@methods) {
         my($method, $params) = splice(@methods,0,2);
-        $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+        $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
     }
     SOAP::Trace::objects('()');
 
@@ -192,7 +191,7 @@ use MQSeries qw(:constants);
 
 sub new {
     my $class = shift;
-    
+
     return $class if ref $class;
 
     die "missing parameter (uri)" if not @_;

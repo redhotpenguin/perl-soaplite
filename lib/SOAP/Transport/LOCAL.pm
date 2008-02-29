@@ -12,7 +12,6 @@ package SOAP::Transport::LOCAL;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $SOAP::Lite::VERSION;
 
 # ======================================================================
@@ -24,7 +23,7 @@ use SOAP::Lite;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Client SOAP::Server);
 
-sub new { 
+sub new {
     my $class = shift;
     return $class if ref $class;
     my(@arg_from, @method_from);
@@ -40,14 +39,14 @@ sub new {
         my($method, $param_ref) = splice(@method_from,0,2);
         $self->$method(ref $param_ref eq 'ARRAY'
             ? @$param_ref
-            : $param_ref) 
+            : $param_ref)
     }
     return $self;
 }
 
 sub send_receive {
     my($self, %parameters) = @_;
-    my($envelope, $endpoint, $action) = 
+    my($envelope, $endpoint, $action) =
         @parameters{qw(envelope endpoint action)};
 
     SOAP::Trace::debug($envelope);

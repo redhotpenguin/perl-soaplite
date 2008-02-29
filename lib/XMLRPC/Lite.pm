@@ -13,9 +13,7 @@ package XMLRPC::Lite;
 use SOAP::Lite;
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
-#$VERSION = $SOAP::Lite::VERSION;
-$VERSION = '0.69';
+$VERSION = '0.71';
 
 # ======================================================================
 
@@ -24,7 +22,7 @@ package XMLRPC::Constants;
 BEGIN {
   no strict 'refs';
   for (qw(
-    FAULT_CLIENT FAULT_SERVER 
+    FAULT_CLIENT FAULT_SERVER
     HTTP_ON_SUCCESS_CODE HTTP_ON_FAULT_CODE
     DO_NOT_USE_XML_PARSER DO_NOT_USE_CHARSET
     DO_NOT_USE_LWP_LENGTH_HACK DO_NOT_CHECK_CONTENT_TYPE
@@ -32,7 +30,7 @@ BEGIN {
     *$_ = \${'SOAP::Constants::' . $_}
   }
   # XML-RPC spec requires content-type to be "text/xml"
-  $XMLRPC::Constants::DO_NOT_USE_CHARSET = 1; 
+  $XMLRPC::Constants::DO_NOT_USE_CHARSET = 1;
 }
 
 # ======================================================================
@@ -86,7 +84,7 @@ sub envelope {
       ));
     }
   } elsif ($type eq 'fault') {
-    $body = XMLRPC::Data->name(methodResponse => 
+    $body = XMLRPC::Data->name(methodResponse =>
       \XMLRPC::Data->type(fault => {faultCode => $_[0], faultString => $_[1]}),
     );
   } else {
@@ -96,10 +94,10 @@ sub envelope {
   $self->xmlize($self->encode_object($body));
 }
 
-sub encode_object { 
+sub encode_object {
   my $self = shift;
   my @encoded = $self->SUPER::encode_object(@_);
-  return $encoded[0]->[0] =~ /^(?:array|struct|i4|int|boolean|string|double|dateTime\.iso8601|base64)$/o 
+  return $encoded[0]->[0] =~ /^(?:array|struct|i4|int|boolean|string|double|dateTime\.iso8601|base64)$/o
     ? ['value', {}, [@encoded]] : @encoded;
 }
 
@@ -210,7 +208,7 @@ sub BEGIN {
     fault => '/methodResponse/fault',
   );
   for my $method (keys %path) {
-    *$method = sub { 
+    *$method = sub {
       my $self = shift;
       ref $self or return $path{$method};
       Carp::croak "Method '$method' is readonly and doesn't accept any parameters" if @_;
@@ -222,7 +220,7 @@ sub BEGIN {
     faultstring => 'faultString',
   );
   for my $method (keys %fault) {
-    *$method = sub { 
+    *$method = sub {
       my $self = shift;
       ref $self or Carp::croak "Method '$method' doesn't have shortcut";
       Carp::croak "Method '$method' is readonly and doesn't accept any parameters" if @_;
@@ -235,7 +233,7 @@ sub BEGIN {
     paramsall => '/methodResponse/params/param',
   );
   for my $method (keys %results) {
-    *$method = sub { 
+    *$method = sub {
       my $self = shift;
       ref $self or return $results{$method};
       Carp::croak "Method '$method' is readonly and doesn't accept any parameters" if @_;
@@ -270,14 +268,14 @@ sub decode_value {
     $children ? scalar(($self->decode_object($children->[0]))[1]) : $value;
   } elsif ($name eq 'array') {
     return [map {scalar(($self->decode_object($_))[1])} @{o_child($children->[0]) || []}];
-  } elsif ($name eq 'struct') { 
+  } elsif ($name eq 'struct') {
     return {map {
       my %hash = map {o_qname($_) => $_} @{o_child($_) || []};
                          # v----- scalar is required here, because 5.005 evaluates 'undef' in list context as empty array
       (o_chars($hash{name}) => scalar(($self->decode_object($hash{value}))[1]));
     } @{$children || []}};
   } elsif ($name eq 'base64') {
-    require MIME::Base64; 
+    require MIME::Base64;
     MIME::Base64::decode_base64($value);
   } elsif ($name =~ /^(?:int|i4|boolean|string|double|dateTime\.iso8601|methodName)$/) {
     return $value;
@@ -349,7 +347,7 @@ __END__
 
 =head1 NAME
 
-XMLRPC::Lite - client and server implementation of XML-RPC protocol 
+XMLRPC::Lite - client and server implementation of XML-RPC protocol
 
 =head1 SYNOPSIS
 
@@ -391,7 +389,7 @@ XMLRPC::Lite is a Perl modules which provides a simple nterface to the
 XML-RPC protocol both on client and server side. Based on SOAP::Lite module,
 it gives you access to all features and transports available in that module.
 
-See F<t/26-xmlrpc.t> for client examples and F<examples/XMLRPC/*> for server 
+See F<t/26-xmlrpc.t> for client examples and F<examples/XMLRPC/*> for server
 implementations.
 
 =head1 DEPENDENCIES
@@ -405,7 +403,7 @@ implementations.
 =head1 CREDITS
 
 The B<XML-RPC> standard is Copyright (c) 1998-2001, UserLand Software, Inc.
-See <http://www.xmlrpc.com> for more information about the B<XML-RPC> 
+See <http://www.xmlrpc.com> for more information about the B<XML-RPC>
 specification.
 
 =head1 COPYRIGHT

@@ -12,10 +12,9 @@ package SOAP::Transport::MAILTO;
 
 use strict;
 use vars qw($VERSION);
-#$VERSION = sprintf("%d.%s", map {s/_//g; $_} q$Name$ =~ /-(\d+)_([\d_]+)/);
 $VERSION = $SOAP::Lite::VERSION;
 
-use MIME::Lite; 
+use MIME::Lite;
 use URI;
 
 # ======================================================================
@@ -27,7 +26,7 @@ use vars qw(@ISA);
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
-sub new { 
+sub new {
     my $class = shift;
     return $class if ref $class;
 
@@ -35,7 +34,7 @@ sub new {
     while (@_) { $class->can($_[0]) ? push(@methods, shift() => shift) : push(@params, shift) }
     my $self = bless {@params} => $class;
     while (@methods) { my($method, $params) = splice(@methods,0,2);
-        $self->$method(ref $params eq 'ARRAY' ? @$params : $params) 
+        $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
     }
     SOAP::Trace::objects('()');
 
@@ -44,7 +43,7 @@ sub new {
 
 sub send_receive {
     my($self, %parameters) = @_;
-    my($envelope, $endpoint, $action) = 
+    my($envelope, $endpoint, $action) =
         @parameters{qw(envelope endpoint action)};
 
     $endpoint ||= $self->endpoint;
