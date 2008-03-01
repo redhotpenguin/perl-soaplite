@@ -11,6 +11,8 @@
 package XMLRPC::Lite;
 
 use SOAP::Lite;
+use SOAP::Data;
+use SOAP;
 use strict;
 use vars qw($VERSION);
 $VERSION = '0.71';
@@ -42,6 +44,8 @@ package XMLRPC::Data;
 # ======================================================================
 
 package XMLRPC::Serializer;
+
+use SOAP::Data;
 
 @XMLRPC::Serializer::ISA = qw(SOAP::Serializer);
 

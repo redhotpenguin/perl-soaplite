@@ -1,8 +1,17 @@
 use strict;
 use warnings;
-use Test;
+use Test::More;
 
+BEGIN {
+  unless(grep /blib/, @INC) {
+    chdir 't' if -d 't';
+    unshift @INC, '../lib' if -d '../lib';
+  }
+}
+
+use SOAP::Serializer;
 use SOAP::Lite;
+use SOAP::Data;
 
 my @types1999 = qw(
    anyURI 
@@ -23,7 +32,7 @@ my @types2001 = qw(
 );
 
 # types * 3 + extra tests + autotype tests
-plan tests => 225;
+plan tests => 227;
 
 test_serializer('SOAP::XMLSchema1999::Serializer', @types1999);
 test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
@@ -31,19 +40,18 @@ test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
 sub test_serializer {
     my $package = shift;
     my @types = @_;
-
+    
     print "# $package\n";
+    use_ok $package;
 
     for my $type (@types) {
         my $method = "as_$type";
-	print "#   $method\n";
-	use Data::Dumper;
+        print "#   $method\n";
         my $result = $package->$method('', 'test', $type , {});
-	ok $result->[0] eq 'test';
-	ok $result->[1]->{ 'xsi:type' };
-	ok $result->[2] eq '';
+        ok $result->[0] eq 'test';
+        ok $result->[1]->{ 'xsi:type' };
+        ok $result->[2] eq '';
     }
-
 }
 
 # additional tests

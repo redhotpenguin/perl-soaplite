@@ -11,6 +11,7 @@ use strict;
 use Test;
 
 use SOAP::Lite;
+use SOAP::Custom::XML::Deserializer;
 
 plan tests => 40;
 

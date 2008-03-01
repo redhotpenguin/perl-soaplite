@@ -11,6 +11,8 @@
 package SOAP::Constants;
 use strict;
 use SOAP::Lite;
+use SOAP::XMLSchema2001::Serializer;
+use SOAP::XMLSchema1999::Serializer;
 
 use constant    URI_1999_SCHEMA_XSD    => "http://www.w3.org/1999/XMLSchema";
 use constant    URI_1999_SCHEMA_XSI    => "http://www.w3.org/1999/XMLSchema-instance";

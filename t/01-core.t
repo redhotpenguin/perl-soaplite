@@ -13,6 +13,8 @@ use Test;
 BEGIN { plan tests => 42; }
 
 use SOAP::Lite;
+use SOAP::Serializer;
+use SOAP::Data;
 
 my($a, $s, $r, $serialized, $deserialized);
 

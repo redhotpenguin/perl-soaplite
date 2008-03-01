@@ -16,6 +16,7 @@ $VERSION = '0.71';
 
 use SOAP::Lite;
 use SOAP::Packager;
+use SOAP::Client;
 
 # ======================================================================
 

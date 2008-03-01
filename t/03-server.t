@@ -13,6 +13,7 @@ use Test;
 BEGIN { plan tests => 32 }
 
 use SOAP::Lite;
+use SOAP::Server;
 
 my($a, $s, $r, $serialized, $deserialized);
 
@@ -164,7 +165,7 @@ my $package = '
     sub schema { $SOAP::Constants::DEFAULT_XML_SCHEMA }
 1;';
 
-# TEST 1-4
+# TESTS 1-10
 HANDLER: {
     print "Server handler test(s)...\n";
 

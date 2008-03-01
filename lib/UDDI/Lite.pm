@@ -18,6 +18,7 @@ use vars qw($VERSION);
 $VERSION = $SOAP::Lite::VERSION;
 
 use SOAP::Lite;
+use SOAP::Data;
 
 # ======================================================================
 

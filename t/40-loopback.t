@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test;
 use SOAP::Lite;
+use SOAP::Data;
 
 plan tests => 3;
 
