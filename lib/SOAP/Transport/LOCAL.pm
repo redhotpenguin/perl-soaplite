@@ -19,9 +19,9 @@ $VERSION = $SOAP::Lite::VERSION;
 package SOAP::Transport::LOCAL::Client;
 
 use SOAP::Lite;
-
+use SOAP::Lite::Server;
 use vars qw(@ISA);
-@ISA = qw(SOAP::Client SOAP::Server);
+@ISA = qw(SOAP::Client SOAP::Lite::Server);
 
 sub new {
     my $class = shift;

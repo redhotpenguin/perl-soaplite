@@ -1,6 +1,6 @@
-package SOAP::Schema;
-# Naming? SOAP::Service::Schema?
+package SOAP::Lite::Schema;
 use SOAP::Lite;
+use SOAP::Lite::Schema::Deserializer;
 use strict;
 
 use Carp ();
@@ -14,7 +14,7 @@ sub new {
         my $class = $self;
         require LWP::UserAgent;
         $self = bless {
-            '_deserializer' => SOAP::Schema::Deserializer->new,
+            '_deserializer' => SOAP::Lite::Schema::Deserializer->new,
             '_useragent'    => LWP::UserAgent->new,
         }, $class;
 
@@ -32,8 +32,8 @@ sub new {
 }
 
 sub schema {
-    warn "SOAP::Schema->schema has been deprecated. "
-        . "Please use SOAP::Schema->schema_url instead.";
+    warn "SOAP::Lite::Schema->schema has been deprecated. "
+        . "Please use SOAP::Lite::Schema->schema_url instead.";
     return shift->schema_url(@_);
 }
 
@@ -52,7 +52,7 @@ sub parse {
     my $self = shift;
     my $s = $self->deserializer->deserialize($self->access)->root;
     # here should be something that defines what schema description we want to use
-    $self->services({SOAP::Schema::WSDL->base($self->schema_url)->parse($s, @_)});
+    $self->services({SOAP::Lite::Schema::WSDL->base($self->schema_url)->parse($s, @_)});
 }
 
 sub refresh_cache {

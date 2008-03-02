@@ -185,7 +185,8 @@ package SOAP::Transport::MQ::Server;
 
 use Carp ();
 use vars qw(@ISA $AUTOLOAD);
-@ISA = qw(SOAP::Server SOAP::Transport::MQ);
+use SOAP::Lite::Server;
+@ISA = qw(SOAP::Lite::Server SOAP::Transport::MQ);
 
 use MQSeries qw(:constants);
 

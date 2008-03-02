@@ -123,11 +123,15 @@ lib/SOAP/Deserializer.pod
 lib/SOAP/Fault.pod
 lib/SOAP/Header.pod
 lib/SOAP/Lite.pm
+lib/SOAP/Lite/Deserializer.pm
 lib/SOAP/Lite/Deserializer/XMLSchema1999.pm
 lib/SOAP/Lite/Deserializer/XMLSchema2001.pm
 lib/SOAP/Lite/Deserializer/XMLSchemaSOAP1_1.pm
 lib/SOAP/Lite/Deserializer/XMLSchemaSOAP1_2.pm
 lib/SOAP/Lite/Packager.pm
+lib/SOAP/Lite/Server.pm
+lib/SOAP/Lite/Schema.pm
+lib/SOAP/Lite/Schema/Deserializer.pm
 lib/SOAP/Lite/Utils.pm
 lib/SOAP/Packager.pm
 lib/SOAP/Schema.pod

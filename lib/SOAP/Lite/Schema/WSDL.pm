@@ -1,4 +1,4 @@
-package SOAP::Schema::WSDL;
+package SOAP::Lite::Schema::WSDL;
 
 use strict;
 use SOAP::Lite;

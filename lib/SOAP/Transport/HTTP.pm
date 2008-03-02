@@ -291,9 +291,9 @@ sub send_receive {
 # ======================================================================
 
 package SOAP::Transport::HTTP::Server;
-
+use SOAP::Lite::Server;
 use vars qw(@ISA $COMPRESS);
-@ISA = qw(SOAP::Server);
+@ISA = qw(SOAP::Lite::Server);
 
 use URI;
 

@@ -24,7 +24,8 @@ package SOAP::Transport::IO::Server;
 use strict;
 use Carp ();
 use vars qw(@ISA);
-@ISA = qw(SOAP::Server);
+use SOAP::Lite::Server;
+@ISA = qw(SOAP::Lite::Server);
 
 sub new {
     my $class = shift;

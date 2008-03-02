@@ -165,7 +165,8 @@ package SOAP::Transport::JABBER::Server;
 
 use Carp ();
 use vars qw(@ISA $AUTOLOAD);
-@ISA = qw(SOAP::Server);
+use SOAP::Lite::Server;
+@ISA = qw(SOAP::Lite::Server);
 
 sub new {
   my $self = shift;
