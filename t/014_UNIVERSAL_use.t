@@ -1,5 +1,7 @@
 use Test;
 
+use strict;
+
 use SOAP::Lite;
 use SOAP::Custom::XML::Data;
 

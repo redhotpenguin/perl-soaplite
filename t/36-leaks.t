@@ -1,4 +1,6 @@
 #!/bin/env perl 
+use strict;
+
 use Devel::Cycle;
 BEGIN {
   unless(grep /blib/, @INC) {

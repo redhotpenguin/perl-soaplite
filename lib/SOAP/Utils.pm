@@ -1,5 +1,7 @@
 package SOAP::Utils;
 
+use strict;
+
 sub qualify {
     $_[1]
         ? $_[1] =~ /:/

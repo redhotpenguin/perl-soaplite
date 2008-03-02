@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+
 use strict;
 use Test;
 plan tests => 5;

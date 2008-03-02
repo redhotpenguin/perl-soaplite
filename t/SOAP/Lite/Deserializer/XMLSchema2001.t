@@ -1,4 +1,6 @@
 use Test::More tests => 42;
+use strict;
+
 use_ok qw(SOAP::Lite::Deserializer::XMLSchema2001);
 
 is SOAP::Lite::Deserializer::XMLSchema2001->anyTypeValue(),

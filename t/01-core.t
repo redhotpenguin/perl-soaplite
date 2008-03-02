@@ -1,5 +1,7 @@
 #!/bin/env perl
 
+use strict;
+
 BEGIN {
   unless(grep /blib/, @INC) {
     chdir 't' if -d 't';

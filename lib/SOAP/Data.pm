@@ -2,6 +2,8 @@ package SOAP::Data;
 
 use strict;
 
+use SOAP::Trace;
+
 use vars qw(@ISA @EXPORT_OK);
 use Exporter;
 use Carp ();

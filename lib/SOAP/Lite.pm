@@ -23,7 +23,6 @@ use Carp ();
 
 $VERSION = '0.71.01';
 
-use SOAP;
 use SOAP::Lite::Utils;
 use SOAP::Constants;
 use SOAP::Packager;
@@ -366,6 +365,8 @@ sub call {
     return $result;
 } # end of call()
 
+1;
+
 package SOAP;
 
 use strict;
@@ -418,10 +419,6 @@ our $soap; # shared between SOAP and SOAP::Lite packages
             : $som;
     };
 }
-
-1;
-
-__END__
 
 1;
 

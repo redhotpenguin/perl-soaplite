@@ -1,5 +1,7 @@
 package SOAP::Cloneable;
 
+use strict;
+
 sub clone {
     my $self = shift;
 

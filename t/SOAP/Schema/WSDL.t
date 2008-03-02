@@ -1,4 +1,6 @@
 use Test::More qw(no_plan);
+use strict;
+
 use SOAP::Lite::Schema::WSDL;
 
 ok my $schema = SOAP::Lite::Schema::WSDL->new();
