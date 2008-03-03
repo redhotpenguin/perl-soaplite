@@ -1,16 +1,15 @@
 #!/bin/env perl 
-use strict;
 
-use Devel::Cycle;
+use strict;
+use Test::More tests => 16;
+
+# use Devel::Cycle;
 BEGIN {
   unless(grep /blib/, @INC) {
     chdir 't' if -d 't';
     unshift @INC, '../lib' if -d '../lib';
   }
 }
-
-use strict;
-use Test;
 
 use SOAP::Lite
   on_fault => sub {
@@ -39,8 +38,6 @@ unless (defined $r && defined $r->envelope) {
 }
 # ------------------------------------------------------
 
-plan tests => 16;
-
 {
   print "Memory leaks test(s)...\n";
 
@@ -58,11 +55,8 @@ plan tests => 16;
       -> uri("Echo")
       -> proxy($proxy)
       -> echo;
-	use Data::Dumper;
 #	find_cycle $soap;
   }
-  use Data::Dumper;
-  
 
   foreach (keys %{$calls{new}}) {
     print "default parser: $_\n";
