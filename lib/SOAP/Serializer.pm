@@ -2,6 +2,9 @@ package SOAP::Serializer;
 
 use strict;
 
+# TODO check and remove dependency
+use SOAP::Lite;
+
 use SOAP::Cloneable;
 use SOAP::XMLSchema::Serializer;
 use SOAP::Trace;
@@ -10,6 +13,7 @@ use SOAP::Utils;
 use SOAP::Deserializer;
 use SOAP::Parser;
 use SOAP::Data;
+
 use Carp ();
 use vars qw(@ISA);
 
@@ -608,11 +612,10 @@ sub register_ns {
 }
 
 sub find_prefix {
-    my $self = shift;
-    my ($ns) = @_;
-    foreach my $this_ns (keys %{$self->{'_namespaces'}}) {
-        return $self->{'_namespaces'}->{$this_ns} if ($ns eq $this_ns);
-    }
+    my ($self, $ns) = @_;
+    return (exists $self->{'_namespaces'}->{$ns})
+        ? $self->{'_namespaces'}->{$ns}
+        : ();
 }
 
 sub fixattrs {

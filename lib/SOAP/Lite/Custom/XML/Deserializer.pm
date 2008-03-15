@@ -7,7 +7,7 @@ use SOAP::Lite::Custom::XML::Data;
 use SOAP::Lite::Deserializer;
 
 use vars qw(@ISA);
-@ISA = qw(SOAP::Deserializer);
+@ISA = qw(SOAP::Lite::Deserializer);
 
 sub decode_value {
     my $self = shift;
