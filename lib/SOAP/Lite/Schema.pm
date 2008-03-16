@@ -1,4 +1,5 @@
 package SOAP::Lite::Schema;
+
 use SOAP::Lite;
 use SOAP::Lite::Schema::Deserializer;
 use strict;

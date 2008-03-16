@@ -3,17 +3,11 @@
 use strict;
 use Test::More q(no_plan);
 
-BEGIN {
-  unless(grep /blib/, @INC) {
-    chdir 't' if -d 't';
-    unshift @INC, '../lib' if -d '../lib';
-    push @INC, 'lib/';
-  }
-}
+use lib qw(lib);
 
 eval "use Test::Strict";
 
 SKIP: {
     skip 'You need Test::Strict installed to run strict testing', if $@;
-    all_perl_files_ok('../lib/','../t','t/','lib/'); # Syntax ok and use strict;
+    all_perl_files_ok(qw(t/ lib/)); # Syntax ok and use strict;
 }

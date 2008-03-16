@@ -106,16 +106,6 @@ lib/Apache/SOAP.pm
 lib/Apache/XMLRPC/Lite.pm
 lib/IO/SessionData.pm
 lib/IO/SessionSet.pm
-lib/OldDocs/SOAP/Lite.pm
-lib/OldDocs/SOAP/Transport/FTP.pm
-lib/OldDocs/SOAP/Transport/HTTP.pm
-lib/OldDocs/SOAP/Transport/IO.pm
-lib/OldDocs/SOAP/Transport/JABBER.pm
-lib/OldDocs/SOAP/Transport/LOCAL.pm
-lib/OldDocs/SOAP/Transport/MAILTO.pm
-lib/OldDocs/SOAP/Transport/MQ.pm
-lib/OldDocs/SOAP/Transport/POP3.pm
-lib/OldDocs/SOAP/Transport/TCP.pm
 lib/SOAP/Client.pod
 lib/SOAP/Constants.pm
 lib/SOAP/Data.pod
