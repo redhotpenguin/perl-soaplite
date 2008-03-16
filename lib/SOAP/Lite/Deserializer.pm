@@ -3,7 +3,6 @@ package SOAP::Lite::Deserializer;
 use strict;
 
 use vars qw(@ISA);
-use SOAP::Lite;
 use SOAP::Parser;
 use SOAP::Lite::Utils;
 use SOAP::Cloneable;
