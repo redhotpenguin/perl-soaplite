@@ -18,6 +18,7 @@ THIS RELEASE
 0.71.01
    ! Version numbers updated
    ! [1904955] Subclassing XMLRPC::Serializer broken
+   ! [ 1604320 ] xsi:nil on part accessor in argless message
 0.71 Feb 2008
   - bumped up version. Just curious about commit e-mail.
 0.70_08 Feb 25 2008

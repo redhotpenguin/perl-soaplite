@@ -833,12 +833,11 @@ sub envelope {
             # End new code
         }
 
-        # This is breaking a unit test right now...
-        # proposed resolution for [ 1700326 ] encode_data called incorrectly in envelope
-        #    $body->set_value(SOAP::Utils::encode_data($parameters ? \$parameters : ()))
-        #      if $body;
-        # must call encode_data on nothing to enforce xsi:nil="true" to be set.
-        $body->set_value($parameters ? \$parameters : SOAP::Utils::encode_data()) if $body;
+        # Set empty value without SOAP::Utils::encode_data to prevent
+        # the use of xsi:nil="true" on the method
+        # Banned by WS-I basic profile
+        # See http://www.ws-i.org/Profiles/BasicProfile-1.2.html#R2211
+        $body->set_value($parameters ? \$parameters : ()) if $body;
     }
     elsif ($type eq 'fault') {
         SOAP::Trace::fault(@parameters);
