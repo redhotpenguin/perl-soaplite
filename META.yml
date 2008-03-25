@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                SOAP-Lite
-version:             0.70_05
+version:             0.71
 abstract:            ~
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.36
