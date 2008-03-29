@@ -1,8 +1,8 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 use strict;
 use Test::More;
-use Data::Dump qw(dump);
+
 use lib qw(lib);
 
 if ( not $ENV{TEST_AUTHOR} ) {

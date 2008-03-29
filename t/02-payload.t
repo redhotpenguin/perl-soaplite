@@ -231,8 +231,10 @@ my($a, $s, $r, $serialized, $deserialized);
   $serialized = SOAP::Serializer
     -> envprefix('')
     -> method('mymethod');
-
-  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod xsi:nil="true" /></Body></Envelope>!);
+# 
+#  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod xsi:nil="true" /></Body></Envelope>!);
+  # removed xsi:nil="true"
+  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod /></Body></Envelope>!);
   $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></soap:Body></soap:Envelope>');
   ok(! defined $deserialized->namespaceuriof('//getStateName'));
 
