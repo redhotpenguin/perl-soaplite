@@ -16,6 +16,7 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 0.71.01
+   ! #34515: Printing UTF-8 through SOAP::Transport::HTTP throws a warning
    ! Version numbers updated
    ! [1904955] Subclassing XMLRPC::Serializer broken
    ! [ 1604320 ] xsi:nil on part accessor in argless message
