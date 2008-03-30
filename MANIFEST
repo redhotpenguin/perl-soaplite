@@ -112,7 +112,6 @@ lib/Apache/XMLRPC/Lite.pm
 lib/IO/SessionData.pm
 lib/IO/SessionSet.pm
 lib/OldDocs/SOAP/Lite.pod
-lib/OldDocs/SOAP/Transport
 lib/OldDocs/SOAP/Transport/FTP.pod
 lib/OldDocs/SOAP/Transport/HTTP.pod
 lib/OldDocs/SOAP/Transport/IO.pod
@@ -127,7 +126,6 @@ lib/SOAP/Client.pm
 lib/SOAP/Client.pod
 lib/SOAP/Cloneable.pm
 lib/SOAP/Constants.pm
-lib/SOAP/Custom/XML
 lib/SOAP/Custom/XML/Data.pm
 lib/SOAP/Custom/XML/Deserializer.pm
 lib/SOAP/Data.pm
@@ -139,11 +137,8 @@ lib/SOAP/Fault.pod
 lib/SOAP/Header.pm
 lib/SOAP/Header.pod
 lib/SOAP/Lite.pm
-lib/SOAP/Lite/Custom
-lib/SOAP/Lite/Custom/XML
 lib/SOAP/Lite/Custom/XML/Data.pm
 lib/SOAP/Lite/Custom/XML/Deserializer.pm
-lib/SOAP/Lite/Deserializer
 lib/SOAP/Lite/Deserializer.pm
 lib/SOAP/Lite/Deserializer/XMLSchema1999.pm
 lib/SOAP/Lite/Deserializer/XMLSchema2001.pm
@@ -187,11 +182,8 @@ lib/SOAP/Transport/TCP.pm
 lib/SOAP/Utils.pm
 lib/SOAP/Utils.pod
 lib/SOAP/XMLSchema/Serializer.pm
-lib/SOAP/XMLSchema1999
 lib/SOAP/XMLSchema1999/Serializer.pm
-lib/SOAP/XMLSchema2001
 lib/SOAP/XMLSchema2001/Serializer.pm
-lib/SOAP/XMLSchemaApacheSOAP
 lib/SOAP/XMLSchemaApacheSOAP/Deserializer.pm
 lib/UDDI/Lite.pm
 lib/XML/Parser/Lite.pm
