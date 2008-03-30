@@ -4,6 +4,8 @@ use strict;
 use Test;
 plan tests => 5;
 
+use lib qw(lib);
+
 local $/ = undef;
 my $xml = <DATA>;
 use SOAP::Lite;

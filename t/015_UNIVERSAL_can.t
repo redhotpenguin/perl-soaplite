@@ -2,6 +2,8 @@
 use Test;
 use strict;
 
+use lib qw(lib);
+
 BEGIN {
     if ($] < 5.008001) {
         print "# +autodispatch broken in 5.8.0\n";

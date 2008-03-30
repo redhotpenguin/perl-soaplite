@@ -2,6 +2,8 @@ use Test;
 
 use strict;
 
+use lib qw(lib);
+
 use SOAP::Lite;
 use SOAP::Custom::XML::Data;
 
