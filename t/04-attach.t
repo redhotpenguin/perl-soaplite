@@ -26,7 +26,8 @@ BEGIN { plan tests => 15 }
 my($a, $soap, $d, $s, $r, $serialized, $deserialized);
 
 { # check attachment deserialization
-  $soap = SOAP::Lite->init_context();
+    $soap = SOAP::Lite->new();
+    $soap->init_context();
 
   ##############################################################################
   print "Attachment deserialization (Content-ID) test(s)...\n";

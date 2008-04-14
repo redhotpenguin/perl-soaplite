@@ -9,6 +9,8 @@ use SOAP::Serializer;
 use SOAP::Transport;
 use SOAP::Lite;
 
+use Scalar::Util qw(weaken);
+
 sub DESTROY { SOAP::Trace::objects('()') }
 
 sub initialize {
@@ -72,14 +74,14 @@ sub new {
 sub init_context {
     my $self = shift;
     $self->{'_deserializer'}->{'_context'} = $self;
+    # weaken circular reference to avoid a memory hole
+    weaken($self->{'_deserializer'}->{'_context'});
+
     $self->{'_serializer'}->{'_context'} = $self;
+    # weaken circular reference to avoid a memory hole
+    weaken($self->{'_serializer'}->{'_context'});
 }
 
-sub destroy_context {
-    my $self = shift;
-    delete($self->{'_deserializer'}->{'_context'});
-    delete($self->{'_serializer'}->{'_context'})
-}
 
 sub BEGIN {
     no strict 'refs';
@@ -339,11 +341,9 @@ sub handle {
             ->prefix('s') # distinguish generated element names between client and server
             ->uri($method_uri)
             ->envelope(response => $method_name . 'Response', @results);
-        $self->destroy_context();
         return $result;
     };
 
-    $self->destroy_context();
     # void context
     return unless defined wantarray;
 

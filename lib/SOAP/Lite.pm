@@ -32,6 +32,8 @@ use SOAP::Serializer;
 use SOAP::Schema::WSDL;
 use SOAP::Lite::Deserializer;
 
+use Scalar::Util qw(weaken);
+
 @ISA = qw(SOAP::Cloneable);
 
 # provide access to global/autodispatched object
@@ -157,16 +159,16 @@ sub new {
 }
 
 sub init_context {
-    my $self = shift->new;
+    my $self = shift;
     $self->{'_deserializer'}->{'_context'} = $self;
+    # weaken circular reference to avoid a memory hole
+    weaken($self->{'_deserializer'}->{'_context'});
+
     $self->{'_serializer'}->{'_context'} = $self;
+    # weaken circular reference to avoid a memory hole
+    weaken($self->{'_serializer'}->{'_context'});
 }
 
-sub destroy_context {
-    my $self = shift;
-    delete($self->{'_deserializer'}->{'_context'});
-    delete($self->{'_serializer'}->{'_context'})
-}
 
 # Naming? wsdl_parser
 sub schema {
@@ -303,25 +305,25 @@ sub call {
 
     $self->init_context();
 
-    my $serializer = $self->serializer;
-    $serializer->on_nonserialized($self->on_nonserialized);
+    my $serializer = $self->serializer();
+    $serializer->on_nonserialized( $self->on_nonserialized() );
 
-    my $response = $self->transport->send_receive(
+    my $response = $self->transport()->send_receive(
         context  => $self, # this is provided for context
-        endpoint => $self->endpoint,
+        endpoint => $self->endpoint(),
         action   => scalar($self->on_action->($serializer->uriformethod($_[0]))),
                 # leave only parameters so we can later update them if required
         envelope => $serializer->envelope(method => shift, @_),
-        encoding => $serializer->encoding,
-        parts    => @{$self->packager->parts} ? $self->packager->parts : undef,
+        encoding => $serializer->encoding(),
+        parts    => @{$self->packager->parts} ? $self->packager()->parts() : undef,
     );
 
-    return $response if $self->outputxml;
+    return $response if $self->outputxml();
 
-    my $result = eval { $self->deserializer->deserialize($response) }
+    my $result = eval { $self->deserializer()->deserialize($response) }
         if $response;
 
-    if (!$self->transport->is_success || # transport fault
+    if (!$self->transport()->is_success() || # transport fault
         $@ ||                            # not deserializible
         # fault message even if transport OK
         # or no transport error (for example, fo TCP, POP3, IO implementations)
@@ -361,7 +363,6 @@ sub call {
             }
         }
     }
-    $self->destroy_context();
     return $result;
 } # end of call()
 

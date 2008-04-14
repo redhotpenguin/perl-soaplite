@@ -15,7 +15,8 @@ my @PREREQS = (
           "Test::More" => 0,
           "XML::Parser" => "2.23",
           "MIME::Base64" => 0,
-          "URI" => 0
+          "URI" => 0,
+		  "Scalar::Util" => 0,
         },
         2
     ],
