@@ -1,0 +1,37 @@
+=pod
+
+=head1 NAME
+
+SOAP::Lite Cookbook - recipes for using SOAP::Lite
+
+=head1 DESCRIPTION
+
+This is a just evolving cookbook for SOAP::Lite.
+
+=head1 CLIENT RECIPES
+
+=head2 Enabling HTTP keepalive
+
+You can switch on keepalive by calling:
+
+ my $soap = SOAP::Lite->proxy('http://example.org', keepalive => 1);
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2008 Martin Kutter.
+
+This library is free software. You may distribute/modify it under
+the same terms as perl itself
+
+=head1 AUTHOR
+
+Martin Kutter E<lt>martin.kutter fen-net.deE<gt>
+
+=head1 REPOSITORY INFORMATION
+
+ $Rev: 583 $
+ $LastChangedBy: kutterma $
+ $Id: $
+ $HeadURL: $
+
+=cut
