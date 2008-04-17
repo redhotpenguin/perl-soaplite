@@ -29,8 +29,8 @@ Martin Kutter E<lt>martin.kutter fen-net.deE<gt>
 
 =head1 REPOSITORY INFORMATION
 
- $Rev: 583 $
- $LastChangedBy: kutterma $
+ $Rev$
+ $LastChangedBy$
  $Id: $
  $HeadURL: $
 
