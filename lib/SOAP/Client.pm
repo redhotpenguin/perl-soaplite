@@ -5,7 +5,8 @@ use strict;
 use vars qw($VERSION);
 use SOAP::Lite::Utils;
 
-$VERSION = '0.70';
+use version; $VERSION = qv(0.71.03);
+
 sub BEGIN {
     __PACKAGE__->__mk_accessors(qw(endpoint code message
         is_success status options));

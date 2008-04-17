@@ -15,6 +15,14 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
+0.71.03
+   ! #35133: Version Unparsable by ExtUtils::MakeMaker
+   ! #33973: KeepAlive fails to function
+   ! #33773: redefined warnings
+   ! #34514: Subclasses of XMLRPC::Serializer misbehave because of a "ref" call in SOAP::Lite
+   (actually fixed in 0.71.01, but I forgot to add it to Changes)
+0.71.02
+   ! [1942233] Memory leak in 0.69 && 0.71
 0.71.01
    ! #34515: Printing UTF-8 through SOAP::Transport::HTTP throws a warning
    ! Version numbers updated

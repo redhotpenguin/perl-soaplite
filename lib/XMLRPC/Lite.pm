@@ -15,7 +15,7 @@ use SOAP::Data;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.71';
+use version; $VERSION = qv(0.71.03);
 
 # ======================================================================
 

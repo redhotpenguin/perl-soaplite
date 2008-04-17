@@ -13,7 +13,7 @@ package SOAP::Constants;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '0.71.01';
+use version; $VERSION = qv(0.71.03);
 
 # use SOAP::Lite;
 use SOAP::XMLSchema2001::Serializer;

@@ -12,7 +12,7 @@ package SOAP::Transport::TCP;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = $SOAP::Lite::VERSION;
+use version; $VERSION = qv(0.71.03);
 
 use URI;
 use IO::Socket;
