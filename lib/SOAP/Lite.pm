@@ -21,7 +21,7 @@ use strict;
 use vars qw($AUTOLOAD @ISA $VERSION);
 use Carp ();
 
-use version; $VERSION = qv(0.71.03);
+use version; $VERSION = qv('0.71.03');
 
 use SOAP::Lite::Utils;
 use SOAP::Constants;

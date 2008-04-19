@@ -15,7 +15,7 @@ use vars qw(@ISA $VERSION);
 use SOAP::Transport::HTTP;
 
 @ISA = qw(SOAP::Transport::HTTP::Apache);
-use version; $VERSION = qv(0.71.03);
+use version; $VERSION = qv('0.71.04');
 
 my $server = __PACKAGE__->new;
 
