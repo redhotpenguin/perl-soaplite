@@ -12,11 +12,12 @@ my @PREREQS = (
         "Core Package",
         "SOAP::Lite",
         {
-          "Test::More" => 0,
-          "XML::Parser" => "2.23",
-          "MIME::Base64" => 0,
-          "URI" => 0,
-		  "Scalar::Util" => 0,
+          "Test::More"      => 0,
+          "XML::Parser"     => "2.23",
+          "MIME::Base64"    => 0,
+          "URI"             => 0,
+          "Scalar::Util"    => 0,
+          "version"         => 0,
         },
         2
     ],
@@ -135,7 +136,7 @@ do {
 } while (!$proceed);
 
 
-# Old way of selecting tests - replaced by extended test suite in 
+# Old way of selecting tests - replaced by extended test suite in
 # subdirectories...
 # my $tests = join ' ', glob ($noncoretests ? 't/*.t' : 't/0*.t');
 
