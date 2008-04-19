@@ -438,10 +438,12 @@ sub make_response {
             ? do { require Encode; Encode::encode($encoding, $response) }
             : $response,
     ));
+
     $self->response->headers->header('Content-Type' => 'Multipart/Related; type="text/xml"; start="<main_envelope>"; boundary="'.$is_multipart.'"') if $is_multipart;
 }
 
-sub product_tokens { join '/', 'SOAP::Lite', 'Perl', SOAP::Transport::HTTP->VERSION }
+# ->VERSION leaks a scalar every call - no idea why.
+sub product_tokens { join '/', 'SOAP::Lite', 'Perl', $SOAP::Transport::HTTP::VERSION; }
 
 # ======================================================================
 
