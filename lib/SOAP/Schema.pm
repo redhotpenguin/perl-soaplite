@@ -2,7 +2,7 @@ package SOAP::Schema;
 # Naming? SOAP::Service::Schema?
 use SOAP::Lite;
 use strict;
-
+use SOAP::Schema::Deserializer;
 use Carp ();
 
 sub DESTROY { SOAP::Trace::objects('()') }
