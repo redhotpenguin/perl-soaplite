@@ -7,7 +7,7 @@ sub clone {
 
     return unless ref $self && UNIVERSAL::isa($self => __PACKAGE__);
 
-    my $clone = bless {} => ref($self) || $self;
+    my $clone = bless {} => ref($self);
     for (keys %$self) {
         my $value = $self->{$_};
         $clone->{$_} = ref $value && UNIVERSAL::isa($value => __PACKAGE__) ? $value->clone : $value;
