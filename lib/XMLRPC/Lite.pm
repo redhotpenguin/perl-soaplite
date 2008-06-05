@@ -75,12 +75,16 @@ sub envelope {
 
     my $body;
     if ($type eq 'response') {
+        # shift off method name to make XMLRPT happy
+        my $method = shift
+            or die "Unspecified method for XMLRPC call\n";
         $body = XMLRPC::Data->name( methodResponse => \XMLRPC::Data->value(
                 XMLRPC::Data->type(params => [@_])
             )
         );
     }
     elsif ($type eq 'method') {
+        # shift off method name to make XMLRPT happy
         my $method = shift
             or die "Unspecified method for XMLRPC call\n";
         $body = XMLRPC::Data->name( methodCall => \XMLRPC::Data->value(
@@ -264,7 +268,7 @@ sub BEGIN {
 
 package XMLRPC::Deserializer;
 
-@XMLRPC::Deserializer::ISA = qw(SOAP::Deserializer);
+@XMLRPC::Deserializer::ISA = qw(SOAP::Lite::Deserializer);
 
 BEGIN {
     no strict 'refs';
