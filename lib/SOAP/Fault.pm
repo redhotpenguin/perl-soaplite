@@ -3,6 +3,7 @@ package SOAP::Fault;
 use strict;
 
 use Carp ();
+use SOAP::Trace ();
 
 use overload fallback => 1, '""' => "stringify";
 

@@ -1,4 +1,4 @@
-use Test::More tests => 37;
+use Test::More tests => 38;
 use strict;
 
 use_ok qw(SOAP::Lite::Deserializer::XMLSchemaSOAP1_2);
@@ -17,6 +17,8 @@ is SOAP::Lite::Deserializer::XMLSchemaSOAP1_2->as_boolean('false'),
 is SOAP::Lite::Deserializer::XMLSchemaSOAP1_2->as_anyType('4242'),
     '4242', 'as_anyType(4242)';
 
+is SOAP::Lite::Deserializer::XMLSchemaSOAP1_2->as_base64('YWJj'), 'abc';
+
 for (qw(
     string float double decimal dateTime timePeriod gMonth gYearMonth gYear
         century gMonthDay gDay duration recurringDuration anyURI
@@ -29,5 +31,5 @@ for (qw(
     my $method = "as_$_";
     is SOAP::Lite::Deserializer::XMLSchemaSOAP1_2->$method('something nice'),
     'something nice', "$method('something nice')";
-    
+
 }

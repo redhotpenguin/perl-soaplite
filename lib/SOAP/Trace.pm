@@ -20,7 +20,7 @@ sub defaultlog {
     my $caller = (caller(1))[3]; # the 4th element returned by caller is the subroutine namea
     $caller = (caller(2))[3] if $caller =~ /eval/;
     chomp(my $msg = join ' ', @_);
-    printf STDERR "%s: %s\n", $caller, $msg;
+    warn sprintf("%s: %s\n", $caller, $msg);
 }
 
 sub import {

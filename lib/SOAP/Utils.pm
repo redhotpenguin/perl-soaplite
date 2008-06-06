@@ -62,7 +62,7 @@ sub encode_attribute { (my $e = $_[0]) =~ s/([&<>\"])/$encode_attribute{$1}/g; $
 my %encode_data = ('&' => '&amp;', '>' => '&gt;', '<' => '&lt;', "\xd" => '&#xd;');
 sub encode_data { my $e = $_[0]; if ($e) { $e =~ s/([&<>\015])/$encode_data{$1}/g; $e =~ s/\]\]>/\]\]&gt;/g; } $e }
 
-# methods for internal tree (SOAP::Deserializer, SOAP::SOM and SOAP::Serializer)
+# methods for internal tree (SOAP::Lite::Deserializer, SOAP::SOM and SOAP::Serializer)
 
 sub o_qname { $_[0]->[0] }
 sub o_attr  { $_[0]->[1] }

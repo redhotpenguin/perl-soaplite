@@ -4,10 +4,10 @@ use strict;
 
 use SOAP::Data;
 use SOAP::Custom::XML::Data;
-use SOAP::Deserializer;
+use SOAP::Lite::Deserializer;
 
 use vars qw(@ISA);
-@ISA = qw(SOAP::Deserializer);
+@ISA = qw(SOAP::Lite::Deserializer);
 
 sub decode_value {
     my $self = shift;

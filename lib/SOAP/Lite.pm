@@ -28,7 +28,7 @@ use SOAP::Constants;
 use SOAP::Packager;
 use SOAP::SOM;
 use SOAP::Transport;
-use SOAP::Serializer;
+use SOAP::Lite::Serializer;
 use SOAP::Schema::WSDL;
 use SOAP::Lite::Deserializer;
 
@@ -134,7 +134,7 @@ sub new {
         $self = ref($SOAP::soap) eq $class ? $SOAP::soap->clone : {
             _transport    => SOAP::Transport->new,
             _serializer   => SOAP::Serializer->new,
-            _deserializer => SOAP::Deserializer->new,
+            _deserializer => SOAP::Lite::Deserializer->new,
             _packager     => SOAP::Packager::MIME->new,
             _schema       => undef,
             _autoresult   => 0,
@@ -462,7 +462,7 @@ L<SOAP::Header> - Header Data Objects
 
 L<SOAP::Serializer> - Serializes data structures to SOAP messages
 
-L<SOAP::Deserializer> - Deserializes SOAP messages into SOAP::SOM objects
+L<SOAP::Lite::Deserializer> - Deserializes SOAP messages into SOAP::SOM objects
 
 L<SOAP::SOM> - SOAP Message objects
 

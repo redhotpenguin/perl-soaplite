@@ -1,7 +1,7 @@
 package SOAP::Lite::Custom::XML::Data;
 
 use strict;
-
+use SOAP::Data;
 use vars qw(@ISA $AUTOLOAD);
 @ISA = qw(SOAP::Data);
 

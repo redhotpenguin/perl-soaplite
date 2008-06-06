@@ -3,11 +3,17 @@ package SOAP::Lite::Deserializer;
 use strict;
 
 use vars qw(@ISA);
+use SOAP::Trace;
 use SOAP::Parser;
+use SOAP::Constants;
+
 use SOAP::Lite::Utils;
+use SOAP::SOM;
 use SOAP::Cloneable;
 use URI;
 @ISA = qw(SOAP::Cloneable);
+
+require SOAP::Lite;
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
@@ -26,10 +32,7 @@ sub new {
         '_hrefs'      => {},
         '_parser'     => SOAP::Parser->new,
         '_xmlschemas' => {
-            $SOAP::Constants::NS_APS => 'SOAP::XMLSchemaApacheSOAP::Deserializer',
-#            map {
-#                $_ => $SOAP::Constants::XML_SCHEMAS{$_} . '::Deserializer'
-#              } keys %SOAP::Constants::XML_SCHEMAS
+            $SOAP::Constants::NS_APS => 'SOAP::XMLSchemaApacheSOAP::Lite::Deserializer',
             map {
                 $_ => 'SOAP::Lite::Deserializer::' . $SOAP::Constants::XML_SCHEMA_OF{$_}
               } keys %SOAP::Constants::XML_SCHEMA_OF
@@ -50,7 +53,8 @@ sub baselocation {
     if ($location) {
         my $uri = URI->new($location);
         # make absolute location if relative
-        $location = $uri->abs($self->base || 'thismessage:/')->as_string unless $uri->scheme;
+        $location = $uri->abs($self->base || 'thismessage:/')->as_string
+            unless $uri->scheme;
     }
     return $location;
 }
@@ -58,8 +62,19 @@ sub baselocation {
 # Returns the envelope and populates SOAP::Packager with parts
 sub decode_parts {
     my $self = shift;
+    # TODO make packager a element of Serializer/Deserializer, not context.
+    # There may be different serializers/deserializers with different
+    # packagers used in an application: Imagine a SOAP proxy receiving
+    # MIME and sending DIME messages.
     my $env = $self->context->packager->unpackage($_[0],$self->context);
     my $body = $self->parser->decode($env);
+
+    # TODO insert MIME element at appropriate location in $body
+    # Values (even MIME encoded values) should be returned, not
+    # stored somewhere else
+    # Storing data in packager/deserializer/context is subject to side effects
+    # (overwriting on next parser run, memory leaks)
+
     # TODO - This shouldn't be here! This is packager specific!
     #        However this does need to pull out all the cid's
     #        to populate ids hash with.
@@ -74,7 +89,7 @@ sub decode_parts {
             : ['mimepart', {}, $data];
         # This below looks like unnecessary bloat!!!
         # I should probably dereference the mimepart, provide a callback to get the string data
-        $id =~ s/^<([^>]*)>$/$1/; # string any leading and trailing brackets
+        $id =~ s/^<([^>]*)>$/$1/; # strip leading and trailing brackets
         $self->ids->{$id} = $part if $id;
         $self->ids->{$location} = $part if $location;
     }
@@ -142,34 +157,37 @@ sub decode_object {
 
     $ref->[ _ATTRS ] = $attrs = {%$attrs}; # make a copy for long attributes
 
+    # set xmlns attributes
+    # TODO remove use vars - use a object member instead
     use vars qw(%uris);
     local %uris = (%uris, map {
         do { (my $ns = $_) =~ s/^xmlns:?//; $ns } => delete $attrs->{$_}
     } grep {/^xmlns(:|$)/} keys %$attrs);
 
+    # set attributes
     foreach (keys %$attrs) {
-        next unless m/^($SOAP::Constants::NSMASK?):($SOAP::Constants::NSMASK)$/;
-
-    $1 =~ /^[xX][mM][lL]/ ||
-        $uris{$1} &&
-            do {
-                $attrs->{SOAP::Utils::longname($uris{$1}, $2)} = do {
+        # ignore non-qualified attributes
+        my ($prefix,$name) = m/^($SOAP::Constants::NSMASK?):($SOAP::Constants::NSMASK)$/
+            or next;
+        ($prefix =~ /^[xX][mM][lL]/ || $uris{$prefix})
+            ? do {
+                $attrs->{SOAP::Lite::Utils::longname($uris{$prefix}, $name)} = do {
                     my $value = $attrs->{$_};
-                    $2 ne 'type' && $2 ne 'arrayType'
+                    $name ne 'type' && $name ne 'arrayType'
                         ? $value
-                        : SOAP::Utils::longname($value =~ m/^($SOAP::Constants::NSMASK?):(${SOAP::Constants::NSMASK}(?:\[[\d,]*\])*)/
+                        : SOAP::Lite::Utils::longname($value =~ m/^($SOAP::Constants::NSMASK?):(${SOAP::Constants::NSMASK}(?:\[[\d,]*\])*)/
                             ? ($uris{$1} || die("Unresolved prefix '$1' for attribute value '$value'\n"), $2)
                             : ($uris{''} || die("Unspecified namespace for type '$value'\n"), $value)
                     );
                 };
                 1;
             }
-            || die "Unresolved prefix '$1' for attribute '$_'\n";
-  }
+            : die "Unresolved prefix '$prefix' for attribute '$_'";
+    }
 
     # and now check the element
     my $ns = ($name =~ s/^($SOAP::Constants::NSMASK?):// ? $1 : '');
-    $ref->[ _NAME ] = SOAP::Utils::longname(
+    $ref->[ _NAME ] = SOAP::Lite::Utils::longname(
         $ns
             ? ($uris{$ns} || die "Unresolved prefix '$ns' for element '$name'\n")
             : (defined $uris{''} ? $uris{''} : undef),
@@ -191,7 +209,7 @@ sub decode_value {
     # check SOAP version if applicable
     use vars '$level'; local $level = $level || 0;
     if (++$level == 1) {
-        my($namespace, $envelope) = SOAP::Utils::splitlongname($name);
+        my($namespace, $envelope) = SOAP::Lite::Utils::splitlongname($name);
         SOAP::Lite->soapversion($namespace) if $envelope eq 'Envelope' && $namespace;
     }
 
@@ -224,7 +242,7 @@ sub decode_value {
     local $arraytype; # it's used only for one level, we don't need it anymore
 
     # $name is not used here since type should be encoded as type, not as name
-    my ($schema, $class) = SOAP::Utils::splitlongname($type) if $type;
+    my ($schema, $class) = SOAP::Lite::Utils::splitlongname($type) if $type;
     my $schemaclass = defined($schema) && $self->xmlschemas->{$schema}
         || $self;
 
@@ -316,11 +334,11 @@ sub decode_value {
         }
 
         # sparse (position)
-        if (ref $children && exists SOAP::Utils::o_lattr($children->[0])->{"{$SOAP::Constants::NS_ENC}position"}) {
+        if (ref $children && exists SOAP::Lite::Utils::o_lattr($children->[0])->{"{$SOAP::Constants::NS_ENC}position"}) {
             my @new;
             for (my $pos = 0; $pos < @$children; $pos++) {
                 # TBD implement position in multidimensional array
-                my($position) = SOAP::Utils::o_lattr($children->[$pos])->{"{$SOAP::Constants::NS_ENC}position"} =~ /^\[(\d+)\]$/
+                my($position) = SOAP::Lite::Utils::o_lattr($children->[$pos])->{"{$SOAP::Constants::NS_ENC}position"} =~ /^\[(\d+)\]$/
                     or die "Position must be specified for all elements of sparse array\n";
                 $new[$position] = $res->[$pos];
             }
@@ -390,7 +408,7 @@ sub decode_value {
 }
 
 sub splitarray {
-    my @sizes = @{+shift};
+    my @sizes = @{ +shift };
     my $size = shift @sizes;
     my $array = shift;
 

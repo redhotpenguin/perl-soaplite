@@ -928,7 +928,7 @@ sub encode_array
 package UDDI::Deserializer;
 
 use vars qw(@ISA);
-@ISA = qw(SOAP::Deserializer);
+@ISA = qw(SOAP::Lite::Deserializer);
 
 sub decode_value
 {

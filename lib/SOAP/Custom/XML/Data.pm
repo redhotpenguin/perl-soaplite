@@ -1,9 +1,7 @@
 package SOAP::Custom::XML::Data;
-
-use strict;
-
-use vars qw(@ISA $AUTOLOAD);
-@ISA = qw(SOAP::Data);
+use strict; use warnings;
+use base qw(SOAP::Data);
+our $AUTOLOAD;
 
 use overload fallback => 1, '""' => sub { shift->value };
 

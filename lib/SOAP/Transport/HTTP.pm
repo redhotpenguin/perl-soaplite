@@ -550,10 +550,11 @@ sub new {
     # Added in 0.65 - Thanks to Nils Sowen
     # use SSL if there is any parameter with SSL_* in the name
     $self->SSL(1) if !$self->SSL && grep /^SSL_/, @params;
-    my $http_daemon = $self->http_daemon_class;
+    my $http_daemon = $self->http_daemon_class
+        or Carp::croak "No daemon class";
     eval "require $http_daemon"
         or Carp::croak $@
-            unless UNIVERSAL::can($http_daemon => 'new');
+            unless $http_daemon->can('new');
 
     $self->{_daemon} = $http_daemon->new(@params)
         or Carp::croak "Can't create daemon: $!";

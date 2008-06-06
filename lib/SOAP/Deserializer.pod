@@ -12,11 +12,12 @@
 
 =head1 NAME
 
-SOAP::Deserializer - the means by which the toolkit manages the conversion of XML into an object managable by a developer
+SOAP::Lite::Deserializer - the means by which the toolkit manages the conversion of XML into an object managable by a developer
 
 =head1 DESCRIPTION
 
-SOAP::Deserializer provides the means by which incoming XML is decoded into a Perl data structure.
+SOAP::Lite::Deserializer provides the means by which incoming XML is decoded
+into a Perl data structure.
 
 =head1 METHODS
 
@@ -24,7 +25,10 @@ SOAP::Deserializer provides the means by which incoming XML is decoded into a Pe
 
 =item context
 
-This provides access to the calling context of C<SOAP::Deserializer>. In a client side context the often means a reference to an instance of SOAP::Lite. In a server side context this means a reference to a SOAP::Server instance.
+This provides access to the calling context of C<SOAP::Lite::Deserializer>.
+In a client side context the often means a reference to an instance of
+SOAP::Lite. In a server side context this means a reference to a
+SOAP::Server instance.
 
 =back
 
@@ -32,9 +36,15 @@ This provides access to the calling context of C<SOAP::Deserializer>. In a clien
 
 =head2 DESERIALIZING RAW XML INTO A SOAP::SOM OBJECT
 
-A useful utility for SOAP::Deserializer is for parsing raw XML documents or fragments into a SOAP::SOM object. SOAP::Lite developers use this technique to write unit tests for the SOAP::Lite module itself. It is a lot more efficient for testing aspects of the toolkit than generating client calls over the network. This is a perfect way for developers to write unit tests for their custom data types for example.
+A useful utility for SOAP::Lite::Deserializer is for parsing raw XML documents
+or fragments into a SOAP::SOM object. SOAP::Lite developers use this technique
+to write unit tests for the SOAP::Lite module itself. It is a lot more
+efficient for testing aspects of the toolkit than generating client calls over
+the network. This is a perfect way for developers to write unit tests for
+their custom data types for example.
 
-Here is an example of how raw XML content can be parsed into a SOAP::SOM object by using SOAP::Deserializer:
+Here is an example of how raw XML content can be parsed into a SOAP::SOM
+object by using SOAP::Lite::Deserializer:
 
     $xml = <<END_XML;
     <foo>
@@ -49,7 +59,7 @@ Here is an example of how raw XML content can be parsed into a SOAP::SOM object 
     </foo>
     END_XML
 
-    my $som = SOAP::Deserializer->deserialize($xml);
+    my $som = SOAP::Lite::Deserializer->deserialize($xml);
 
 =head1 COPYRIGHT
 

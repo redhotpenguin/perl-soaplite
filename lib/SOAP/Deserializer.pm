@@ -1,5 +1,7 @@
 package SOAP::Deserializer;
 
+die "deprecated";
+
 use strict;
 
 use vars qw(@ISA);

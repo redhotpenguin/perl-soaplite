@@ -278,7 +278,7 @@ The most efficient way To parse and to extract data out of an array containing a
     </foo>
     END_XML
 
-    my $som = SOAP::Deserializer->deserialize($xml);
+    my $som = SOAP::Lite::Deserializer->deserialize($xml);
     my $i = 0;
     foreach my $a ($som->dataof("//person/*")) {
         $i++;

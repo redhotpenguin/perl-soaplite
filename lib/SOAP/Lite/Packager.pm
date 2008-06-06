@@ -12,7 +12,7 @@ package SOAP::Lite::Packager;
 
 use strict;
 use vars;
-
+use List::Util qw(first);
 use vars qw($SUPPORTED_TYPES);
 $SUPPORTED_TYPES = { };
 
@@ -82,8 +82,10 @@ sub unpackage {
 # ======================================================================
 
 package SOAP::Lite::Packager::MIME;
+use strict; use warnings;
 
-use strict;
+use List::Util qw(first);
+
 use vars qw(@ISA);
 @ISA = qw(SOAP::Lite::Packager);
 

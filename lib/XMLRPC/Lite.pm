@@ -47,7 +47,7 @@ package XMLRPC::Serializer;
 
 use SOAP::Data;
 
-@XMLRPC::Serializer::ISA = qw(SOAP::Serializer);
+@XMLRPC::Serializer::ISA = qw(SOAP::Lite::Serializer);
 
 sub new {
     my $class = shift;

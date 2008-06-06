@@ -275,7 +275,7 @@ library.
  -- SOAP::Header         -- Provides extensions for header serialization
  -- SOAP::Parser         -- Parses XML file into object tree
  -- SOAP::Serializer     -- Serializes data structures to SOAP package
- -- SOAP::Deserializer   -- Deserializes results of SOAP::Parser into objects
+ -- SOAP::Lite::Deserializer   -- Deserializes results of SOAP::Parser into objects
  -- SOAP::SOM            -- Provides access to deserialized object tree
  -- SOAP::Constants      -- Provides access to common constants
  -- SOAP::Trace          -- Provides tracing facilities
@@ -392,7 +392,7 @@ call C<proxy()> first. No checks for protocol equivalence will be made.
 
 Lets you specify the kind of output from all method calls. If C<true>, all 
 methods will return unprocessed, raw XML code. You can parse it with 
-XML::Parser, SOAP::Deserializer or any other appropriate module.
+XML::Parser, SOAP::Lite::Deserializer or any other appropriate module.
 
 =item autotype()
 
