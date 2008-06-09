@@ -221,11 +221,6 @@ sub process_related {
         || get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
 
     if (!defined($start) || $start eq "") {
-        $start = $self->generate_random_string(10);
-        $entity->parts(0)->head->add('content-id',$start);
-    }
-
-    if (!defined($start) || $start eq "") {
       $start = $self->generate_random_string(10);
       $entity->parts(0)->head->add('content-id',$start);
   }
