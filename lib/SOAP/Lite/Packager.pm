@@ -225,7 +225,15 @@ sub process_related {
     # As it turns out, the Content-ID and start parameters are optional
     # according to the MIME and SOAP specs. In the event that the head cannot
     # be found, the head/root entity is used as a starting point.
-    my $start = get_multipart_id($entity->head->mime_attr('content-type.start'));
+
+    # [19 Mar 2008] Modified by Feng Li <feng.li@sybase.com>
+    # Check optional start parameter, then optional Content-ID, then create/add
+    # Content-ID (the same approach as in SOAP::Lite 0.66)
+
+    #my $start = get_multipart_id($entity->head->mime_attr('content-type.start'));
+    my $start = get_multipart_id($entity->head->mime_attr('content-type.start'))
+        || get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
+
     if (!defined($start) || $start eq "") {
         $start = $self->generate_random_string(10);
         $entity->parts(0)->head->add('content-id',$start);
