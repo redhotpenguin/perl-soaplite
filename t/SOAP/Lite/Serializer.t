@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 17; #qw(no_plan);
+use Test::More tests => 22; #qw(no_plan);
 use Scalar::Util qw(refaddr);
 
 use_ok qw(SOAP::Lite::Serializer);
@@ -46,3 +46,17 @@ eval {
 };
 like $@, qr{^Element \s 'xmlfoo' \s can't \s be \s allowed}x, 'error on <xmlfoo/>';
 
+ok $tag = $serializer->tag('_Xml', {}, undef), 'serialize <_Xml/>';
+eval {
+    $tag = $serializer->tag('XmL:lang', {}, undef);;
+};
+like $@, qr{^Element \s 'XmL:lang' \s can't \s be \s allowed}x, 'error on <xml:lang/>';
+undef $@;
+eval {
+    $tag = $serializer->tag('XMLfoo', {}, undef);
+};
+like $@, qr{^Element \s 'XMLfoo' \s can't \s be \s allowed}x, 'error on <xmlfoo/>';
+
+my $xml = $serializer->envelope('fault', faultstrind => '>>> foo <<<');
+like $xml, qr{\&gt;\&gt;\&gt;}x, 'fault escaped OK';
+unlike $xml, qr{\&amp;gt;}x, 'fault escaped OK';
