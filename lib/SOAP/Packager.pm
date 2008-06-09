@@ -248,7 +248,7 @@ sub process_related {
     if ($start && $pid eq $start) {
       $env = $part->bodyhandle->as_string;
     } else {
-      $self->push_part($part) if (defined($part->bodyhandle));
+      $self->push_part($part);
     }
   }
 #  die "Can't find 'start' parameter in multipart MIME message\n"

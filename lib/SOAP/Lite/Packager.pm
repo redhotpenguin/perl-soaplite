@@ -263,7 +263,7 @@ sub process_related {
             $env = $part->bodyhandle->as_string;
         }
         else {
-            $self->push_part($part) if (defined($part->bodyhandle));
+            $self->push_part($part);
         }
     }
 
