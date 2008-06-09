@@ -119,7 +119,7 @@ sub as_string {
     return [
         $name,
         {'xsi:type' => 'xsd:string', %$attr},
-        SOAP::Utils::encode_data($value)
+        $value
     ];
 }
 
@@ -129,7 +129,7 @@ sub as_anyURI {
     return [
         $name,
         {'xsi:type' => 'xsd:anyURI', %$attr},
-        SOAP::Utils::encode_data($value)
+        $value
     ];
 }
 
