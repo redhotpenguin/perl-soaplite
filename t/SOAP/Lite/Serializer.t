@@ -57,7 +57,7 @@ eval {
 };
 like $@, qr{^Element \s 'XMLfoo' \s can't \s be \s allowed}x, 'error on <xmlfoo/>';
 
-my $xml = $serializer->envelope('fault', faultstrind => '>>> foo <<<');
+my $xml = $serializer->envelope('fault', faultstring => '>>> foo <<<');
 like $xml, qr{\&gt;\&gt;\&gt;}x, 'fault escaped OK';
 unlike $xml, qr{\&amp;gt;}x, 'fault escaped OK';
 
@@ -67,5 +67,7 @@ like $xml, qr{\&gt;\&gt;\&gt;}x, 'response escaped OK';
 unlike $xml, qr{\&amp;gt;}x, 'response escaped OK';
 
 $xml = $serializer->envelope('method', foo => '>>> bar <<<');
-like $xml, qr{\&gt;\&gt;\&gt;}x, 'response escaped OK';
-unlike $xml, qr{\&amp;gt;}x, 'response escaped OK';
+like $xml, qr{\&gt;\&gt;\&gt;}x, 'method escaped OK';
+unlike $xml, qr{\&amp;gt;}x, 'method escaped OK';
+
+

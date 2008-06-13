@@ -238,6 +238,7 @@ EOBASE64
 
   eval { SOAP::Lite->new->abc() };
   ok($@ =~ /A service address has not been specified/);
+  print "#$@\n";
 }
 
 {
