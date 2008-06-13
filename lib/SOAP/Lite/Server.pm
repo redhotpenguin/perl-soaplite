@@ -5,7 +5,7 @@ use strict;
 use Carp ();
 use SOAP::Lite::Deserializer;
 use SOAP::Packager;
-use SOAP::Serializer;
+use SOAP::Lite::Serializer;
 use SOAP::Transport;
 use SOAP::Lite;
 
@@ -15,7 +15,7 @@ sub initialize {
     return (
         packager => SOAP::Packager::MIME->new,
         transport => SOAP::Transport->new,
-        serializer => SOAP::Serializer->new,
+        serializer => SOAP::Lite::Serializer->new,
         deserializer => SOAP::Lite::Deserializer->new,
         on_action => sub { ; },
         on_dispatch => sub {

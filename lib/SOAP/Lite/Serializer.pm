@@ -792,8 +792,8 @@ sub envelope {
         # Find all the SOAP Body elements
         else {
             # proposed resolution for [ 1700326 ] encode_data called incorrectly in envelope
-            # push(@parameters, $_);
-            push (@parameters, SOAP::Utils::encode_data($_));
+            push(@parameters, $_);
+            # push (@parameters, SOAP::Utils::encode_data($_));
         }
     }
     my $header = @header ? SOAP::Data->set_value(@header) : undef;
@@ -844,7 +844,7 @@ sub envelope {
         $body = SOAP::Data-> name(SOAP::Utils::qualify($self->envprefix => 'Fault'))
           -> value(\SOAP::Data->set_value(
                 SOAP::Data->name(faultcode => SOAP::Utils::qualify($self->envprefix => $parameters[0]))->type(""),
-                SOAP::Data->name(faultstring => $parameters[1])->type(""),
+                SOAP::Data->name(faultstring => SOAP::Utils::encode_data($parameters[1]))->type(""),
                 defined($parameters[3])
                     ? SOAP::Data->name(faultactor => $parameters[3])->type("")
                     : (),
@@ -853,7 +853,7 @@ sub envelope {
                         my $detail = $parameters[2];
                         ref $detail
                             ? \$detail
-                            : $detail
+                            : SOAP::Utils::encode_data($detail)
                     })
                     : (),
         ));
