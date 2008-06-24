@@ -129,7 +129,8 @@ EOP
         }
         $self->{'_stub'} .= "    parameters => [\n";
         foreach (@{$services->{$service}{parameters}}) {
-#           next unless $_;
+            # This is a workaround for https://sourceforge.net/tracker/index.php?func=detail&aid=2001592&group_id=66000&atid=513017
+            next unless ref $_;
             $self->{'_stub'} .= "      SOAP::Data->new(name => '".$_->name."', type => '".$_->type."', attr => {";
             $self->{'_stub'} .= do {
                 my %attr = %{$_->attr};
