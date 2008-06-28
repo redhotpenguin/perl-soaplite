@@ -167,13 +167,16 @@ else {
 }
 
 ExtUtils::MakeMaker::WriteMakefile(
-    'NAME'	   => 'SOAP::Lite',
-    'VERSION_FROM' => 'lib/SOAP/Lite.pm',
-    'PREREQ_PM'    => {
+    'NAME'          => 'SOAP::Lite',
+    'AUTHOR'        =>  'Pavel Kulchenko, Randy J Ray, Byrne Reese, Martin Kutter (MKUTTER@cpan.org)',
+    'LICENSE'       => 'perl',
+    'VERSION_FROM'  => 'lib/SOAP/Lite.pm',
+    'ABSTRACT_FROM' => 'lib/SOAP/Lite.pm',
+    'PREREQ_PM'     => {
         %prereqs
      },
-    'EXE_FILES'    => ['bin/SOAPsh.pl', 'bin/XMLRPCsh.pl', 'bin/stubmaker.pl'],
-    test           => {TESTS => $tests},
+    'EXE_FILES'     => ['bin/SOAPsh.pl', 'bin/XMLRPCsh.pl', 'bin/stubmaker.pl'],
+    test            => {TESTS => $tests},
 );
 
 
