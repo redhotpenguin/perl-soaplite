@@ -2068,6 +2068,10 @@ http://sourceforge.net/tracker/?group_id=66000&atid=513017
 
 Copyright (C) 2000-2007 Paul Kulchenko. All rights reserved.
 
+Copyright (C) 2007-2008 Martin Kutter.
+
+=head1 LICENSE
+
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
