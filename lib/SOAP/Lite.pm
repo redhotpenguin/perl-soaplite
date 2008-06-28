@@ -29,6 +29,7 @@ use SOAP::Packager;
 use SOAP::SOM;
 use SOAP::Transport;
 use SOAP::Lite::Serializer;
+use SOAP::Schema;
 use SOAP::Schema::WSDL;
 use SOAP::Lite::Deserializer;
 
@@ -133,7 +134,7 @@ sub new {
         # Check whether we can clone. Only the SAME class allowed, no inheritance
         $self = ref($SOAP::soap) eq $class ? $SOAP::soap->clone : {
             _transport    => SOAP::Transport->new,
-            _serializer   => SOAP::Serializer->new,
+            _serializer   => SOAP::Lite::Serializer->new,
             _deserializer => SOAP::Lite::Deserializer->new,
             _packager     => SOAP::Packager::MIME->new,
             _schema       => undef,

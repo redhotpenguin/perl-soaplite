@@ -4,12 +4,16 @@ use strict; use warnings;
 use IPC::Open2;
 use File::Basename qw(dirname);
 
+# make a send_receive which performs an open2, much like a web server
+# connects to STDIN and STDOUT...
 sub send_receive {
     my ($self, %parameters) = @_;
     my ($context, $envelope, $endpoint, $action, $encoding, $parts) =
         @parameters{qw(context envelope endpoint action encoding parts)};
 
-    # print $envelope;
+    # safety measure: Die if we hang
+    $SIG{ALRM} = sub { die "did not return" };
+    alarm(3);
 
     my $perl = $^X;
 
@@ -29,7 +33,7 @@ sub send_receive {
 
     close $child_out;
 
-    # print $result[-1];
+    alarm(0);
 
     return $result[-1];
 }
@@ -40,6 +44,8 @@ use Test::More qw(no_plan);
 use SOAP::Lite; # +trace;
 my $soap = SOAP::Lite->new()->proxy('http://');
 no warnings qw(redefine once);
+
+# make override send_receive in CGI client
 *SOAP::Transport::HTTP::Client::send_receive =
     \&SOAP::Transport::CGI_TEST::Client::send_receive;
 
@@ -54,6 +60,6 @@ if ($] >= 5.008) {
     }
 }
 else {
-    use bytes;
+    eval { use bytes };
     is length $result, 8, "lenght of >$result< is 8 due to wide character";
 }

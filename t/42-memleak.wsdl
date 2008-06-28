@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<definitions name="Authentication" targetNamespace="http://foo.com/webservices" xmlns:typens="http://foo.com/webservices" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+<types>
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://foo.com/webservices">
+</xsd:schema>
+</types>
+<message name="doAuthenticate">
+  <part name="strAccount" type="xsd:string" />
+  <part name="strToken" type="xsd:string" />
+  <part name="strReferrer" type="xsd:string" />
+  <part name="strSourceURL" type="xsd:string" />
+  <part name="strClientIP" type="xsd:string" />
+  </message>
+<message name="doAuthenticateResponse">
+  <part name="Result" type="xsd:int" />
+</message>
+<portType name="AuthenticationPort">
+<operation name="Authenticate">
+  <input message="typens:doAuthenticate" />
+  <output message="typens:doAuthenticateResponse" />
+  </operation>
+  </portType>
+<binding name="AuthenticationBinding" type="typens:AuthenticationPort">
+  <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+<operation name="Authenticate">
+  <soap:operation soapAction="http://foo.com/webservices/Authenticate" />
+<input>
+  <soap:body use="encoded" namespace="http://foo.com/webservices" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+  </input>
+<output>
+  <soap:body use="encoded" namespace="http://foo.com/webservices" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+  </output>
+  </operation>
+  </binding>
+<service name="AuthenticationService">
+<port name="AuthenticationPort" binding="typens:AuthenticationBinding">
+  <soap:address location="http://localhost/Authentication_test.php" />
+  </port>
+  </service>
+</definitions>
