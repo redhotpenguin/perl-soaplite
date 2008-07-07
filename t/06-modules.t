@@ -29,15 +29,14 @@ my @modules = qw(SOAP::Lite
                  SOAP::Transport::MQ SOAP::Transport::JABBER
                 );
 foreach (@modules) {
-    eval "use $_";
+    eval "require $_";
 
-    if ($@ =~ /(Can\'t locate)|(XML::Parser::Lite requires)|(this is
-    only version)|(load mod_perl)/) {
+    if ($@ =~ /(Can\'t locate)|(XML::Parser::Lite requires)|(this is only version)|(load mod_perl)/) {
         SKIP: {
             skip("Module $_ does not exist or is breaking in an expected way", 1);
         }
     next;
     }
 
-    ok(!$@, "use $_") or warn $@;
+    is($@, '', "use $_") or warn $@;
 }
