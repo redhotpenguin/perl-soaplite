@@ -109,6 +109,8 @@ sub new {
     $self->agent(join '/', 'SOAP::Lite', 'Perl', $SOAP::Transport::HTTP::VERSION);
     $self->options({});
 
+    $self->http_request(HTTP::Request->new());
+
     while (@methods) {
         my($method, $params) = splice(@methods,0,2);
         $self->$method(ref $params eq 'ARRAY' ? @$params : $params)
@@ -134,20 +136,22 @@ sub send_receive {
             && eval { require Compress::Zlib };
 
     # Initialize the basic about the HTTP Request object
-    $self->http_request(HTTP::Request->new);
-    $self->http_request->headers(HTTP::Headers->new);
+    my $http_request = $self->http_request()->clone();
+
+    # $self->http_request(HTTP::Request->new);
+    $http_request->headers(HTTP::Headers->new);
 
     # TODO - add application/dime
-    $self->http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
-    $self->http_request->method($method);
-    $self->http_request->url($endpoint);
+    $http_request->header(Accept => ['text/xml', 'multipart/*', 'application/soap']);
+    $http_request->method($method);
+    $http_request->url($endpoint);
 
     no strict 'refs';
     if ($parts) {
         my $packager = $context->packager;
         $envelope = $packager->package($envelope,$context);
         for my $hname (keys %{$packager->headers_http}) {
-            $self->http_request->headers->header(
+            $http_request->headers->header(
                 $hname => $packager->headers_http->{$hname}
             );
         }
@@ -161,7 +165,7 @@ sub send_receive {
 
         $envelope = Compress::Zlib::memGzip($envelope) if $compressed;
 
-        my $original_encoding = $self->http_request->content_encoding;
+        my $original_encoding = $http_request->content_encoding;
 
         while (1) {
             # check cache for redirect
@@ -188,10 +192,10 @@ sub send_receive {
                 if !$SOAP::Constants::DO_NOT_USE_LWP_LENGTH_HACK
                     && length($envelope) != $bytelength;
 
-            $self->http_request->content($envelope);
-            $self->http_request->protocol('HTTP/1.1');
+            $http_request->content($envelope);
+            $http_request->protocol('HTTP/1.1');
 
-            $self->http_request
+            $http_request
                 ->proxy_authorization_basic($ENV{'HTTP_proxy_user'},
                      $ENV{'HTTP_proxy_pass'})
                if ($ENV{'HTTP_proxy_user'} && $ENV{'HTTP_proxy_pass'});
@@ -199,28 +203,28 @@ sub send_receive {
             # by Murray Nesbitt
             if ($method eq 'M-POST') {
                my $prefix = sprintf '%04d', int(rand(1000));
-               $self->http_request->header(
+               $http_request->header(
                    Man => qq!"$SOAP::Constants::NS_ENV"; ns=$prefix!);
-               $self->http_request->header("$prefix-SOAPAction" => $action)
+               $http_request->header("$prefix-SOAPAction" => $action)
                    if defined $action;
             }
             else {
-               $self->http_request->header(SOAPAction => $action)
+               $http_request->header(SOAPAction => $action)
                    if defined $action;
             }
 
-#            $self->http_request->header(Expect => '100-Continue');
+#            $http_request->header(Expect => '100-Continue');
 
             # allow compress if present and let server know we could handle it
-            $self->http_request->header('Accept-Encoding' =>
+            $http_request->header('Accept-Encoding' =>
                 [$SOAP::Transport::HTTP::Client::COMPRESS])
                    if $self->options->{is_compress};
 
-            $self->http_request->content_encoding($SOAP::Transport::HTTP::Client::COMPRESS)
+            $http_request->content_encoding($SOAP::Transport::HTTP::Client::COMPRESS)
                if $compressed;
 
-            if(!$self->http_request->content_type) {
-                $self->http_request->content_type(join '; ',
+            if(!$http_request->content_type) {
+                $http_request->content_type(join '; ',
                      $SOAP::Constants::DEFAULT_HTTP_CONTENT_TYPE,
                      !$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding
                          ? 'charset=' . lc($encoding)
@@ -228,21 +232,21 @@ sub send_receive {
                 );
             }
             elsif (!$SOAP::Constants::DO_NOT_USE_CHARSET && $encoding ) {
-                my $tmpType = $self->http_request->headers->header('Content-type');
-                #	$self->http_request->content_type($tmpType.'; charset=' . lc($encoding));
+                my $tmpType = $http_request->headers->header('Content-type');
+                #	$http_request->content_type($tmpType.'; charset=' . lc($encoding));
                 my $addition = '; charset=' . lc($encoding);
-                $self->http_request->content_type($tmpType.$addition) if ($tmpType !~ /$addition/);
+                $http_request->content_type($tmpType.$addition) if ($tmpType !~ /$addition/);
             }
 
-            $self->http_request->content_length($bytelength);
-            SOAP::Trace::transport($self->http_request);
-            SOAP::Trace::debug($self->http_request->as_string);
+            $http_request->content_length($bytelength);
+            SOAP::Trace::transport($http_request);
+            SOAP::Trace::debug($http_request->as_string);
 
             $self->SUPER::env_proxy if $ENV{'HTTP_proxy'};
 
             # send and receive the stuff.
             # TODO maybe eval this? what happens on connection close?
-            $self->http_response($self->SUPER::request($self->http_request));
+            $self->http_response($self->SUPER::request($http_request));
             SOAP::Trace::transport($self->http_response);
             SOAP::Trace::debug($self->http_response->as_string);
 
@@ -256,7 +260,7 @@ sub send_receive {
                 # 415 Unsupported Media Type
                 $nocompress{$endpoint} = 1;
                 $envelope = Compress::Zlib::memGunzip($envelope);
-                $self->http_request
+                $http_request
                     ->headers->remove_header('Content-Encoding');
                 redo COMPRESS; # try again without compression
             }
