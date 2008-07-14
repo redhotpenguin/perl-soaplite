@@ -945,8 +945,8 @@ The SOAP service to be accessed is a simple variation of the well-known
 hello world program. It accepts two parameters, a name and a given name,
 and returns "Hello $given_name $name".
 
-We will use Martin Kutter as the name for the call, so all variants will print
-the following message on success:
+We will use "Martin Kutter" as the name for the call, so all variants will
+print the following message on success:
 
  Hello Martin Kutter!
 
@@ -987,22 +987,127 @@ As of 2008, document/literal has become the predominant SOAP message
 variant. rpc/literal and rpc/encoded are still in use, mainly with scripting
 languages, while document/encoded is hardly used at all.
 
-You will see clients for all common SOAP variants in this section.
+You will see clients for the rpc/encoded and document/literal SOAP variants in
+this section.
 
 =head2 Example implementations
 
 =head3 RPC/ENCODED
 
-The web service accepts the parameters in the order "name", "given name".
-There's no interface definition.
+Rpc/encoded is most popular with scripting languages like perl, php and python
+without the use of a WSDL. Usual method descriptions look like this:
 
-A web service client looks like this.
+ Method: sayHello(string, string)
+ Parameters:
+    name: string
+    givenName: string
+
+Such a description usually means that you can call a method named "sayHello"
+with two positional parameters, "name" and "givenName", which both are
+strings.
+
+The message corresponding to this description looks somewhat like this:
+
+ <sayHello xmlns="urn:HelloWorld">
+   <s-gensym01 xsi:type="xsd:string">Kutter</s-gensym01>
+   <s-gensym02 xsi:type="xsd:string">Martin</s-gensym02>
+ </sayHello>
+
+Any XML tag names may be used instead of the "s-gensym01" stuff - parameters
+are positional, the tag names have no meaning.
+
+A client producing such a call is implemented like this:
 
  use SOAP::Lite;
- my $soap = SOAP::Lite->new( proxy => 'http://localhost:80/helloworld.pl');
+ my $soap = SOAP::Lite->new( proxy => 'http://localhost:81/soap-wsdl-test/helloworld.pl');
+ $soap->default_ns('urn:HelloWorld');
+ my $som = $soap->call('sayHello', 'Kutter', 'Martin');
+ die $som->faultstring if ($som->fault);
+ print $som->result, "\n";
 
- my $som = $soap->call(sayHello, 'Kutter', 'Martin'),
- die $som->fault->{ faultstring } if ($som->fault);
+You can of course use a one-liner, too...
+
+Sometimes, rpc/encoded interfaces are described with WSDL definitions.
+A WSDL accepting "named" parameters with rpc/encoded looks like this:
+
+ <definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:s="http://www.w3.org/2001/XMLSchema"
+   xmlns:s0="urn:HelloWorld"
+   targetNamespace="urn:HelloWorld"
+   xmlns="http://schemas.xmlsoap.org/wsdl/">
+   <types>
+     <s:schema targetNamespace="urn:HelloWorld">
+     </s:schema>
+   </types>
+   <message name="sayHello">
+     <part name="name" type="s:string" />
+     <part name="givenName" type="s:string" />
+   </message>
+   <message name="sayHelloResponse">
+     <part name="sayHelloResult" type="s:string" />
+   </message>
+
+   <portType name="Service1Soap">
+     <operation name="sayHello">
+       <input message="s0:sayHello" />
+       <output message="s0:sayHelloResponse" />
+     </operation>
+   </portType>
+
+   <binding name="Service1Soap" type="s0:Service1Soap">
+     <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+         style="rpc" />
+     <operation name="sayHello">
+       <soap:operation soapAction="urn:HelloWorld#sayHello"/>
+       <input>
+         <soap:body use="encoded"
+           encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+       </input>
+       <output>
+         <soap:body use="encoded"
+           encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+       </output>
+     </operation>
+   </binding>
+   <service name="HelloWorld">
+     <port name="HelloWorldSoap" binding="s0:Service1Soap">
+       <soap:address location="http://localhost:81/soap-wsdl-test/helloworld.pl" />
+     </port>
+   </service>
+ </definitions>
+
+The message corresponding to this schema looks like this:
+
+ <sayHello xmlns="urn:HelloWorld">
+   <name xsi:type="xsd:string">Kutter</name>
+   <givenName xsi:type="xsd:string">Martin</givenName>
+ </sayHello>
+
+A web service client using this schema looks like this:
+
+ use SOAP::Lite;
+ my $soap = SOAP::Lite->service("file:say_hello_rpcenc.wsdl");
+ eval { my $result = $soap->sayHello('Kutter', 'Martin'); };
+ if ($@) {
+     die $@;
+ }
+ print $som->result();
+
+You may of course also use the following one-liner:
+
+ perl -MSOAP::Lite -e 'print SOAP::Lite->service("file:say_hello_rpcenc.wsdl")\
+   ->sayHello('Kutter', 'Martin'), "\n";'
+
+A web service client (without a service description) looks like this.
+
+ use SOAP::Lite;
+ my $soap = SOAP::Lite->new( proxy => 'http://localhost:81/soap-wsdl-test/helloworld.pl');
+ $soap->default_ns('urn:HelloWorld');
+ my $som = $soap->call('sayHello',
+    SOAP::Data->name('name')->value('Kutter'),
+    SOAP::Data->name('givenName')->value('Martin')
+ );
+ die $som->faultstring if ($som->fault);
  print $som->result, "\n";
 
 =head3 RPC/LITERAL
@@ -1011,82 +1116,94 @@ SOAP web services using the document/literal message encoding are usually
 described by some Web Service Definition. Our web service has the following
 WSDL description:
 
- <?xml version="1.0" encoding="UTF-8"?>
  <definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-    xmlns:s="http://www.w3.org/2001/XMLSchema"
-    xmlns:s0="urn:HelloWorld"
-    targetNamespace="urn:HelloWorld"
-    xmlns="http://schemas.xmlsoap.org/wsdl/">
+   xmlns:s="http://www.w3.org/2001/XMLSchema"
+   xmlns:s0="urn:HelloWorld"
+   targetNamespace="urn:HelloWorld"
+   xmlns="http://schemas.xmlsoap.org/wsdl/">
    <types>
      <s:schema targetNamespace="urn:HelloWorld">
        <s:complexType name="sayHello">
          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="name" type="s:string" />
-             <s:element minOccurs="0" maxOccurs="1" name="givenName" type="s:string" nillable="1" />
+           <s:element minOccurs="0" maxOccurs="1" name="name"
+              type="s:string" />
+           <s:element minOccurs="0" maxOccurs="1" name="givenName"
+              type="s:string" nillable="1" />
          </s:sequence>
-        </s:complexType>
+       </s:complexType>
 
-        <s:complexType name="sayHelloResponse">
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="sayHelloResult" type="s:string" />
-          </s:sequence>
-      </s:complexType>
-    </types>
-    <message name="sayHello">
-      <part name="parameters" type="s0:sayHello" />
-    </message>
-    <message name="sayHelloResponse">
-      <part name="parameters" type="s0:sayHelloResponse" />
-    </message>
+       <s:complexType name="sayHelloResponse">
+         <s:sequence>
+           <s:element minOccurs="0" maxOccurs="1" name="sayHelloResult"
+              type="s:string" />
+         </s:sequence>
+       </s:complexType>
+     </s:schema>
+   </types>
+   <message name="sayHello">
+     <part name="parameters" type="s0:sayHello" />
+   </message>
+   <message name="sayHelloResponse">
+     <part name="parameters" type="s0:sayHelloResponse" />
+   </message>
 
-    <portType name="Service1Soap">
-      <operation name="sayHello">
-        <input message="s0:sayHelloSoapIn" />
-        <output message="s0:sayHelloSoapOut" />
-      </operation>
-    </portType>
+   <portType name="Service1Soap">
+     <operation name="sayHello">
+       <input message="s0:sayHello" />
+       <output message="s0:sayHelloResponse" />
+     </operation>
+   </portType>
 
-    <binding name="Service1Soap" type="s0:Service1Soap">
-      <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
-          style="rpc" />
-      <operation name="sayHello">
-        <soap:operation soapAction="urn:HelloWorld#sayHello"/>
-        <input>
-          <soap:body use="literal" />
-        </input>
-        <output>
-          <soap:body use="literal" />
-        </output>
-      </operation>
-    </binding>
-    <service name="HelloWorld">
-      <port name="HelloWorldSoap" binding="s0:Service1Soap">
-        <soap:address location="http://localhost:80//helloworld.pl" />
-      </port>
-    </service>
+   <binding name="Service1Soap" type="s0:Service1Soap">
+     <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+         style="rpc" />
+     <operation name="sayHello">
+       <soap:operation soapAction="urn:HelloWorld#sayHello"/>
+       <input>
+         <soap:body use="literal" namespace="urn:HelloWorld"/>
+       </input>
+       <output>
+         <soap:body use="literal" namespace="urn:HelloWorld"/>
+       </output>
+     </operation>
+   </binding>
+   <service name="HelloWorld">
+     <port name="HelloWorldSoap" binding="s0:Service1Soap">
+       <soap:address location="http://localhost:80//helloworld.pl" />
+     </port>
+   </service>
   </definitions>
 
 The XML message (inside the SOAP Envelope) look like this:
 
- <sayHello xmlns="urn:HelloWorld">
-   <name>Kutter</name>
-   <givenName>Martin</givenName>
- </sayHello>
 
- <sayHelloResponse>
-   <sayHelloResult>Hello Martin Kutter!</sayHelloResult>
+ <ns0:sayHello xmlns:ns0="urn:HelloWorld">
+    <parameters>
+      <name>Kutter</name>
+      <givenName>Martin</givenName>
+    </parameters>
+ </ns0:sayHello>
+
+ <sayHelloResponse xmlns:ns0="urn:HelloWorld">
+    <parameters>
+        <sayHelloResult>Hello Martin Kutter!</sayHelloResult>
+    </parameters>
  </sayHelloResponse>
 
- use SOAP::Lite;
+This is the SOAP::Lite implementation for the web service client:
+
+ use SOAP::Lite +trace;
  my $soap = SOAP::Lite->new( proxy => 'http://localhost:80/helloworld.pl');
 
  $soap->on_action( sub { "urn:HelloWorld#sayHello" });
- $soap->autotype(0);
+ $soap->autotype(0)->readable(1);
  $soap->default_ns('urn:HelloWorld');
 
- my $som = $soap->call('sayHello'
-    SOAP::Data->name('name')->value( 'Kutter' ),
-    SOAP::Data->name('givenName')->value('Martin'),
+ my $som = $soap->call('sayHello', SOAP::Data->name('parameters')->value(
+    \SOAP::Data->value([
+        SOAP::Data->name('name')->value( 'Kutter' ),
+        SOAP::Data->name('givenName')->value('Martin'),
+    ]))
 );
 
  die $som->fault->{ faultstring } if ($som->fault);
@@ -1098,7 +1215,6 @@ SOAP web services using the document/literal message encoding are usually
 described by some Web Service Definition. Our web service has the following
 WSDL description:
 
- <?xml version="1.0" encoding="UTF-8"?>
  <definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
     xmlns:s="http://www.w3.org/2001/XMLSchema"
     xmlns:s0="urn:HelloWorld"
@@ -1155,7 +1271,7 @@ WSDL description:
         <soap:address location="http://localhost:80//helloworld.pl" />
       </port>
     </service>
-  </definitions>
+ </definitions>
 
 The XML message (inside the SOAP Envelope) look like this:
 
@@ -1187,20 +1303,26 @@ You can call this web service with the following client code:
 
 =head2 Differences between the implementations
 
-You may have noticed that there's no between the rpc/literal
-and the document/literal example's implementation. In fact, from SOAP::Lite's
-point of view, the only differences between rpc/literal and document/literal
-that parameters are always named.
+You may have noticed that there's little difference between the rpc/encoded,
+rpc/literal and the document/literal example's implementation. In fact, from
+SOAP::Lite's point of view, the only differences between rpc/literal and
+document/literal that parameters are always named.
 
-In our example, the rpc/literal variant already used named parameters (by
-using a single complexType only as positional parameter), so there's no
-difference at all.
+In our example, the rpc/encoded variant already used named parameters (by
+using two messages), so there's no difference at all.
 
-The differences would have been bigger if the rpc/literal example had used
-more than one positional parameter, but this is quite unlikely to happen in
-the future: Current interoperability standards (like the WS-I basic profile)
-mandate the use of a single complexType as only parameter in rpc/literal
-calls.
+You may have noticed the somewhat strange idiom for passing a list of named
+paraneters in the rpc/literal example:
+
+ my $som = $soap->call('sayHello', SOAP::Data->name('parameters')->value(
+    \SOAP::Data->value([
+        SOAP::Data->name('name')->value( 'Kutter' ),
+        SOAP::Data->name('givenName')->value('Martin'),
+    ]))
+ );
+
+While SOAP::Data provides full control over the XML generated, passing
+hash-like structures require additional coding.
 
 =head1 WRITING A SOAP SERVER
 
