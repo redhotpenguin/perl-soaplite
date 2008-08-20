@@ -19,20 +19,22 @@ use version; $VERSION = qv('0.71.04');
 use SOAP::XMLSchema2001::Serializer;
 use SOAP::XMLSchema1999::Serializer;
 
-use constant    URI_1999_SCHEMA_XSD    => "http://www.w3.org/1999/XMLSchema";
-use constant    URI_1999_SCHEMA_XSI    => "http://www.w3.org/1999/XMLSchema-instance";
-use constant    URI_2000_SCHEMA_XSD    => "http://www.w3.org/2000/10/XMLSchema";
-use constant    URI_2000_SCHEMA_XSI    => "http://www.w3.org/2000/10/XMLSchema-instance";
-use constant    URI_2001_SCHEMA_XSD    => "http://www.w3.org/2001/XMLSchema";
-use constant    URI_2001_SCHEMA_XSI    => "http://www.w3.org/2001/XMLSchema-instance";
-use constant    URI_LITERAL_ENC        => "";
-use constant    URI_SOAP11_ENC         => "http://schemas.xmlsoap.org/soap/encoding/";
-use constant    URI_SOAP11_ENV         => "http://schemas.xmlsoap.org/soap/envelope/";
-use constant    URI_SOAP11_NEXT_ACTOR  => "http://schemas.xmlsoap.org/soap/actor/next";
-use constant    URI_SOAP12_ENC         => "http://www.w3.org/2003/05/soap-encoding";
-use constant    URI_SOAP12_ENV         => "http://www.w3.org/2003/05/soap-envelope";
-use constant    URI_SOAP12_NOENC       => "http://www.w3.org/2003/05/soap-envelope/encoding/none";
-use constant    URI_SOAP12_NEXT_ACTOR  => "http://www.w3.org/2003/05/soap-envelope/role/next";
+use constant {
+  URI_1999_SCHEMA_XSD    => "http://www.w3.org/1999/XMLSchema",
+  URI_1999_SCHEMA_XSI    => "http://www.w3.org/1999/XMLSchema-instance",
+  URI_2000_SCHEMA_XSD    => "http://www.w3.org/2000/10/XMLSchema",
+  URI_2000_SCHEMA_XSI    => "http://www.w3.org/2000/10/XMLSchema-instance",
+  URI_2001_SCHEMA_XSD    => "http://www.w3.org/2001/XMLSchema",
+  URI_2001_SCHEMA_XSI    => "http://www.w3.org/2001/XMLSchema-instance",
+  URI_LITERAL_ENC        => "",
+  URI_SOAP11_ENC         => "http://schemas.xmlsoap.org/soap/encoding/",
+  URI_SOAP11_ENV         => "http://schemas.xmlsoap.org/soap/envelope/",
+  URI_SOAP11_NEXT_ACTOR  => "http://schemas.xmlsoap.org/soap/actor/next",
+  URI_SOAP12_ENC         => "http://www.w3.org/2003/05/soap-encoding",
+  URI_SOAP12_ENV         => "http://www.w3.org/2003/05/soap-envelope",
+  URI_SOAP12_NOENC       => "http://www.w3.org/2003/05/soap-envelope/encoding/none",
+  URI_SOAP12_NEXT_ACTOR  => "http://www.w3.org/2003/05/soap-envelope/role/next",
+};
 
 use vars qw($NSMASK $ELMASK);
 
