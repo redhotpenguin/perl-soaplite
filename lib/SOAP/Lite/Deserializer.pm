@@ -32,7 +32,7 @@ sub new {
         '_hrefs'      => {},
         '_parser'     => SOAP::Parser->new,
         '_xmlschemas' => {
-            $SOAP::Constants::NS_APS => 'SOAP::XMLSchemaApacheSOAP::Lite::Deserializer',
+            $SOAP::Constants::NS_APS => 'SOAP::XMLSchemaApacheSOAP::Deserializer',
             map {
                 $_ => 'SOAP::Lite::Deserializer::' . $SOAP::Constants::XML_SCHEMA_OF{$_}
               } keys %SOAP::Constants::XML_SCHEMA_OF

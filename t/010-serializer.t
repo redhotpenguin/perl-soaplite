@@ -9,16 +9,16 @@ BEGIN {
   }
 }
 
-use SOAP::Serializer;
+use SOAP::Lite::Serializer;
 use SOAP::Lite;
 use SOAP::Data;
 
 my @types1999 = qw(
-   anyURI 
-   string float double decimal timeDuration recurringDuration uriReference 
+   anyURI
+   string float double decimal timeDuration recurringDuration uriReference
    integer nonPositiveInteger negativeInteger long int short byte
    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-   positiveInteger timeInstant time timePeriod date month year century 
+   positiveInteger timeInstant time timePeriod date month year century
    recurringDate recurringDay language
 );
 
@@ -40,7 +40,7 @@ test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
 sub test_serializer {
     my $package = shift;
     my @types = @_;
-    
+
     print "# $package\n";
     use_ok $package;
 
@@ -83,7 +83,7 @@ if ($] < 5.008) {
     print "# Skippng unicode test on perl <5.8 ($])\n";
     ok(1);
     ok(1);
-} 
+}
 else {
     eval {
         # may fail on old perls
@@ -102,7 +102,7 @@ else {
             }
         }
     }
-}    
+}
 
 
 
@@ -114,8 +114,8 @@ ok $@ =~m{ \A String \s value \s expected }xms;
 
 ok ! SOAP::XMLSchema1999::Serializer->DESTROY();
 
-my $serializer = SOAP::Serializer->new();
-my $fault_envelope = $serializer->envelope( 
+my $serializer = SOAP::Lite::Serializer->new();
+my $fault_envelope = $serializer->envelope(
     fault => 'Code', 'string', 'Detail', 'Actor'
 );
 
@@ -123,7 +123,7 @@ my $fault_envelope = $serializer->envelope(
 ok $fault_envelope =~m{ .+(faultcode).+(faultstring).+(faultactor).+(detail)}x;
 
 
-$serializer = SOAP::Serializer->new();
+$serializer = SOAP::Lite::Serializer->new();
 
 print "# autotype tests\n";
 $serializer->autotype(1);

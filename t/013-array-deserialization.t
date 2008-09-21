@@ -8,8 +8,8 @@ use lib qw(lib);
 
 local $/ = undef;
 my $xml = <DATA>;
-use SOAP::Lite;
-my $som = SOAP::Deserializer->new->deserialize($xml);
+use SOAP::Lite::Deserializer;
+my $som = SOAP::Lite::Deserializer->new->deserialize($xml);
 my $result = $som->result();
 
 ok (@$result == 2);
