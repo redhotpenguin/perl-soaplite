@@ -647,6 +647,7 @@ sub new {
         require Apache2::RequestUtil;
         require APR::Table;
         Apache2::Const->import(-compile => 'OK');
+        Apache2::Const->import(-compile => 'HTTP_BAD_REQUEST');
         $self->{'MOD_PERL_VERSION'} = 2;
         $self->{OK} = &Apache2::Const::OK;
     }
@@ -659,6 +660,7 @@ sub new {
            require Apache;
            require Apache::Constants;
            Apache::Constants->import('OK');
+           Apache::Constants->import('HTTP_BAD_REQUEST');
            $self->{'MOD_PERL_VERSION'} = 1;
            $self->{OK} = &Apache::Constants::OK;
         }
@@ -667,6 +669,7 @@ sub new {
            require Apache::RequestIO;
            require Apache::Const;
            Apache::Const->import(-compile => 'OK');
+           Apache::Const->import(-compile => 'HTTP_BAD_REQUEST');
            $self->{'MOD_PERL_VERSION'} = 1.99;
            $self->{OK} = &Apache::OK;
         }
