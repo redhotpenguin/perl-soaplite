@@ -507,7 +507,8 @@ sub encode_literal_array {
     # and do not crete a wrapper array tag.
     if (!$self->autotype) {
         $name ||= gen_name;
-        return map {$self->encode_object($_, $name)} @$array;
+        my @items = map {$self->encode_object($_, $name)} @$array;
+        return [ $name, {%$attr}, [@items], $self->gen_id($array) ];
     }
 
     my $items = 'item';
