@@ -318,6 +318,9 @@ sub decode_value {
     elsif ($name =~ /^(?:param|fault)$/) {
         return scalar(($self->decode_object($children->[0]))[1]);
     }
+    elsif ($name =~ /^(?:nil)$/) {
+        return undef;
+    }
     else {
         die "wrong element '$name'\n";
     }
