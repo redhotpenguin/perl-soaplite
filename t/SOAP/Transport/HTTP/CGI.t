@@ -60,6 +60,8 @@ if ($] >= 5.008) {
     }
 }
 else {
-    eval { use bytes };
-    is length $result, 8, "lenght of >$result< is 8 due to wide character";
+    eval { use bytes;
+        is length $result, 8, "lenght of >$result< is 8 due to wide character";
+
+    }
 }
