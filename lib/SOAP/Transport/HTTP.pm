@@ -345,7 +345,9 @@ sub BEGIN {
 
 sub handle {
     my $self = shift->new;
-
+	
+	SOAP::Trace::debug($self->request->content);
+	
     if ($self->request->method eq 'POST') {
         $self->action($self->request->header('SOAPAction') || undef);
     }
@@ -400,6 +402,8 @@ sub handle {
             : $content
     )
         or return;
+        
+    SOAP::Trace::debug($response);
 
     $self->make_response($SOAP::Constants::HTTP_ON_SUCCESS_CODE, $response);
 }
