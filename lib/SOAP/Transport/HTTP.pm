@@ -373,8 +373,10 @@ sub handle {
     # anyway it'll blow up inside ::Server::handle if something wrong with message
     # TBD: but what to do with MIME encoded messages in THOSE environments?
     return $self->make_fault($SOAP::Constants::FAULT_CLIENT,
-        "Content-Type must be 'text/xml,' 'multipart/*,' or 'application/dime' instead of '$content_type'")
-        if $content_type
+        "Content-Type must be 'text/xml,' 'multipart/*,' ".
+        "'application/soap+xml,' 'or 'application/dime' instead of '$content_type'")
+        if !$SOAP::Constants::DO_NOT_CHECK_CONTENT_TYPE && $content_type
+            && $content_type ne 'application/soap+xml'
             && $content_type ne 'text/xml'
             && $content_type ne 'application/dime'
             && $content_type !~ m!^multipart/!;
