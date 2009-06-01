@@ -18,6 +18,7 @@ my @PREREQS = (
           "URI"             => 0,
           "Scalar::Util"    => 0,
           "version"         => 0,
+          "constant"        => 1.14, #for multiple constants
         },
         2
     ],
