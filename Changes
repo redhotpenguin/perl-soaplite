@@ -15,7 +15,102 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
-0.71.03
+0.716 
+    ! #78502 t/08-schema.t noisy under 5.17.2 (unescaped left brace in regex  is deprecated)
+    ! #78608 Documentation for "+trace"
+    ! #78639 Spelling error reported by Debian tools
+0.715
+    ! #75938 Change to warning / add configuration variable to allow XML tags starting with /xml/i
+    ! #76902 Missing info in "SSL CERTIFICATE AUTHENTICATION" documentation
+	! #74577 work around/fixes for success with MS WS https/compressed
+    ! #74308 SOAP-Lite fails for operations with period in name
+    ! #73802 client did not set the encoding of the soap-envelope to 'iso-8859-1' in HTTP-request
+    ! #75019 HTTP server doesn't process PIPE signal
+    ! #72836 Processing a SOAP 1.2 request breaks the next SOAP 1.1 response
+    ! #70381 SOAP-Lite performance
+    ! #53375 comments after <?xml .. >
+    ! #63693 Uninitalized value (again)
+    ! #37360 Use of uninitialized variables in SOAP tests
+    ! fixed encoding in xmlrpc keys
+    ! #15176 problems with SOAP::Header ->value 
+0.714
+    Moved SOAP::Transport::TCP into SOAP-Transport-TPC distribution
+    ! #70329 - not generating attributes properly (deleting id attribute)
+0.713
+    ! #52637 error sending a request in perl 5.10.0 containing utf-8 data using the string data type
+	! #48775 Small bug in SOAP::Packager
+	! #51178 Emailing: SOAP-Lite-0.710.10.patch
+	! #55962 Spelling errors
+	! #52015 defined(%hash) deprecated in Perl 5.11
+	! #63693 Uninitalized value
+	! #65655 Assignment of shift to list
+	! #58538 regression from 0.710.08 soap:Client,Application failed during request deserialization
+	! #64250 Bleadperl v5.13.7-297-g558b442 breaks SOAP::Lite 0.712
+	! #68088 XML::Parser::Lite fails tests under perl 5.14 RC1
+	! #69825 Bug in SOAP/Lite/Deserializer/XMLSchemaSOAP1_2.pm
+0.712
+    ! #57409 SOAP::Lite installation problem
+    ! #52015 defined(%hash) deprecated in Perl 5.11
+    ! #39546 use of version.pm
+    ! #52637 error sending a request in perl 5.10.0 containing utf-8 data using the string data type
+    ! #55962 Spelling errors 
+0.712
+   SOAP::Transport::JABBER, SOAP::Transport::MQ and SOAP::Tranport::FTP
+   are now in their own distributions.
+   ! [2790747] Bugtracker specification in META.yml missing
+   ! #45997: Inconsistency in SOAP::Serializer documentation
+   ! #55618: HTTP_TRANSFER_ENCODING can be undefined in SOAP/Transpo
+   ! [2946245] / #54106 Only last Cookie Set
+   ! #50178: Win32 isuue with IO::SessionData and IO::SessionSet
+   ! #41527: SOAP::Lite 0.69 with Apache2 HTTP Server module and mod_perl 2 
+           returns 500 Internal 
+0.710.10
+   ! #49981: UDDI::Lite version not parsable by cpanplus (again)
+0.710.09
+   ! #46444: use SOAP::Lite::Deserializer::XMLSchemaSOAP1_2 missing
+   ! #37151: Strawberry perl 5.10 - Tests fail and then later hang
+   ! #49981: UDDI::Lite version not parsable by cpanplus
+   ! #49011: Fails to install under strawberry perl
+   ! [2825166] In Constant DEFAULT_HTTP_CONTENT_TYPE
+   ! [2832939] chunked client requests are returned 411(Length Required) 
+   ! [2860559] serious utf8 bug
+   ! #44568 Tracing unavailable when SOAP::Lite is used as a server 
+   ! #44195 submitting patches / mention Nginx transport module in documentation
+   ! [2777361] SOAP 1.2 Content-Type rejected
+   ! #41937 ([patch] enable more tests)
+   ! #39101: Apache2::Const::HTTP_BAD_REQUEST not defined
+   ! #39672: serialization and autotype 'off'
+   ! #41348: t/SOAP/Transport/HTTP/CGI.t failing on 5.6.x
+   ! #20569: XMLRPC::Lite "wrong element 'nil'" exception on '<value><nil/></value>'
+   + require Task::Weaken
+   + better META.yml generated (Alexandr Ciornii)
+
+0.710.08 - Jul 13 2008
+   ! [ 2015071 ] HTTP header is no more accessible
+   The HTTP header can be pre-filled again. Now, the HTTP header is cloned
+   from a (possibly user defined) header for every request
+   ! #37358: Test Failure in Strawberry perl - IO::SessionData
+   ! #37359: Test Failure in Strawberry perl - IO::SessionSet
+   ! [ 2005296 ] CPANTS says META.yml broken
+   ! [ 2005288 ] CPANTS: has_humanreadable_license not ok
+   ! #37040: Memory leak when calling WS using wsdl
+   SOAP::Transport::HTTP->new() was leaking two scalars per call
+0.710.07
+   ! [ 1963995 ] > not deserialized in result
+   ! [ 1833218 ] < and > not deserialized in faultstring/detail
+   ! [ 1959329 ] Incorrect Content-Type while sending requests with no parts
+   ! [ 1945385 ] Incorrect starting part detection for Multipart/Related
+0.710.06
+   ! #36477 SOAP::Lite Envelope not stripped down for XMLRPC
+   ! #36455 XMLRPC::Transport::HTTP::CGI generates extra params
+0.710.05
+   ! got version number right, finally. Thanks to Graham Barr,
+   Andreas J. Koenig and Matt S Trout (in alphabetical order) for support
+0.071.04
+   ! updated version number and fixed declaring version, so that perl 5.6.2
+   can parse it, too
+   ! fixed memory leaks with XMLRPC::Lite
+v0.71.03
    ! #35041: SOAP::Lite Passes Decoded Strings to LWP
    ! #35133: Version Unparsable by ExtUtils::MakeMaker
    ! #33973: KeepAlive fails to function
@@ -28,7 +123,6 @@ THIS RELEASE
    ! #34515: Printing UTF-8 through SOAP::Transport::HTTP throws a warning
    ! Version numbers updated
    ! [1904955] Subclassing XMLRPC::Serializer broken
-   ! [ 1604320 ] xsi:nil on part accessor in argless message
 0.71 Feb 2008
   - bumped up version. Just curious about commit e-mail.
 0.70_08 Feb 25 2008

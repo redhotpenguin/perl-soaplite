@@ -1,7 +1,5 @@
 #!/bin/env perl 
 
-use strict;
-
 BEGIN {
   unless(grep /blib/, @INC) {
     chdir 't' if -d 't';
@@ -76,12 +74,12 @@ EOX
   ok($@ =~ m!Unrecognized type '\{http://www.w3.org/1999/XMLSchema\}something'!);
 
   eval { SOAP::Deserializer->deserialize('<i xmlns:xsd="http://some.thing.else/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:type="xsd:something">12</i>') };
-  ok($@ =~ m!Unrecognized type '{http://some.thing.else/XMLSchema}something'!);
+  ok($@ =~ m!Unrecognized type '\{http://some.thing.else/XMLSchema\}something'!);
 
   foreach (qw(base64Binary hexBinary anyType anySimpleType
       gMonth gYearMonth gYear gMonthDay gDay duration anyURI dateTime)) {
     eval { SOAP::Deserializer->deserialize(qq!<i xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:type="xsd:$_">12</i>!) };
-    ok($@ =~ m!Unrecognized type '{http://www.w3.org/1999/XMLSchema}$_'!);
+    ok($@ =~ m!Unrecognized type '\{http://www.w3.org/1999/XMLSchema\}$_'!);
   }
 
   ok(SOAP::Deserializer->deserialize(qq!<i xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:type="xsd:boolean">true</i>!)->root eq '1');
@@ -97,7 +95,7 @@ EOX
   foreach (qw(ur-type base64 hex
     timeDuration uriReference timeInstant month year recurringDate recurringDay)) {
     eval { SOAP::Deserializer->deserialize(qq!<i xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:$_">12</i>!) };
-    ok($@ =~ m!Unrecognized type '{http://www.w3.org/2001/XMLSchema}$_'!);
+    ok($@ =~ m!Unrecognized type '\{http://www.w3.org/2001/XMLSchema\}$_'!);
   }
 
   eval { SOAP::Deserializer->deserialize(qq!<i xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:type="xsd:boolean">something</i>!) };

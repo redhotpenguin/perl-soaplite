@@ -1,7 +1,5 @@
 #!/bin/env perl
 
-use strict;
-
 BEGIN {
     unless(grep /blib/, @INC) {
         chdir 't' if -d 't';
@@ -15,7 +13,6 @@ use Test;
 BEGIN { plan tests => 32 }
 
 use SOAP::Lite;
-use SOAP::Server;
 
 my($a, $s, $r, $serialized, $deserialized);
 
@@ -167,7 +164,7 @@ my $package = '
     sub schema { $SOAP::Constants::DEFAULT_XML_SCHEMA }
 1;';
 
-# TESTS 1-10
+# TEST 1-4
 HANDLER: {
     print "Server handler test(s)...\n";
 
@@ -224,7 +221,9 @@ HANDLER: {
         SOAP::Server->dispatch_to('\protocols', 'Calculator')
     ) { # end for
         my $result = SOAP::Deserializer->deserialize($server->handle($tests{'XML only'}));
-        ok(($result->result || 0) == 7);
+        my $value = $result->result;
+use Data::Dumper;		print Dumper $value;
+		ok($value + 0 == 7);
     }
 }
 

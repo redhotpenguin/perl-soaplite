@@ -11,8 +11,9 @@
 package SOAP::Transport::MAILTO;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = $SOAP::Lite::VERSION;
+
+
+our $VERSION = 0.715;
 
 use MIME::Lite;
 use URI;

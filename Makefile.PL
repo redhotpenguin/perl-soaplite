@@ -1,7 +1,7 @@
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
-require 5.005;
+use 5.006; #weak references require perl 5.6
 use strict;
 use ExtUtils::MakeMaker;
 use diagnostics;
@@ -17,8 +17,9 @@ my @PREREQS = (
           "MIME::Base64"    => 0,
           "URI"             => 0,
           "Scalar::Util"    => 0,
-          "version"         => 0,
-          "constant"        => 1.14, #for multiple constants
+          "Task::Weaken"    => 0, #to be sure than weaken works (Scalar::Util has XS part)
+          "constant"        => 0, #don't force people to upgrade
+          "Class::Inspector" => 0,
         },
         2
     ],
@@ -32,14 +33,15 @@ my @PREREQS = (
     ],
     ["Client HTTPS support","SOAP::Transport::HTTPS::Client",{"Crypt::SSLeay" => 0},0],
     ["Client SMTP/sendmail support","SOAP::Transport::MAILTO::Client",{"MIME::Lite" => 0},1],
-    ["Client FTP support","SOAP::Transport::FTP::Client",{"Net::FTP" => 0,"IO::File" => 0},0],
+    ["Client FTP support","SOAP::Transport::FTP::Client",{"SOAP::Transport::FTP" => 0.711},0],
+    ["Client TCP support","SOAP::Transport::TCP::Client",{"SOAP::Transport::TCP" => 0.714},0],    
     ["Standalone HTTP server","SOAP::Transport::HTTP::Daemon",{"HTTP::Daemon" => 0},1],
     ["Apache/mod_perl server","SOAP::Transport::HTTP::Apache",{"Apache" => 0},0],
     ["FastCGI server","SOAP::Transport::HTTP::FCGI",{"FCGI" => 0},0],
     ["POP3 server","SOAP::Transport::POP3::Server",{"Net::POP3" => 0,"MIME::Parser" => 0},1],
     ["IO server","SOAP::Transport::IO::Server",{"IO::File" => 0},0],
-    ["MQ transport support","SOAP::Transport::MQ",{"MQSeries" => 0},1],
-    ["JABBER transport support","SOAP::Transport::JABBER",{"Net::Jabber" => 0},0],
+    ["MQ transport support","SOAP::Transport::MQ",{"SOAP::Transport::MQ" => 0.712},0],
+    ["JABBER transport support","SOAP::Transport::JABBER",{"SOAP::Transport::JABBER" => 0.712},0],
     ["MIME messages","SOAP::Packager::MIME",{"MIME::Parser" => 0},1],
     ["DIME messages","SOAP::Packager::DIME",{"IO::Scalar" => "2.105", "DIME::Tools" => 0.03, "Data::UUID" => "0.11"},0],
     ["SSL Support for TCP Transport","SOAP::Transport::TCP",{"IO::Socket::SSL" => 0},0],
@@ -55,7 +57,6 @@ Usage: perl Makefile.PL <options>
 Possible options are:
 
   --noprompt            Disable interactive dialog
-  --alltests            Perform extra testing       (Has no effect any more)
   --help, -?            Display this help text
 
   [Do not] install prerequisites for appropriate module:
@@ -84,7 +85,6 @@ use vars qw($noprompt $alltests $help $intro);
 
 GetOptions (
     "noprompt" => \$noprompt,
-    "alltests" => \$alltests,
     "help|?" => \$help,
 );
 
@@ -164,7 +164,7 @@ if ($noncoretests) {
     $tests = join ' ' , @test_from;
 }
 else {
-    $tests = join ' ', glob ('t/0*.t');
+    $tests = join ' ', glob ('t/0*.t t/*xmlparserlite.t t/*loopback.t');
 }
 
 ExtUtils::MakeMaker::WriteMakefile(
@@ -178,6 +178,17 @@ ExtUtils::MakeMaker::WriteMakefile(
      },
     'EXE_FILES'     => ['bin/SOAPsh.pl', 'bin/XMLRPCsh.pl', 'bin/stubmaker.pl'],
     test            => {TESTS => $tests},
+    ($ExtUtils::MakeMaker::VERSION ge '6.48'? 
+     (MIN_PERL_VERSION => 5.006,
+      META_MERGE => {
+          resources=> {
+              repository => 'https://soaplite.svn.sourceforge.net/svnroot/soaplite/branches/0.71',
+          },
+          keywords => ['SOAP','SOAP client','SOAP server'],
+          bugtracker => 'https://sourceforge.net/tracker/?group_id=66000&atid=513017',
+          
+      },
+     ) : ()),
 );
 
 

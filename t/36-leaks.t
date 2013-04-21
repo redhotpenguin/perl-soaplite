@@ -1,9 +1,5 @@
-#!/bin/env perl 
-
-use strict;
-use Test::More tests => 16;
-
-# use Devel::Cycle;
+#!/bin/env perl
+use Devel::Cycle;
 BEGIN {
   unless(grep /blib/, @INC) {
     chdir 't' if -d 't';
@@ -11,11 +7,14 @@ BEGIN {
   }
 }
 
+use strict;
+use Test;
+
 use SOAP::Lite
   on_fault => sub {
     my $soap = shift;
     my $res = shift;
-    ref $res ? warn(join " ", "SOAP FAULT:", $res->faultstring, "\n") 
+    ref $res ? warn(join " ", "SOAP FAULT:", $res->faultstring, "\n")
              : warn(join " ", "TRANSPORT ERROR:", $soap->transport->status, "\n");
     return new SOAP::SOM;
   }
@@ -33,10 +32,12 @@ eval { $s->transport->timeout($SOAP::Test::TIMEOUT = $SOAP::Test::TIMEOUT) };
 $r = $s->test_connection;
 
 unless (defined $r && defined $r->envelope) {
-  print "1..0 # Skip: ", $s->transport->status, "\n"; 
+  print "1..0 # Skip: ", $s->transport->status, "\n";
   exit;
 }
 # ------------------------------------------------------
+
+plan tests => 16;
 
 {
   print "Memory leaks test(s)...\n";
@@ -45,7 +46,7 @@ unless (defined $r && defined $r->envelope) {
 
   my %calls = ();
 
-  SOAP::Lite->import(trace => [objects => sub { 
+  SOAP::Lite->import(trace => [objects => sub {
 #    warn join ', ' , caller(2);
     my @caller = caller(2);
     $calls{$2}{$1}++ if ($caller[3] =~ /^(.+)::([^\:]+)$/);
@@ -55,8 +56,11 @@ unless (defined $r && defined $r->envelope) {
       -> uri("Echo")
       -> proxy($proxy)
       -> echo;
+	use Data::Dumper;
 #	find_cycle $soap;
   }
+  use Data::Dumper;
+
 
   foreach (keys %{$calls{new}}) {
     print "default parser: $_\n";

@@ -1,6 +1,4 @@
 use Test::More;
-use strict;
-
 plan tests => 42;
 use_ok qw(SOAP::Lite::Deserializer::XMLSchema1999);
 

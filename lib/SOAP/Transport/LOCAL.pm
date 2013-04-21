@@ -11,28 +11,34 @@
 package SOAP::Transport::LOCAL;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = $SOAP::Lite::VERSION;
+
+
+our $VERSION = 0.715;
 
 # ======================================================================
 
 package SOAP::Transport::LOCAL::Client;
 
 use SOAP::Lite;
-use SOAP::Lite::Server;
+
 use vars qw(@ISA);
-@ISA = qw(SOAP::Client SOAP::Lite::Server);
+our @ISA = qw(SOAP::Client SOAP::Server);
 
 sub new {
     my $class = shift;
     return $class if ref $class;
-    my(@arg_from, @method_from);
+    my @method_from;
     while (@_) {
-        $class->can($_[0])
-            ? push(@method_from, shift() => shift)
-            : push(@arg_from, shift)
+        if ($class->can($_[0])) {
+            push(@method_from, shift() => shift);
+        }
+        else
+        {
+            # ignore unknown arguments
+            shift;
+        }
     }
-    my $self = $class->SUPER::new(@arg_from);
+    my $self = $class->SUPER::new();
     $self->is_success(1);     # it's difficult to fail in this module
     $self->dispatch_to(@INC);
     while (@method_from) {
@@ -45,8 +51,8 @@ sub new {
 }
 
 sub send_receive {
-    my($self, %parameters) = @_;
-    my($envelope, $endpoint, $action) =
+    my ($self, %parameters) = @_;
+    my ($envelope, $endpoint, $action) =
         @parameters{qw(envelope endpoint action)};
 
     SOAP::Trace::debug($envelope);

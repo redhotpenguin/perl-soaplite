@@ -25,7 +25,8 @@ SKIP: {
     );
     my $client;
     ok $client = SOAP::Transport::HTTP::Client->new();
-    $client->send_receive();
+    $client->send_receive(endpoint => 'http://example.org',
+		envelope => '');
     is $client->code(), '200';
     is $client->message(), '200 OK';
 }
@@ -52,7 +53,7 @@ undef $client;
 my $server;
 ok $server = SOAP::Transport::HTTP::Server->new(), 'SOAP::Transport::HTTP::Server->new()';
 isa_ok $server, 'SOAP::Transport::HTTP::Server';
-# isa_ok $server, 'SOAP::Server';
+isa_ok $server, 'SOAP::Server';
 is $server, $server->new(), '$server->new() returns $server';
 
 like $server->product_tokens(), qr{SOAP::Lite}x;
@@ -65,7 +66,7 @@ undef $server;
 
 ok $server = SOAP::Transport::HTTP::CGI->new();
 isa_ok $server, 'SOAP::Transport::HTTP::Server';
-# isa_ok $server, 'SOAP::Server';
+isa_ok $server, 'SOAP::Server';
 
 test_make_fault($server);
 

@@ -13,8 +13,8 @@ package SOAP::Packager;
 use strict;
 use vars;
 
-use vars qw($SUPPORTED_TYPES);
-$SUPPORTED_TYPES = { };
+our $VERSION = 0.715;
+our $SUPPORTED_TYPES = { };
 
 sub BEGIN {
   no strict 'refs';
@@ -199,7 +199,7 @@ sub process_form_data {
     my $name = $part->head->mime_attr('content-disposition.name');
     $name eq 'payload' ?
       $env = $part->bodyhandle->as_string
-	: $self->push_part($part);
+      : $self->push_part($part);
   }
   return $env;
 }
@@ -209,9 +209,9 @@ sub process_related {
   my ($entity) = @_;
   die "Multipart MIME messages MUST declare Multipart/Related content-type"
     if ($entity->head->mime_attr('content-type') !~ /^multipart\/related/i);
-    # As it turns out, the Content-ID and start parameters are optional
-    # according to the MIME and SOAP specs. In the event that the head cannot
-    # be found, the head/root entity is used as a starting point.
+  # As it turns out, the Content-ID and start parameters are optional
+  # according to the MIME and SOAP specs. In the event that the head cannot
+  # be found, the head/root entity is used as a starting point.
     # [19 Mar 2008] Modified by Feng Li <feng.li@sybase.com>
     # Check optional start parameter, then optional Content-ID, then create/add
     # Content-ID (the same approach as in SOAP::Lite 0.66)
@@ -220,7 +220,7 @@ sub process_related {
     my $start = get_multipart_id($entity->head->mime_attr('content-type.start'))
         || get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
 
-    if (!defined($start) || $start eq "") {
+  if (!defined($start) || $start eq "") {
       $start = $self->generate_random_string(10);
       $entity->parts(0)->head->add('content-id',$start);
   }
@@ -244,7 +244,7 @@ sub process_related {
     # alternative in the following MIME Header attributes
     my $plocation = $part->head->get('content-location') ||
       $part->head->mime_attr('Content-Disposition.filename') ||
-	$part->head->mime_attr('Content-Type.name');
+      $part->head->mime_attr('Content-Type.name');
     if ($start && $pid eq $start) {
       $env = $part->bodyhandle->as_string;
     } else {
@@ -304,7 +304,7 @@ sub package {
    my $soapversion = defined($context) ? $context->soapversion : '1.1';
    $top->attach('MIMEType' => $soapversion == 1.1 ?
                   "http://schemas.xmlsoap.org/soap/envelope/" : "application/soap+xml",
-                'Data'     => $envelope );
+                'Data'     => \$envelope );
    $message->add_payload($top);
    # consume the attachments that come in as input by 'shift'ing
    no strict 'refs';
@@ -372,7 +372,7 @@ Instantiates a new instance of a SOAP::Packager.
 =item parts
 
 Contains an array of parts. The contents of this array and their types are completely
-dependant upon the Packager being used. For example, when using MIME, the content
+dependent upon the Packager being used. For example, when using MIME, the content
 of this array is MIME::Entity's.
 
 =item push_part

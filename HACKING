@@ -7,12 +7,23 @@ There's a Subversion repository available at
 
     https://soaplite.svn.sourceforge.net/svnroot/soaplite/
 
-It's recommended to check out the trunk from
+It's recommended to check out the cuurent maintenance branch from
 
-   https://soaplite.svn.sourceforge.net/svnroot/soaplite/trunk
+   https://soaplite.svn.sourceforge.net/svnroot/soaplite/branches/0.71
 
 Engagement in the further development of this module is highly encouraged -
 many people have already contributed, and many more probably will.
+
+MAILING PATCHES
+===============
+
+Preferred patches are "unified" diffs ignoring whitespaces created by 
+
+diff -uw OLD NEW
+
+Please don't create patches where the original file has been renamed (like
+appending .old) - they can't be applied without editing.
+
 
 SOAP::Lite CODING GUIDELINES
 ============================

@@ -1,11 +1,7 @@
 use strict;
 use warnings;
 use Test;
-
-use lib qw(lib);
-
 use SOAP::Lite;
-use SOAP::Data;
 
 plan tests => 3;
 

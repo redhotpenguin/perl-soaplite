@@ -12,7 +12,7 @@ package SOAP::Lite::Packager;
 
 use strict;
 use vars;
-use List::Util qw(first);
+
 use vars qw($SUPPORTED_TYPES);
 $SUPPORTED_TYPES = { };
 
@@ -82,10 +82,8 @@ sub unpackage {
 # ======================================================================
 
 package SOAP::Lite::Packager::MIME;
-use strict; use warnings;
 
-use List::Util qw(first);
-
+use strict;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Lite::Packager);
 
@@ -225,15 +223,7 @@ sub process_related {
     # As it turns out, the Content-ID and start parameters are optional
     # according to the MIME and SOAP specs. In the event that the head cannot
     # be found, the head/root entity is used as a starting point.
-
-    # [19 Mar 2008] Modified by Feng Li <feng.li@sybase.com>
-    # Check optional start parameter, then optional Content-ID, then create/add
-    # Content-ID (the same approach as in SOAP::Lite 0.66)
-
-    #my $start = get_multipart_id($entity->head->mime_attr('content-type.start'));
-    my $start = get_multipart_id($entity->head->mime_attr('content-type.start'))
-        || get_multipart_id($entity->parts(0)->head->mime_attr('content-id'));
-
+    my $start = get_multipart_id($entity->head->mime_attr('content-type.start'));
     if (!defined($start) || $start eq "") {
         $start = $self->generate_random_string(10);
         $entity->parts(0)->head->add('content-id',$start);
@@ -263,7 +253,7 @@ sub process_related {
             $env = $part->bodyhandle->as_string;
         }
         else {
-            $self->push_part($part);
+            $self->push_part($part) if (defined($part->bodyhandle));
         }
     }
 
@@ -386,7 +376,7 @@ Instantiates a new instance of a SOAP::Lite::Packager.
 =item parts
 
 Contains an array of parts. The contents of this array and their types are completely
-dependant upon the Packager being used. For example, when using MIME, the content
+dependent upon the Packager being used. For example, when using MIME, the content
 of this array is MIME::Entity's.
 
 =item push_part

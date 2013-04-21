@@ -1,7 +1,4 @@
 package SOAP::Lite::Deserializer::XMLSchemaSOAP1_2;
-
-use strict;
-
 use SOAP::Lite::Deserializer::XMLSchemaSOAP1_1;
 
 sub anyTypeValue { 'anyType' }
@@ -17,10 +14,10 @@ BEGIN {
         century gMonthDay gDay duration recurringDuration anyURI
         language integer nonPositiveInteger negativeInteger long int short byte
         nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-        positiveInteger date time dateTime
+        positiveInteger date time
     )) {
-        my $name = 'as_' . $method; 
-        *$name = sub { $_[1] }; 
+        my $name = 'as_' . $method;
+        *$name = sub { $_[1] };
     }
 }
 

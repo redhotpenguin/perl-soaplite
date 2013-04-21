@@ -1,7 +1,5 @@
 #!/bin/env perl 
 
-use strict;
-
 BEGIN {
   unless(grep /blib/, @INC) {
     chdir 't' if -d 't';
@@ -13,7 +11,6 @@ use strict;
 use Test;
 
 use SOAP::Lite;
-use SOAP::Custom::XML::Deserializer;
 
 plan tests => 40;
 

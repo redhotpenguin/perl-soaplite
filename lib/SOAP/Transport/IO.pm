@@ -11,12 +11,11 @@
 package SOAP::Transport::IO;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = $SOAP::Lite::VERSION;
+
+our $VERSION = 0.715;
 
 use IO::File;
 use SOAP::Lite;
-
 # ======================================================================
 
 package SOAP::Transport::IO::Server;
@@ -24,8 +23,7 @@ package SOAP::Transport::IO::Server;
 use strict;
 use Carp ();
 use vars qw(@ISA);
-use SOAP::Lite::Server;
-@ISA = qw(SOAP::Lite::Server);
+@ISA = qw(SOAP::Server);
 
 sub new {
     my $class = shift;

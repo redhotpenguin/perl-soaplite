@@ -11,12 +11,11 @@
 package SOAP::Transport::POP3;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = $SOAP::Lite::VERSION;
+
+our $VERSION = 0.715;
 
 use Net::POP3;
 use URI;
-use SOAP::Lite;
 
 # ======================================================================
 

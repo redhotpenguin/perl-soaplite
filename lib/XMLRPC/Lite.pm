@@ -11,11 +11,9 @@
 package XMLRPC::Lite;
 
 use SOAP::Lite;
-use SOAP::Data;
-
 use strict;
-use vars qw($VERSION);
-use version; $VERSION = qv('0.71.04');
+
+our $VERSION = 0.715;
 
 # ======================================================================
 
@@ -45,9 +43,7 @@ package XMLRPC::Data;
 
 package XMLRPC::Serializer;
 
-use SOAP::Data;
-
-@XMLRPC::Serializer::ISA = qw(SOAP::Lite::Serializer);
+@XMLRPC::Serializer::ISA = qw(SOAP::Serializer);
 
 sub new {
     my $class = shift;
@@ -144,7 +140,7 @@ sub encode_hash {
 
     return ['struct', {}, [
         map {
-            ['member', {}, [['name', {}, $_], $self->encode_object($hash->{$_})]]
+            ['member', {}, [['name', {}, SOAP::Utils::encode_data($_)], $self->encode_object($hash->{$_})]]
         } keys %{ $hash }
     ]];
 }
@@ -268,7 +264,7 @@ sub BEGIN {
 
 package XMLRPC::Deserializer;
 
-@XMLRPC::Deserializer::ISA = qw(SOAP::Lite::Deserializer);
+@XMLRPC::Deserializer::ISA = qw(SOAP::Deserializer);
 
 BEGIN {
     no strict 'refs';
@@ -368,7 +364,7 @@ sub new {
         serializer => XMLRPC::Serializer->new,
         deserializer => XMLRPC::Deserializer->new,
         on_action => sub {return},
-        uri => 'http://unspecified/',
+        default_ns => 'http://unspecified/',
         @_
     );
 }

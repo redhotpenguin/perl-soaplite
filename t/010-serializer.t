@@ -1,24 +1,15 @@
 use strict;
 use warnings;
-use Test::More;
+use Test;
 
-BEGIN {
-  unless(grep /blib/, @INC) {
-    chdir 't' if -d 't';
-    unshift @INC, '../lib' if -d '../lib';
-  }
-}
-
-use SOAP::Lite::Serializer;
 use SOAP::Lite;
-use SOAP::Data;
 
 my @types1999 = qw(
-   anyURI
-   string float double decimal timeDuration recurringDuration uriReference
+   anyURI 
+   string float double decimal timeDuration recurringDuration uriReference 
    integer nonPositiveInteger negativeInteger long int short byte
    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-   positiveInteger timeInstant time timePeriod date month year century
+   positiveInteger timeInstant time timePeriod date month year century 
    recurringDate recurringDay language
 );
 
@@ -32,7 +23,7 @@ my @types2001 = qw(
 );
 
 # types * 3 + extra tests + autotype tests
-plan tests => 227;
+plan tests => 225;
 
 test_serializer('SOAP::XMLSchema1999::Serializer', @types1999);
 test_serializer('SOAP::XMLSchema2001::Serializer', @types2001);
@@ -42,16 +33,17 @@ sub test_serializer {
     my @types = @_;
 
     print "# $package\n";
-    use_ok $package;
 
     for my $type (@types) {
         my $method = "as_$type";
-        print "#   $method\n";
+	print "#   $method\n";
+	use Data::Dumper;
         my $result = $package->$method('', 'test', $type , {});
-        ok $result->[0] eq 'test';
-        ok $result->[1]->{ 'xsi:type' };
-        ok $result->[2] eq '';
+	ok $result->[0] eq 'test';
+	ok $result->[1]->{ 'xsi:type' };
+	ok $result->[2] eq '';
     }
+
 }
 
 # additional tests
@@ -83,7 +75,7 @@ if ($] < 5.008) {
     print "# Skippng unicode test on perl <5.8 ($])\n";
     ok(1);
     ok(1);
-}
+} 
 else {
     eval {
         # may fail on old perls
@@ -102,7 +94,7 @@ else {
             }
         }
     }
-}
+}    
 
 
 
@@ -114,8 +106,8 @@ ok $@ =~m{ \A String \s value \s expected }xms;
 
 ok ! SOAP::XMLSchema1999::Serializer->DESTROY();
 
-my $serializer = SOAP::Lite::Serializer->new();
-my $fault_envelope = $serializer->envelope(
+my $serializer = SOAP::Serializer->new();
+my $fault_envelope = $serializer->envelope( 
     fault => 'Code', 'string', 'Detail', 'Actor'
 );
 
@@ -123,7 +115,7 @@ my $fault_envelope = $serializer->envelope(
 ok $fault_envelope =~m{ .+(faultcode).+(faultstring).+(faultactor).+(detail)}x;
 
 
-$serializer = SOAP::Lite::Serializer->new();
+$serializer = SOAP::Serializer->new();
 
 print "# autotype tests\n";
 $serializer->autotype(1);

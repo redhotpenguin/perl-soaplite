@@ -65,7 +65,7 @@ Along with methods of XMLRPC::Lite you'll be able (and that's much more
 interesting) run any XMLRPC methods you know about on remote server and
 see processed results. You can even switch on debugging (with call 
 something like: C<on_debug(sub{print@_})>) and see XMLRPC code with 
-headers sent and recieved.
+headers sent and received.
 
 =head1 COPYRIGHT
 

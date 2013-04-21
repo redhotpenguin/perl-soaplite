@@ -10,11 +10,10 @@
 
 package SOAP::Test;
 
-use 5.004;
-use vars qw($VERSION $TIMEOUT);
-use version; $VERSION = qv('0.71.04');
+use 5.006;
+our $VERSION = 0.715;
 
-$TIMEOUT = 5;
+our $TIMEOUT = 5;
 
 # ======================================================================
 
@@ -76,7 +75,7 @@ sub run_for {
 
   $r = $s->getStateStruct({item1 => 1, item2 => 4})->result;
   ok(ref $r && $r->{item2} eq 'Arkansas');
-
+print $s->transport->status, "\n";
   {
     my $autoresult = $s->autoresult;
     $s->autoresult(1);

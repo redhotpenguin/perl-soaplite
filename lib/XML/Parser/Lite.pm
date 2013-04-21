@@ -12,8 +12,9 @@
 package XML::Parser::Lite;
 
 use strict;
-use vars qw($VERSION);
-use version; $VERSION = qv('0.71.04');
+use warnings;
+
+our $VERSION = 0.715;
 
 sub new {
     my $class = shift;
@@ -32,7 +33,8 @@ sub setHandlers {
     my $self = shift;
 
     # allow symbolic refs, avoid "subroutine redefined" warnings
-    no strict 'refs'; local $^W;
+    no strict 'refs';
+    no warnings qw(redefine);
     # clear all handlers if called without parameters
     if (not @_) {
         for (qw(Start End Char Final Init Comment Doctype XMLDecl)) {
@@ -70,7 +72,8 @@ sub _regexp {
     my $TextSE = "[^<]+";
     my $UntilHyphen = "[^-]*-";
     my $Until2Hyphens = "([^-]*)-(?:[^-]$[^-]*-)*-";
-    my $CommentCE = "$Until2Hyphens(?{${package}::comment(\$2)})>?";
+    #my $CommentCE = "$Until2Hyphens(?{${package}::comment(\$2)})>?";
+    my $CommentCE = "(.+)--(?{${package}::comment(\$2)})>?";
 #    my $Until2Hyphens = "$UntilHyphen(?:[^-]$UntilHyphen)*-";
 #    my $CommentCE = "$Until2Hyphens>?";
     my $UntilRSBs = "[^\\]]*](?:[^\\]]+])*]+";
@@ -126,6 +129,7 @@ my $REGEXP = _regexp('??');
 sub _parse_re {
     use re "eval";
     undef $^R;
+    no strict 'refs';
     1 while $_[0] =~ m{$REGEXP}go
 };
 
@@ -165,7 +169,8 @@ sub _final {
 sub _start {
     die "multiple roots, wrong element '$_[0]'\n" if $level++ && !@stack;
     push(@stack, $_[0]);
-    Start(__PACKAGE__, @_);
+    my $r=Start(__PACKAGE__, @_);
+    return ref($r) eq 'ARRAY' ? $r : undef;
 }
 
 sub _char {
@@ -182,21 +187,26 @@ sub _char {
 }
 
 sub _end {
+    no warnings qw(uninitialized);
     pop(@stack) eq $_[0] or die "mismatched tag '$_[0]'\n";
-    End(__PACKAGE__, $_[0]);
+    my $r=End(__PACKAGE__, $_[0]);
+    return ref($r) eq 'ARRAY' ? $r : undef;
 }
 
 sub comment {
-    Comment(__PACKAGE__, $_[0]);
+    my $r=Comment(__PACKAGE__, $_[0]);
+    return ref($r) eq 'ARRAY' ? $r : undef;
 }
 
 sub end {
-     pop(@stack) eq $_[0] or die "mismatched tag '$_[0]'\n";
-     End(__PACKAGE__, $_[0]);
- }
+    pop(@stack) eq $_[0] or die "mismatched tag '$_[0]'\n";
+    my $r=End(__PACKAGE__, $_[0]);
+    return ref($r) eq 'ARRAY' ? $r : undef;
+}
 
 sub _doctype {
-    Doctype(__PACKAGE__, $_[0]);
+    my $r=Doctype(__PACKAGE__, $_[0]);
+    return ref($r) eq 'ARRAY' ? $r : undef;
 }
 
 sub _xmldecl {
@@ -329,7 +339,7 @@ See L<XML::Parser> for details
 
 =head2 Final
 
-Called at the end of the parsing process. You should perform any neccessary
+Called at the end of the parsing process. You should perform any necessary
 cleanup here.
 
 =head1 SEE ALSO

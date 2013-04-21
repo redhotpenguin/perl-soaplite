@@ -1,18 +1,16 @@
 use Test::More qw(no_plan);
-use strict;
+use SOAP::Lite;
 
-use SOAP::Lite::Schema::WSDL;
+ok my $schema = SOAP::Schema::WSDL->new();
 
-ok my $schema = SOAP::Lite::Schema::WSDL->new();
-
-my $element = SOAP::Lite::Custom::XML::Data
+my $element = SOAP::Custom::XML::Data
         -> SOAP::Data::name('schema')
         -> set_value(
-            SOAP::Lite::Custom::XML::Data
+            SOAP::Custom::XML::Data
                 -> SOAP::Data::name('complexType')
                 ->attr({ name => 'test' })
 );
 
-my @result = SOAP::Lite::Schema::WSDL::parse_schema_element( $element );
+my @result = SOAP::Schema::WSDL::parse_schema_element( $element );
 is @result, 0, 'empty elements on empty complexType'
 

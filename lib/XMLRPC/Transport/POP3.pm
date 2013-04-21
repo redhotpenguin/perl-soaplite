@@ -11,10 +11,10 @@
 package XMLRPC::Transport::POP3;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = $XMLRPC::Lite::VERSION;
 
+our $VERSION = 0.715;
 use XMLRPC::Lite;
+
 use SOAP::Transport::POP3;
 
 # ======================================================================
@@ -42,12 +42,11 @@ XMLRPC::Transport::POP3 - Server side POP3 support for XMLRPC::Lite
   my $server = XMLRPC::Transport::POP3::Server
     -> new('pop://pop.mail.server')
     # if you want to have all in one place
-    # -> new('pop://user:password@pop.mail.server') 
+    # -> new('pop://user:password@pop.mail.server')
     # or, if you have server that supports MD5 protected passwords
-    # -> new('pop://user:password;AUTH=+APOP@pop.mail.server') 
+    # -> new('pop://user:password;AUTH=+APOP@pop.mail.server')
     # specify path to My/Examples.pm here
-    -> dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method') 
-  ;
+    -> dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method');
   # you don't need to use next line if you specified your password in new()
   $server->login('user' => 'password') or die "Can't authenticate to POP3 server\n";
 

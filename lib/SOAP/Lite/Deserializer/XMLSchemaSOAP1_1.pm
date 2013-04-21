@@ -6,9 +6,11 @@ sub anyTypeValue { 'ur-type' }
 sub as_boolean {
     shift;
     my $value = shift;
-    return 1 if ($value eq '1' or $value eq 'true');
-    return 0 if ($value eq '0' or $value eq 'false');
-    die "Wrong boolean value '$value'\n"
+    $value eq '1' || $value eq 'true'
+        ? 1
+        : $value eq '0' || $value eq 'false'
+            ? 0
+            : die "Wrong boolean value '$value'\n"
 }
 
 sub as_base64 { shift; require MIME::Base64; MIME::Base64::decode_base64(shift) }

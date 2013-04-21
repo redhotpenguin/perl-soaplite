@@ -1,6 +1,4 @@
-#!/bin/env perl
-
-use strict;
+#!/bin/env perl 
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -10,14 +8,11 @@ BEGIN {
 }
 
 use strict;
-use Test::More;
+use Test;
 
 BEGIN { plan tests => 131 }
 
 use SOAP::Lite;
-use SOAP::Header;
-use SOAP::Fault;
-
 $SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
 
 my($a, $s, $r, $serialized, $deserialized);
@@ -25,7 +20,7 @@ my($a, $s, $r, $serialized, $deserialized);
 { # check root, mustUnderstand
   print "root and mustUnderstand attributes with SOAP::Data test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer->serialize(SOAP::Data->root(1 => 1)->name('rootandunderstand')->mustUnderstand(1));
+  $serialized = SOAP::Serializer->serialize(SOAP::Data->root(1 => 1)->name('rootandunderstand')->mustUnderstand(1));
 
   ok($serialized =~ m!<rootandunderstand( xsi:type="xsd:int"| soap:mustUnderstand="1"| soapenc:root="1"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){7}>1</rootandunderstand>!);
 }
@@ -33,7 +28,7 @@ my($a, $s, $r, $serialized, $deserialized);
 { # check deserialization of envelope with result
   print "Deserialization of envelope with result test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -61,7 +56,7 @@ my($a, $s, $r, $serialized, $deserialized);
 { # check deserialization of envelope with fault
   print "Deserialization of envelope with fault test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 <soap:Body>
 <soap:Fault><faultcode>soap:Client</faultcode><faultstring>Application Error</faultstring><detail>Invalid Password</detail></soap:Fault></soap:Body></soap:Envelope>
@@ -75,20 +70,20 @@ my($a, $s, $r, $serialized, $deserialized);
 { # check deserialization of circular references
   print "Deserialization of circular references test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <Struct prefix:id="123" xmlns:prefix="aaa" id="ref-0xb61350"><a id="ref-0xb61374"><b href="#ref-0xb61350"/></a></Struct>
 ');
 
   ok(ref $deserialized->valueof('/Struct') eq ref $deserialized->valueof('//b'));
 
-  ok($deserialized->dataof('/Struct')->attr->{'{aaa}id'} == 123);
+  ok($deserialized->dataof('/Struct')->attr->{'{aaa}id'} == 123); 
   ok(exists $deserialized->dataof('/Struct')->attr->{'id'});
 }
 
-{ # check SOAP::SOM
+{ # check SOAP::SOM 
   print "SOM test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope  xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
@@ -109,7 +104,7 @@ my($a, $s, $r, $serialized, $deserialized);
 ');
 
   # should return STRING '/Envelope/Body/[1]/[1]'
-  my $result = SOAP::SOM::result;
+  my $result = SOAP::SOM::result; 
   ok($deserialized->valueof("$result/[1]") == 20);
   ok($deserialized->valueof("$result/[3]") == 60);
   ok($deserialized->valueof("$result/[5]") == 200);
@@ -130,10 +125,10 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($deserialized->valueof('[5]') == 200);
 }
 
-{ # check output parameters
+{ # check output parameters   
   print "Output parameters test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('
+  $deserialized = SOAP::Deserializer->deserialize('
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
@@ -153,10 +148,10 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($paramsout[0] eq 'name2' && $paramsout[1] eq 'name3');
 }
 
-{ # check nonqualified namespace
+{ # check nonqualified namespace   
   print "Nonqualified namespace test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('
+  $deserialized = SOAP::Deserializer->deserialize('
 <soap:Envelope  xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
@@ -180,10 +175,10 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($deserialized->namespaceuriof('//doublerResponse') eq 'http://simon.fell.com/calc');
 }
 
-{ # check for Array of Array serialization
+{ # check for Array of Array serialization 
   print "Array of Array serialization test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer
+  $serialized = SOAP::Serializer
     ->readable(1)
     ->method('mymethod' => [[1, 2], [3, 4]]);
   ok($serialized =~ m!soapenc:arrayType="soapenc:Array\[2\]"!);
@@ -192,54 +187,51 @@ my($a, $s, $r, $serialized, $deserialized);
 { # check for serialization with SOAPStruct
   print "Serialization w/out SOAPStruct test(s)...\n";
   $a = { a => 1 };
-  $serialized = SOAP::Lite::Serializer->namespaces({})->serialize($a);
+  $serialized = SOAP::Serializer->namespaces({})->serialize($a);
   ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:int">1</a></c-gensym\1>!);
 }
 
-{ # check header/envelope serialization/deserialization
+{ # check header/envelope serialization/deserialization   
   print "Header/Envelope serialization/deserialization test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer->method( # same as ->envelope(method =>
-      'mymethod', 1, 2, 3,
+  $serialized = SOAP::Serializer->method( # same as ->envelope(method =>
+      'mymethod', 1, 2, 3, 
       SOAP::Header->name(t1 => 5)->mustUnderstand(1)->uri('http://namespaces.soaplite.com/headers'),
       SOAP::Header->name(t2 => 7)->mustUnderstand(2),
   );
-  $deserialized = SOAP::Lite::Deserializer->deserialize($serialized);
+  $deserialized = SOAP::Deserializer->deserialize($serialized);
 
   my $t1 = $deserialized->match(SOAP::SOM::header)->headerof('t1');
   my $t2 = $deserialized->dataof('t2');
   my $t3 = eval { $deserialized->headerof(SOAP::SOM::header . '/{http://namespaces.soaplite.com/headers}t3'); };
-
 
   ok(!$@ && !defined $t3);
 
   my @paramsin = $deserialized->paramsin;
   my @paramsall = $deserialized->paramsall;
 
-  like $t2->type,  qr{^int$}, 'type';
-  is $t2->mustUnderstand, 1, 'mustUnderstand';
+  ok($t2->type =~ /^int$/);
+  ok($t2->mustUnderstand == 1);
   ok(@paramsin == 3);
   ok(@paramsall == 3);
 
   eval { $deserialized->result(1) };
   ok($@ =~ /Method 'result' is readonly/);
 
-  $serialized = SOAP::Lite::Serializer->method( # same as ->envelope(method =>
-      SOAP::Data->name('mymethod')->attr({something => 'value'}), 1, 2, 3,
+  $serialized = SOAP::Serializer->method( # same as ->envelope(method =>
+      SOAP::Data->name('mymethod')->attr({something => 'value'}), 1, 2, 3, 
   );
   ok($serialized =~ /<mymethod something="value">/);
 
-  $serialized = SOAP::Lite::Serializer
+  $serialized = SOAP::Serializer
     -> envprefix('')
     -> method('mymethod');
-#
-#  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod xsi:nil="true" /></Body></Envelope>!);
-  # removed xsi:nil="true"
-  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod /></Body></Envelope>!);
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></soap:Body></soap:Envelope>');
+
+  ok($serialized =~ m!<Envelope(?: xmlns:namesp\d+="http://schemas.xmlsoap.org/soap/envelope/"| namesp\d+:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}><Body><mymethod xsi:nil="true" /></Body></Envelope>!);
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></soap:Body></soap:Envelope>');
   ok(! defined $deserialized->namespaceuriof('//getStateName'));
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns="a" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><soap:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></soap:Body></soap:Envelope>');
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns="a" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema"><soap:Body><getStateName><c-gensym5 xsi:type="xsd:int">1</c-gensym5></getStateName></soap:Body></soap:Envelope>');
   ok($deserialized->namespaceuriof('//getStateName') eq 'a');
 }
 
@@ -247,16 +239,16 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Map type serialization/deserialization test(s)...\n";
 
   my $key = "\0\1";
-  $serialized = SOAP::Lite::Serializer->method(aa => SOAP::Data->type(map => {a => 123, $key => 456})->name('maaap'));
+  $serialized = SOAP::Serializer->method(aa => SOAP::Data->type(map => {a => 123, $key => 456})->name('maaap'));
 
   { local $^W; # disable warning on implicit map encoding
-    my $implicit = SOAP::Lite::Serializer->method(aa => SOAP::Data->name(maaap => {a => 123, $key => 456}));
+    my $implicit = SOAP::Serializer->method(aa => SOAP::Data->name(maaap => {a => 123, $key => 456}));
     ok($implicit eq $serialized);
   }
   ok($serialized =~ /apachens:Map/);
   ok($serialized =~ m!xmlns:apachens="http://xml.apache.org/xml-soap"!);
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize($serialized);
+  $deserialized = SOAP::Deserializer->deserialize($serialized);
   $a = $deserialized->valueof('//maaap');
   ok(UNIVERSAL::isa($a => 'HASH'));
   ok(ref $a && $a->{$key} == 456);
@@ -265,13 +257,13 @@ my($a, $s, $r, $serialized, $deserialized);
 { # Stringified type serialization
   print "Stringified type serialization test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer->serialize(bless { a => 1, _current => [] } => 'SOAP::SOM');
-
+  $serialized = SOAP::Serializer->serialize(bless { a => 1, _current => [] } => 'SOAP::SOM');
+  
   my $test = $serialized;
   ok $test =~s{
             <\?xml \s version="1.0" \s encoding="UTF-8"\?>
             <SOAP__SOM
-            (?:
+            (?: 
                 \sxsi:type="namesp(\d+):SOAP__SOM"
                 | \sxmlns:namesp\d+="http://namespaces.soaplite.com/perl"
                 | \sxmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
@@ -285,30 +277,30 @@ my($a, $s, $r, $serialized, $deserialized);
   }{}xms;
 
   ok $test =~s{ <a \s xsi:type="xsd:int">1</a> }{}xms;
-  ok $test =~s{ <_current (:?
+  ok $test =~s{ <_current (:? 
         \s soapenc:arrayType="xsd:anyType\[0\]"
         | \s xsi:type="soapenc:Array" ){2}
        \s/>
     }{}xms;
 
   ok length $test == 0;
-
+  
   # Replaced complex regex by several simpler (see above).
-
+  
   # ok($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2} /></SOAP__SOM>!);
-  # ok( ($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2}/></SOAP__SOM>!)
+  # ok( ($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><a xsi:type="xsd:int">1</a><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2}/></SOAP__SOM>!) 
   # ||  ($serialized =~ m!<SOAP__SOM(?: xsi:type="namesp(\d+):SOAP__SOM"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){6}><_current(?: soapenc:arrayType="xsd:anyType\[0\]"| xsi:type="soapenc:Array"){2}/><a xsi:type="xsd:int">1</a></SOAP__SOM>!));
   #print $serialized;
   #  exit;
 
   $serialized =~ s/__/./g; # check for SOAP.SOM instead of SOAP__SOM
-  ok(ref SOAP::Lite::Deserializer->deserialize($serialized)->root eq 'SOAP::SOM');
+  ok(ref SOAP::Deserializer->deserialize($serialized)->root eq 'SOAP::SOM');
 }
 
 { # Serialization of non-allowed element
   print "Serialization of non-allowed element test(s)...\n";
 
-  eval { $serialized = SOAP::Lite::Serializer->serialize(SOAP::Data->name('---' => 'aaa')) };
+  eval { $serialized = SOAP::Serializer->serialize(SOAP::Data->name('---' => 'aaa')) };
 
   ok($@ =~ /^Element/);
 }
@@ -317,7 +309,7 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Custom serialization of blessed reference test(s)...\n";
 
   eval q!
-    sub SOAP::Lite::Serializer::as_My__Own__Class {
+    sub SOAP::Serializer::as_My__Own__Class {
       my $self = shift;
       my($value, $name, $type, $attr) = @_;
       return [$name, {%{$attr || {}}, 'xsi:type' => 'xsd:string'}, join ', ', map {"$_ => $value->{$_}"} sort keys %$value];
@@ -325,7 +317,7 @@ my($a, $s, $r, $serialized, $deserialized);
     1;
   ! or die;
 
-  $serialized = SOAP::Lite::Serializer->serialize(bless {a => 1, b => 2} => 'My::Own::Class');
+  $serialized = SOAP::Serializer->serialize(bless {a => 1, b => 2} => 'My::Own::Class');
   ok($serialized =~ m!<My__Own__Class( xsi:type="xsd:string"| xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"| xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"| xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"| xmlns:xsd="http://www.w3.org/2001/XMLSchema"){5}>a => 1, b => 2</My__Own__Class>!);
 }
 
@@ -336,19 +328,19 @@ my($a, $s, $r, $serialized, $deserialized);
   my $a = { a => $b };
   my $c = { c1 => $a, c2 => $a };
 
-  $serialized = SOAP::Lite::Serializer->autotype(0)->method(a => $c);
+  $serialized = SOAP::Serializer->autotype(0)->method(a => $c);
   ok($serialized =~ m!<soap:Body><a><c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></soap:Body>! ||
      $serialized =~ m!<soap:Body><a><c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></soap:Body>! ||
      $serialized =~ m!<soap:Body><a><c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></soap:Body>! ||
      $serialized =~ m!<soap:Body><a><c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /></c-gensym\1></a><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></soap:Body>!);
 
-  $serialized = SOAP::Lite::Serializer->autotype(0)->namespaces({})->serialize($c);
+  $serialized = SOAP::Serializer->autotype(0)->namespaces({})->serialize($c);
   ok($serialized =~ m!<c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></c-gensym\1>! ||
      $serialized =~ m!<c-gensym(\d+)><c1 href="#ref-(\d+)" /><c2 href="#ref-\2" /><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></c-gensym\1>! ||
      $serialized =~ m!<c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /><c-gensym(\d+) id="ref-(\d+)"><b>2</b></c-gensym\3><c-gensym(\d+) id="ref-\2"><a href="#ref-\4" /></c-gensym\5></c-gensym\1>! ||
      $serialized =~ m!<c-gensym(\d+)><c2 href="#ref-(\d+)" /><c1 href="#ref-\2" /><c-gensym(\d+) id="ref-\2"><a href="#ref-(\d+)" /></c-gensym\3><c-gensym(\d+) id="ref-\4"><b>2</b></c-gensym\5></c-gensym\1>!);
 
-  my $root = SOAP::Lite::Deserializer->deserialize($serialized)->root;
+  my $root = SOAP::Deserializer->deserialize($serialized)->root;
 
   ok($root->{c1}->{a}->{b} == 2);
   ok($root->{c2}->{a}->{b} == 2);
@@ -359,7 +351,9 @@ my($a, $s, $r, $serialized, $deserialized);
 
   $a = { b => 2 };
 
-  $serialized = SOAP::Lite::Serializer->autotype(0)->method(a => SOAP::Header->value($a), $a);
+  print $serialized = SOAP::Serializer->autotype(0)->method(a => SOAP::Header->value($a), $a);
+  print "\n";
+  print '<soap:Header><c-gensym\d+ href="#ref-(\d+)" /></soap:Header><soap:Body><a><c-gensym\d+ href="#ref-\1" /></a><c-gensym(\d+) id="ref-\1"><b>2</b></c-gensym\2></soap:Body>', "\n";
   ok($serialized =~ m!<soap:Header><c-gensym\d+ href="#ref-(\d+)" /></soap:Header><soap:Body><a><c-gensym\d+ href="#ref-\1" /></a><c-gensym(\d+) id="ref-\1"><b>2</b></c-gensym\2></soap:Body>!);
 }
 
@@ -368,11 +362,11 @@ my($a, $s, $r, $serialized, $deserialized);
 
   my $desc = 0;
   my $typecasts = 0;
-  eval {
-    package MyDeserializer;
-    @MyDeserializer::ISA = 'SOAP::Lite::Deserializer';
+  eval { 
+    package MyDeserializer; 
+    @MyDeserializer::ISA = 'SOAP::Deserializer';
     sub typecast;
-    *typecast = sub { shift;
+    *typecast = sub { shift; 
       my($value, $name, $attrs, $children, $type) = @_;
       $desc = "$name @{[scalar @$children]}" if $name eq 'a';
       $typecasts++;
@@ -389,33 +383,33 @@ my($a, $s, $r, $serialized, $deserialized);
 { # Deserialization with wrong encodingStyle
   print "Deserialization with wrong encodingStyle test(s)...\n";
 
-  eval { $deserialized = SOAP::Lite::Deserializer->deserialize(
-'<a
+  eval { $deserialized = SOAP::Deserializer->deserialize(
+'<a 
    soap:encodingStyle="http://schemas.microsoft.com/soap/encoding/clr/1.0 http://schemas.xmlsoap.org/soap/encoding/"
    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 >1</a>') };
   ok(!$@ && $deserialized);
 
-  eval { $deserialized = SOAP::Lite::Deserializer->deserialize(
-'<a
+  eval { $deserialized = SOAP::Deserializer->deserialize(
+'<a 
    soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 >1</a>') };
   ok(!$@ && $deserialized);
 
-  eval { $deserialized = SOAP::Lite::Deserializer->deserialize(
-'<a
+  eval { $deserialized = SOAP::Deserializer->deserialize(
+'<a 
    soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/something"
    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 >1</a>') };
   ok(!$@ && $deserialized);
 
-  eval { $deserialized = SOAP::Lite::Deserializer->deserialize(
+  eval { $deserialized = SOAP::Deserializer->deserialize(
 '<a>1</a>') };
   ok(!$@ && $deserialized);
 
-  eval { $deserialized = SOAP::Lite::Deserializer->deserialize(
-'<a
+  eval { $deserialized = SOAP::Deserializer->deserialize(
+'<a 
    soap:encodingStyle=""
    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 >1</a>') };
@@ -426,7 +420,7 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Deserialization with root attribute test(s)...\n";
 
   # root="0", should skip
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
@@ -446,7 +440,7 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($deserialized->result == 2);
 
   # root="0", but in wrong namespace
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
@@ -466,7 +460,7 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($deserialized->result == 1);
 
   # root="1"
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 	 xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
 	 xmlns:xsd="http://www.w3.org/1999/XMLSchema"
@@ -500,10 +494,10 @@ my($a, $s, $r, $serialized, $deserialized);
   ok(ref $body->{doublerResponse1} && ref $body->{doublerResponse2});
 }
 
-{
+{ 
   print "Deserialization with null elements test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 <soap:Body>
 <namesp23:object_infoResponse xmlns:namesp23="http://localhost/Test">
@@ -530,8 +524,8 @@ my($a, $s, $r, $serialized, $deserialized);
 {
   print "Serialization of list with undef elements test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer->method(a => undef, 1, undef, 2);
-  my(@r) = SOAP::Lite::Deserializer->deserialize($serialized)->paramsall;
+  $serialized = SOAP::Serializer->method(a => undef, 1, undef, 2);
+  my(@r) = SOAP::Deserializer->deserialize($serialized)->paramsall;
 
   ok(2 == grep {!defined} @r);
 }
@@ -540,15 +534,15 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Deserialization with xsi:type='string' test(s)...\n";
 
   $a = 'SOAP::Lite';
-  $deserialized = SOAP::Lite::Deserializer->deserialize(qq!<inputString xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:type="string" xmlns="http://schemas.xmlsoap.org/soap/encoding/">$a</inputString>!)->root;
+  $deserialized = SOAP::Deserializer->deserialize(qq!<inputString xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:type="string" xmlns="http://schemas.xmlsoap.org/soap/encoding/">$a</inputString>!)->root;
 
   ok($deserialized eq $a);
 }
 
-{
+{ 
   print "Deserialization with typing inherited from Array element test(s)...\n";
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize('<?xml version="1.0"?>
+  $deserialized = SOAP::Deserializer->deserialize('<?xml version="1.0"?>
 <soapenc:Array xsi:type="soapenc:Array" soapenc:arrayType="soapenc:base64[]" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 <item xsi:type="xsd:string">MTIz</item>
 <item>MTIz</item>
@@ -564,12 +558,12 @@ my($a, $s, $r, $serialized, $deserialized);
 {
   print "Serialization with explicit typing test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer
+  $serialized = SOAP::Serializer
     ->method(a => SOAP::Data->name('return')->type(int => 1));
   ok($serialized =~ /xsd:int/);
 
   eval {
-    $serialized = SOAP::Lite::Serializer
+    $serialized = SOAP::Serializer
       ->method(a => SOAP::Data->name('return')->type(noint => 1));
   };
   ok($@ =~ /for type 'noint' is not specified/);
@@ -578,13 +572,13 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Serialization w/out explicit typing test(s)...\n";
 
   $a = { a => 'false' };
-  $serialized = SOAP::Lite::Serializer->namespaces({})->serialize($a);
+  $serialized = SOAP::Serializer->namespaces({})->serialize($a);
 
   ### 'false' evaluated as a boolean should still be false after the evaluation.
   ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:boolean">false</a></c-gensym\1>!);
 
   $a = { a => 'true' };
-  $serialized = SOAP::Lite::Serializer->namespaces({})->serialize($a);
+  $serialized = SOAP::Serializer->namespaces({})->serialize($a);
 
   ### 'false' evaluated as a boolean should still be false after the evaluation.
   ok($serialized =~ m!<c-gensym(\d+)><a xsi:type="xsd:boolean">true</a></c-gensym\1>!);
@@ -593,16 +587,16 @@ my($a, $s, $r, $serialized, $deserialized);
 {
   print "Serialization with explicit namespaces test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer->serialize(SOAP::Data->name('b' => 1));
+  $serialized = SOAP::Serializer->serialize(SOAP::Data->name('b' => 1));
   ok($serialized =~ m!<b !);
 
-  $serialized = SOAP::Lite::Serializer->serialize(SOAP::Data->name('c:b' => 1));
+  $serialized = SOAP::Serializer->serialize(SOAP::Data->name('c:b' => 1));
   ok($serialized =~ m!<c:b !);
 
-  $serialized = SOAP::Lite::Serializer->serialize(SOAP::Data->name('{a}b' => 1));
+  $serialized = SOAP::Serializer->serialize(SOAP::Data->name('{a}b' => 1));
   ok($serialized =~ m!<namesp\d+:b ! && $serialized =~ m!xmlns:namesp\d+="a"!);
 
-  $serialized = SOAP::Lite::Serializer->serialize(SOAP::Data->name('{}b' => 1));
+  $serialized = SOAP::Serializer->serialize(SOAP::Data->name('{}b' => 1));
   ok($serialized =~ m!<b ! && $serialized =~ m!xmlns=""!);
 
   my @prefix_uri_tests = (
@@ -610,16 +604,16 @@ my($a, $s, $r, $serialized, $deserialized);
     [ undef,  undef,  '<b>1</b>' ],
     [ undef,     '',  '<b xmlns="">1</b>' ],
     [ undef,    'a',  '<(namesp\d+):b xmlns:\1="a">1</\1:b>' ],
-    [    '',  undef,  '<b>1</b>' ],
-    [    '',     '',  '<b xmlns="">1</b>' ],
-    [    '',    'a',  '<b xmlns="a">1</b>' ],
-    [   'c',  undef,  '<c:b>1</c:b>' ],
-    [   'c',     '',  '<b xmlns="">1</b>' ],
+    [    '',  undef,  '<b>1</b>' ],           
+    [    '',     '',  '<b xmlns="">1</b>' ],  
+    [    '',    'a',  '<b xmlns="a">1</b>' ], 
+    [   'c',  undef,  '<c:b>1</c:b>' ],       
+    [   'c',     '',  '<b xmlns="">1</b>' ],  
     [   'c',    'a',  '<c:b xmlns:c="a">1</c:b>' ],
   );
 
-  my $serializer = SOAP::Lite::Serializer->autotype(0)->namespaces({});
-  my $deserializer = SOAP::Lite::Deserializer->new;
+  my $serializer = SOAP::Serializer->autotype(0)->namespaces({});
+  my $deserializer = SOAP::Deserializer->new;
   my $testnum = 0;
   foreach (@prefix_uri_tests) {
     $testnum++;
@@ -662,11 +656,11 @@ my($a, $s, $r, $serialized, $deserialized);
 </soap:Envelope>!;
 
   SOAP::Lite->soapversion(1.1);
-  $deserialized = SOAP::Lite::Deserializer->deserialize($a);
+  $deserialized = SOAP::Deserializer->deserialize($a);
   ok(ref $deserialized->result eq 'ARRAY');
 
   SOAP::Lite->soapversion(1.2);
-  $deserialized = SOAP::Lite::Deserializer->deserialize($a);
+  $deserialized = SOAP::Deserializer->deserialize($a);
   ok(ref $deserialized->result eq 'ARRAY');
 
   SOAP::Lite->soapversion($version);
@@ -676,7 +670,7 @@ my($a, $s, $r, $serialized, $deserialized);
   print "Deserialization of multidimensional array of array test(s)...\n";
 
   $a = q!<?xml version="1.0" encoding="UTF-8"?>
-<S:Envelope S:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'
+<S:Envelope S:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/' 
    xmlns:S='http://schemas.xmlsoap.org/soap/envelope/'
    xmlns:E='http://schemas.xmlsoap.org/soap/encoding/'
    xmlns:a='http://foo.bar.org/'
@@ -698,7 +692,7 @@ my($a, $s, $r, $serialized, $deserialized);
 </i>
 </nums></a:SomeMethod></S:Body></S:Envelope>!;
 
-  $deserialized = SOAP::Lite::Deserializer->deserialize($a)->result;
+  $deserialized = SOAP::Deserializer->deserialize($a)->result;
 
   # [
   #   [
@@ -721,20 +715,20 @@ my($a, $s, $r, $serialized, $deserialized);
 {
   print "Serialization without specified typemapping test(s)...\n";
 
-  $serialized = SOAP::Lite::Serializer->method(a => bless {a => 1} => 'A');
+  $serialized = SOAP::Serializer->method(a => bless {a => 1} => 'A');
   ok($serialized =~ m!<A xsi:type="namesp\d+:A">!);
-  ok($serialized =~ m!^<\?xml!); # xml declaration
+  ok($serialized =~ m!^<\?xml!); # xml declaration 
 
   # higly questionably, but that's how it is
-  $serialized = SOAP::Lite::Serializer->encoding(undef)->method(a => bless {a => 1} => 'A');
+  $serialized = SOAP::Serializer->encoding(undef)->method(a => bless {a => 1} => 'A');
   ok($serialized =~ m!<A(?: xsi:type="namesp\d+:A"| xmlns:namesp\d+="http://namespaces.soaplite.com/perl")>!);
-  ok($serialized !~ m!^<\?xml!); # no xml declaration
+  ok($serialized !~ m!^<\?xml!); # no xml declaration 
 }
 
 {
   print "Deserialization with different XML Schemas on one element test(s)...\n";
 
-  my $deserializer = SOAP::Lite::Deserializer->new;
+  my $deserializer = SOAP::Deserializer->new;
   $deserializer->deserialize(q!<soap:Envelope
     soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
     xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
@@ -789,7 +783,7 @@ xsi9:type="xsd1:string">Simple Test String</inputString>
 
   my %calls;
   {
-    SOAP::Lite->import(trace => [objects => sub {
+    SOAP::Lite->import(trace => [objects => sub { 
       if ((caller(2))[3] =~ /^(.+)::(.+)$/) {
         $calls{$2}{$1}++;
       }
