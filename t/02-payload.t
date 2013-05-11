@@ -10,7 +10,12 @@ BEGIN {
 use strict;
 use Test;
 
-BEGIN { plan tests => 131 }
+BEGIN {
+    my @todo;
+    $] >= 5.017010
+    and push @todo, 37;
+    plan tests => 133, todo => \@todo;
+}
 
 use SOAP::Lite;
 $SIG{__WARN__} = sub { ; }; # turn off deprecation warnings
@@ -97,6 +102,12 @@ my($a, $s, $r, $serialized, $deserialized);
 <item2 xsi:type="xsd:int">60</item2>
 <item2 xsi:type="xsd:int">100</item2>
 <item3 xsi:type="xsd:int">200</item3>
+<item3 xsi:type="xsd:int">200</item3>
+<item4 xsi:type="xsd:int">200</item4>
+<item4 xsi:type="xsd:int">200</item4>
+<item5 xsi:type="xsd:int">400</item5>
+<item5 xsi:type="xsd:int">450</item5>
+<item6 xsi:type="xsd:int">600</item6>
 </nums>
 </m:doublerResponse>
 </soap:Body>
@@ -108,6 +119,9 @@ my($a, $s, $r, $serialized, $deserialized);
   ok($deserialized->valueof("$result/[1]") == 20);
   ok($deserialized->valueof("$result/[3]") == 60);
   ok($deserialized->valueof("$result/[5]") == 200);
+  ok($deserialized->valueof("$result/[9]") == 400);
+  # Test more than 9 items to check depth is okay - RT78692
+  ok($deserialized->valueof("$result/[11]") == 600);
 
   # match should return true/false in boolean context (and object ref otherwise)
   ok($deserialized->match('aaa') ? 0 : 1);

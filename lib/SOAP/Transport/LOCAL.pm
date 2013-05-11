@@ -13,7 +13,7 @@ package SOAP::Transport::LOCAL;
 use strict;
 
 
-our $VERSION = 0.715;
+our $VERSION = 0.716;
 
 # ======================================================================
 

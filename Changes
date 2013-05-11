@@ -15,7 +15,15 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 -----------------------------------------------------------------------
 THIS RELEASE
 -----------------------------------------------------------------------
-0.716 
+
+
+0.716 May 10, 2013
+    ! #17275 Client unable to detect fatal SOAP failure (e.g. unable to connect to host)
+    ! #81471 Force array context for correct Apache header parsing in SOAP::Transport::HTTP
+    ! #45611 deserializing SOAP message with composite attachment raises exception
+    ! #84168 Test t/02-payload.t fails under Perl 5.17.10
+    ! #85098 Monkey patch for LWP::Protocol confuses the toolchain
+    ! #78692 / #84724 / #83715 Sending large object (many levels deep) throws error Incorrect parameter
     ! #78502 t/08-schema.t noisy under 5.17.2 (unescaped left brace in regex  is deprecated)
     ! #78608 Documentation for "+trace"
     ! #78639 Spelling error reported by Debian tools

@@ -12,7 +12,7 @@ package XMLRPC::Test;
 
 use 5.004;
 use vars qw($VERSION $TIMEOUT);
-our $VERSION = 0.715;
+our $VERSION = 0.716;
 
 $TIMEOUT = 5;
 

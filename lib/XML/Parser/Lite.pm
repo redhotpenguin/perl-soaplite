@@ -14,7 +14,7 @@ package XML::Parser::Lite;
 use strict;
 use warnings;
 
-our $VERSION = 0.715;
+our $VERSION = 0.716;
 
 sub new {
     my $class = shift;

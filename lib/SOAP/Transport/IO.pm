@@ -12,7 +12,7 @@ package SOAP::Transport::IO;
 
 use strict;
 
-our $VERSION = 0.715;
+our $VERSION = 0.716;
 
 use IO::File;
 use SOAP::Lite;

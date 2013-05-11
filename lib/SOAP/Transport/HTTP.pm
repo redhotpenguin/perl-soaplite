@@ -12,7 +12,7 @@ package SOAP::Transport::HTTP;
 
 use strict;
 
-our $VERSION = 0.715;
+our $VERSION = 0.716;
 
 use SOAP::Lite;
 use SOAP::Packager;
@@ -44,7 +44,8 @@ sub patch {
     }
     {
 
-        package LWP::Protocol;
+        package
+            LWP::Protocol;
         local $^W = 0;
         my $collect = \&collect;    # store original
         *collect = sub {
@@ -303,6 +304,7 @@ sub send_receive {
     $self->message( $self->http_response->message );
     $self->is_success( $self->http_response->is_success );
     $self->status( $self->http_response->status_line );
+    return if ($self->http_response->is_success == 0);
 
     # Pull out any cookies from the response headers
     $self->{'_cookie_jar'}->extract_cookies( $self->http_response )
@@ -818,7 +820,7 @@ sub handler {
     $self->request(
         HTTP::Request->new(
             $r->method() => $r->uri,
-            HTTP::Headers->new( $r->headers_in ),
+            HTTP::Headers->new( %{ $r->headers_in } ),
             $content
         ) );
     $self->SUPER::handle;

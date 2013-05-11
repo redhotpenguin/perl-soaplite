@@ -121,6 +121,7 @@ sub initialize_parser {
     $self->{'_parser'}->output_to_core('ALL');
     $self->{'_parser'}->tmp_to_core(1);
     $self->{'_parser'}->ignore_errors(1);
+    $self->{'_parser'}->extract_nested_messages(0);
 }
 
 sub generate_random_string {
