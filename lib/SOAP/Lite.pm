@@ -1735,12 +1735,15 @@ sub xmlparser {
 
 sub parser {
     my $self = shift->new;
-    @_
-        ? do {
-            $self->{'_parser'} = shift;
-            return $self;
-        }
-        : return ($self->{'_parser'} ||= $self->xmlparser);
+
+    # set the parser if passed
+    if (my $parser = shift) {
+        $self->{'_parser'} = shift;
+        return $self;
+    }
+
+    # else return the parser or use XML::Parser::Lite
+    return ($self->{'_parser'} ||= $self->xmlparser);
 }
 
 sub new {
