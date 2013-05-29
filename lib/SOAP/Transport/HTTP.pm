@@ -817,10 +817,17 @@ sub handler {
         return Apache::Constants::BAD_REQUEST();
     }
 
+    my %headers;
+    if ( $self->{'MOD_PERL_VERSION'} < 2 ) {
+        %headers = $r->headers_in; # Apache::Table structure
+    } else {
+        %headers = %{ $r->headers_in }; # Apache2::RequestRec structure
+    }
+    
     $self->request(
         HTTP::Request->new(
             $r->method() => $r->uri,
-            HTTP::Headers->new( %{ $r->headers_in } ),
+            HTTP::Headers->new( %headers ),
             $content
         ) );
     $self->SUPER::handle;

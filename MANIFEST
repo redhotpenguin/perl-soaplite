@@ -128,13 +128,6 @@ lib/SOAP/Transport/LOOPBACK.pm
 lib/SOAP/Transport/MAILTO.pm
 lib/SOAP/Transport/POP3.pm
 lib/SOAP/Utils.pod
-lib/UDDI/Lite.pm
-lib/XML/Parser/Lite.pm
-lib/XMLRPC/Lite.pm
-lib/XMLRPC/Test.pm
-lib/XMLRPC/Transport/HTTP.pm
-lib/XMLRPC/Transport/POP3.pm
-lib/XMLRPC/Transport/TCP.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
@@ -151,7 +144,6 @@ t/03-server.t
 t/04-attach.t
 t/05-customxml.t
 t/06-modules.t
-t/07-xmlrpc_payload.t
 t/08-schema.t
 t/096_characters.t
 t/097_kwalitee.t
@@ -169,12 +161,7 @@ t/22-interop_apache.t
 t/23-ppm.t
 t/24-wsdl.t
 t/25-uddi.t
-t/26-xmlrpc.t
-t/27-xmlparserlite.t
-t/28-uddi_search.t
-t/29-uddi_publishing.t
 t/36-leaks.t
-t/37-mod_xmlrpc.t
 t/38-packager.t
 t/40-loopback.t
 t/SOAP/Data.t
@@ -194,7 +181,4 @@ t/SOAP/Transport/LOCAL.t
 t/SOAP/Transport/MAILTO.t
 t/SOAP/Transport/POP3.t
 t/TEST.pl
-t/XMLRPC/Lite.t
-t/XML/Parser/adam.xml
-t/XML/Parser/Lite.t
 

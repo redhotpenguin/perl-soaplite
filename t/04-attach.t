@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 15 }
+BEGIN { plan tests => 18 }
 
 my ( $a, $soap, $d, $s, $r, $serialized, $deserialized );
 
