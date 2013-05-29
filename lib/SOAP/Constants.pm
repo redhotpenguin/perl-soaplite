@@ -12,7 +12,7 @@ package SOAP::Constants;
 use strict;
 use SOAP::Lite;
 
-our $VERSION = 0.716;
+our $VERSION = 0.717;
 
 use constant    URI_1999_SCHEMA_XSD    => "http://www.w3.org/1999/XMLSchema";
 use constant    URI_1999_SCHEMA_XSI    => "http://www.w3.org/1999/XMLSchema-instance";

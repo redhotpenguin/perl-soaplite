@@ -142,6 +142,7 @@ t/015_UNIVERSAL_can.t
 t/02-payload.t
 t/03-server.t
 t/04-attach.t
+t/04-attach-cid-encoded.t
 t/05-customxml.t
 t/06-modules.t
 t/08-schema.t

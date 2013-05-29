@@ -17,8 +17,9 @@ THIS RELEASE
 -----------------------------------------------------------------------
 
 0.717
+    ! #82416: xop href cid: URI encoded support reported by Michael R. Davis (mrdvt92)
     ! #85208 bad test plan
-    ! use different headers for mod_perl vs mod_perl2 [Mithun Bhattacharya]
+    ! #83750 different headers for mod_perl vs mod_perl2 [Mithun Bhattacharya]
 
 0.716 May 10, 2013
     ! #17275 Client unable to detect fatal SOAP failure (e.g. unable to connect to host)

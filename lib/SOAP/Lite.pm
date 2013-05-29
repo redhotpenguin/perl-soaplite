@@ -18,7 +18,7 @@ package SOAP::Lite;
 
 use 5.006; #weak references require perl 5.6
 use strict;
-our $VERSION = 0.716;
+our $VERSION = 0.717;
 # ======================================================================
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
@@ -2052,6 +2052,7 @@ package SOAP::Deserializer;
 use vars qw(@ISA);
 use SOAP::Lite::Utils;
 use Class::Inspector;
+use URI::Escape qw{uri_unescape};
 
 @ISA = qw(SOAP::Cloneable);
 
@@ -2301,8 +2302,10 @@ sub decode_value {
     }
     elsif (exists $attrs->{href}) {
         (my $id = delete $attrs->{href}) =~ s/^(#|cid:|uuid:)?//;
+        my $type=$1;
+        $id=uri_unescape($id) if (defined($type) and $type eq 'cid:');
         # convert to absolute if not internal '#' or 'cid:'
-        $id = $self->baselocation($id) unless $1;
+        $id = $self->baselocation($id) unless $type;
         return $self->hrefs->{$id} if exists $self->hrefs->{$id};
         # First time optimization. we don't traverse IDs unless asked for it.
         # This is where traversing id's is delayed from before
