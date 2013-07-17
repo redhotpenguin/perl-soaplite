@@ -15,7 +15,7 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
-1.0 June 20, 2013
+1.0 July 16, 2013
     ! #85713 SOAP::Transport::HTTP, 500 error skips parsing of response
     ! No more Windows 98 client support. Wait, wut?
     ! Merge SOAP::Transport::TCP back into SOAP::Lite (for now)
