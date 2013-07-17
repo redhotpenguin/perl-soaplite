@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # ======================================================================
 #
 # Copyright (C) 2000-2005 Paul Kulchenko (paulclinger@yahoo.com)
@@ -14,7 +12,6 @@
 #
 # October 2007, Martin Kutter
 
->>>>>>> 40d5840e5711be9ab1c95f2cc133cfa90d5837eb
 package SOAP::Lite;
 
 use strict;
@@ -3906,12 +3903,7 @@ SOAP::Lite 0.71 will be the last version of SOAP::Lite running on perl 5.005
 
 Future versions of SOAP::Lite will require at least perl 5.6.0
 
-<<<<<<< HEAD
 If you have not had the time to upgrade your perl, you should consider this now.
-=======
-If you have not had the time to upgrade your perl, you should consider this
-now.
->>>>>>> 40d5840e5711be9ab1c95f2cc133cfa90d5837eb
 
 =head1 OVERVIEW OF CLASSES AND PACKAGES
 
