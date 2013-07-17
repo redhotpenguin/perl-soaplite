@@ -1,14 +1,9 @@
-#!/bin/env perl
-use Devel::Cycle;
-BEGIN {
-  unless(grep /blib/, @INC) {
-    chdir 't' if -d 't';
-    unshift @INC, '../lib' if -d '../lib';
-  }
-}
+#!/usr/bin/perl
 
 use strict;
-use Test;
+use warnings;
+
+use Test::More;
 
 use SOAP::Lite
   on_fault => sub {
@@ -20,7 +15,7 @@ use SOAP::Lite
   }
 ;
 
-my($a, $s, $r);
+my ($a, $s, $r);
 
 my $proxy = 'http://services.soaplite.com/echo.cgi';
 

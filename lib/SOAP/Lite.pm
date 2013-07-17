@@ -1,25 +1,9 @@
-# ======================================================================
-#
-# Copyright (C) 2000-2005 Paul Kulchenko (paulclinger@yahoo.com)
-# SOAP::Lite is free software; you can redistribute it
-# and/or modify it under the same terms as Perl itself.
-#
-# $Id$
-#
-# ======================================================================
-
-# Formatting hint:
-# Target is the source code format laid out in Perl Best Practices (4 spaces
-# indent, opening brace on condition line, no cuddled else).
-#
-# October 2007, Martin Kutter
-
 package SOAP::Lite;
 
-use 5.006; #weak references require perl 5.6
 use strict;
-our $VERSION = 0.717;
-# ======================================================================
+use warnings;
+
+our $VERSION = '1.0';
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 
@@ -3899,12 +3883,13 @@ client and server side.
 
 =head1 PERL VERSION WARNING
 
+As of version SOAP::Lite version 1.0, no perl versions before 5.8 will be supported.
+
 SOAP::Lite 0.71 will be the last version of SOAP::Lite running on perl 5.005
 
 Future versions of SOAP::Lite will require at least perl 5.6.0
 
-If you have not had the time to upgrad your perl, you should consider this
-now.
+If you have not had the time to upgrade your perl, you should consider this now.
 
 =head1 OVERVIEW OF CLASSES AND PACKAGES
 
@@ -5626,9 +5611,6 @@ You can download the latest version SOAP::Lite for Unix or SOAP::Lite for
 Win32 from the following sources:
 
  * CPAN:                http://search.cpan.org/search?dist=SOAP-Lite
- * Sourceforge:         http://sourceforge.net/projects/soaplite/
-
-PPM packages are also available from sourceforge.
 
 You are welcome to send e-mail to the maintainers of SOAP::Lite with your
 comments, suggestions, bug reports and complaints.
@@ -5649,25 +5631,25 @@ of this software.
 
 =head1 HACKING
 
-SOAP::Lite's development takes place on sourceforge.net.
+Latest development takes place on GitHub.com. Come on by and fork it.
 
-There's a subversion repository set up at
+git@github.com:redhotpenguin/soaplite.git
 
- https://soaplite.svn.sourceforge.net/svnroot/soaplite/
+Also see the HACKING file.
+
+Actively recruiting maintainers for this module. Come and get it on!
 
 =head1 REPORTING BUGS
 
-Please report all suspected SOAP::Lite bugs using Sourceforge. This ensures
-proper tracking of the issue and allows you the reporter to know when something
-gets fixed.
-
-http://sourceforge.net/tracker/?group_id=66000&atid=513017
+Please use rt.cpan.org or github to report bugs. Pull requests are preferred.
 
 =head1 COPYRIGHT
 
 Copyright (C) 2000-2007 Paul Kulchenko. All rights reserved.
 
 Copyright (C) 2007-2008 Martin Kutter
+
+Copyright (C) 2013 Fred Moyer
 
 =head1 LICENSE
 
@@ -5687,5 +5669,7 @@ Randy J. Ray (rjray@blackperl.com)
 Byrne Reese (byrne@majordojo.com)
 
 Martin Kutter (martin.kutter@fen-net.de)
+
+Fred Moyer (fred@redhotpenguin.com)
 
 =cut

@@ -1,7 +1,6 @@
 #
 # ReleaseNotes.txt
 #
-# $Id$
 
 The following is a compilation of various issues developers should be aware of
 when developing Web services using SOAP::Lite.
@@ -55,7 +54,3 @@ client for those response lacking these attributes.
 OBJECTS BY REFERENCE
 SOAP::Server->objects_by_reference is marked EXPERIMENTAL
 
-SOAP CLIENT CRASHES ON WINDOWS 98 WITH BIG MESSAGES
-Some users using Windows 98, and an older version of Perl experience a page
-fault error in perl58.dll when transmitting/receiving messages over a certain
-size. This problem is fixed by upgrading to the latest version of Perl.

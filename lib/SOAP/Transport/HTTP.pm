@@ -12,7 +12,7 @@ package SOAP::Transport::HTTP;
 
 use strict;
 
-our $VERSION = 0.717;
+our $VERSION = 1.0;
 
 use SOAP::Lite;
 use SOAP::Packager;

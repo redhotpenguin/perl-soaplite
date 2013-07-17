@@ -1,7 +1,6 @@
 #
 # Revision history for Perl extension SOAP::Lite.
 #
-# $Id$
 
 The contents of this file provides a change history for the SOAP::Lite
 Perl module. New features are designated with a '+' and bug fixes with
@@ -16,7 +15,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
-0.717
+1.0 June 20, 2013
+    ! #85713 SOAP::Transport::HTTP, 500 error skips parsing of response
+    ! No more Windows 98 client support. Wait, wut?
+    ! Merge SOAP::Transport::TCP back into SOAP::Lite (for now)
     ! #82416: xop href cid: URI encoded support reported by Michael R. Davis (mrdvt92)
     ! #85208 bad test plan
     ! #83750 different headers for mod_perl vs mod_perl2 [Mithun Bhattacharya]

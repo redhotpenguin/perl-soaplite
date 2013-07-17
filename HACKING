@@ -1,29 +1,13 @@
 HACKING
 =======
 
-Development of SOAP::Lite takes place on sourceforge.net.
+Development of SOAP::Lite takes place on GitHub.
 
-There's a Subversion repository available at
+git@github.com:redhotpenguin/soaplite.git
 
-    https://soaplite.svn.sourceforge.net/svnroot/soaplite/
+Come on by and fork it and submit a pull request.
 
-It's recommended to check out the cuurent maintenance branch from
-
-   https://soaplite.svn.sourceforge.net/svnroot/soaplite/branches/0.71
-
-Engagement in the further development of this module is highly encouraged -
-many people have already contributed, and many more probably will.
-
-MAILING PATCHES
-===============
-
-Preferred patches are "unified" diffs ignoring whitespaces created by 
-
-diff -uw OLD NEW
-
-Please don't create patches where the original file has been renamed (like
-appending .old) - they can't be applied without editing.
-
+Looking for a few good maintainers! We want you!
 
 SOAP::Lite CODING GUIDELINES
 ============================
@@ -33,11 +17,6 @@ Damian Conway, but allows deviances for speed and backward compatibility
 reasons.
 
 The following guidelines apply:
-
-- warnings
-    * "use warnings" is not used. The warnings pragma first appeared in
-    perl 5.6. As SOAP::Lite works with perls as old as 5.005_04, you must not
-    use the warnings pragma. Use "local $^W" to say "no warnings" instead.
 
 - Symbol table operations
    * SOAP::Lite heavily relies on symbol table operations. While this is

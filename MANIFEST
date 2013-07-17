@@ -161,7 +161,6 @@ t/21-public.t
 t/22-interop_apache.t
 t/23-ppm.t
 t/24-wsdl.t
-t/25-uddi.t
 t/36-leaks.t
 t/38-packager.t
 t/40-loopback.t
@@ -181,5 +180,6 @@ t/SOAP/Transport/IO.xml
 t/SOAP/Transport/LOCAL.t
 t/SOAP/Transport/MAILTO.t
 t/SOAP/Transport/POP3.t
+t/SOAP/Transport/TCP.t
 t/TEST.pl
 
