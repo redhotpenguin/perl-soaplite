@@ -11,10 +11,7 @@ use strict;
 use Test;
 
 BEGIN {
-    my @todo;
-    $] >= 5.017010
-    and push @todo, 37;
-    plan tests => 133, todo => \@todo;
+    plan tests => 133;
 }
 
 use SOAP::Lite;

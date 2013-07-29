@@ -302,7 +302,6 @@ sub send_receive {
     $self->message( $self->http_response->message );
     $self->is_success( $self->http_response->is_success );
     $self->status( $self->http_response->status_line );
-    return if ($self->http_response->is_success == 0);
 
     # Pull out any cookies from the response headers
     $self->{'_cookie_jar'}->extract_cookies( $self->http_response )

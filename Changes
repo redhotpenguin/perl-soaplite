@@ -15,8 +15,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
-1.01
+1.01 July 29, 2013
+    ! #84168 Test t/02-payload.t fails under Perl 5.17.10
     ! #87127 TEST.pl removed from MANIFEST
+    ! revert #85713 - various reports of environment failures
 
 1.0 July 16, 2013
     ! #85713 SOAP::Transport::HTTP, 500 error skips parsing of response
