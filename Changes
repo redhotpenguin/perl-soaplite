@@ -15,6 +15,8 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+    ! #87421 1.01 release blew out xml versions. mea culpa.
+
 1.01 July 29, 2013
     ! #84168 Test t/02-payload.t fails under Perl 5.17.10
     ! #87127 TEST.pl removed from MANIFEST
