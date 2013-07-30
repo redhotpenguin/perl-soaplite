@@ -11,7 +11,7 @@ package SOAP::Transport::LOCAL;
 use strict;
 
 
-our $VERSION = 1.01;
+our $VERSION = 1.02;
 
 # ======================================================================
 
