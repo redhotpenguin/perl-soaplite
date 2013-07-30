@@ -9,7 +9,7 @@
 package SOAP::Test;
 
 use 5.006;
-our $VERSION = 1.0;
+our $VERSION = 1.01;
 
 our $TIMEOUT = 5;
 
