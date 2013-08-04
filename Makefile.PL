@@ -23,7 +23,6 @@ my %prereqs = (
     "IO::File"         => 0,
     "MIME::Parser"     => 0,
     "IO::Scalar"       => "2.105",
-    "DIME::Tools"      => 0.03,
     "Data::UUID"       => "0.11",
     "IO::Socket::SSL"  => 0,
     "Compress::Zlib"   => 0,

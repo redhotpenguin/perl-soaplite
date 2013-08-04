@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.03 August 4, 2013
+    ! #87195 Remove DIME::Tools dep until we can work around its issues
+
 1.02 July 30, 2013
     ! #87421 1.01 release blew out xml versions. mea culpa.
 

@@ -17,7 +17,7 @@ package SOAP::Lite;
 use strict;
 use warnings;
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 
@@ -3897,7 +3897,7 @@ client and server side.
 
 =head1 PERL VERSION WARNING
 
-As of version SOAP::Lite version 1.02, no perl versions before 5.8 will be supported.
+As of version SOAP::Lite version 1.03, no perl versions before 5.8 will be supported.
 
 SOAP::Lite 0.71 will be the last version of SOAP::Lite running on perl 5.005
 

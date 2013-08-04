@@ -99,7 +99,6 @@ examples/XMLRPC/xmlrpc.cgi
 examples/XMLRPC/xmlrpc.daemon
 HACKING
 lib/Apache/SOAP.pm
-lib/Apache/XMLRPC/Lite.pm
 lib/SOAP/Client.pod
 lib/SOAP/Constants.pm
 lib/SOAP/Data.pod
