@@ -11,7 +11,7 @@ package SOAP::Transport::MAILTO;
 use strict;
 
 
-our $VERSION = 1.04;
+our $VERSION = 1.05;
 
 use MIME::Lite;
 use URI;

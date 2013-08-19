@@ -10,7 +10,7 @@ package SOAP::Transport::IO;
 
 use strict;
 
-our $VERSION = 1.04;
+our $VERSION = 1.05;
 
 use IO::File;
 use SOAP::Lite;

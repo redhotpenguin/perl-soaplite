@@ -1,13 +1,14 @@
-#!/bin/env perl
+#!/usr/bin/perl
+
 use strict;
-use Test;
+use warnings;
+
+use Test::More;
 
 BEGIN {
-  unless(grep /blib/, @INC) {
-    chdir 't' if -d 't';
-    unshift @INC, '../lib' if -d '../lib';
-  }
-  plan tests => 5;
+    eval { require MIME::Parser; };
+
+    skip "MIME::Parser not installed", 5 if $@;
 }
 
 my ($mp, $env, $part, @part_data);
@@ -166,5 +167,7 @@ ok(@{$mp->parts} == 1);
 # Tests to see if data extraction worked
 #@part_data = $mp->find_part( id => '<claim061403a.somexml@claiming-it.com>' );
 #ok($part_data[0] eq '<a><b>c</b></a>');
+
+done_testing();
 
 1;

@@ -10,7 +10,7 @@ package SOAP::Transport::HTTP;
 
 use strict;
 
-our $VERSION = 1.04;
+our $VERSION = 1.05;
 
 use SOAP::Lite;
 use SOAP::Packager;
@@ -606,7 +606,7 @@ sub handle {
     my $status =
       defined( $ENV{'SERVER_SOFTWARE'} )
       && $ENV{'SERVER_SOFTWARE'} =~ /IIS/
-      ? $ENV{SERVER_PROTOCOL} || 'HTTP/1.04'
+      ? $ENV{SERVER_PROTOCOL} || 'HTTP/1.0'
       : 'Status:';
     my $code = $self->response->code;
 
