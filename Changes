@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.05 August 18, 2013
+    ! #87848 Fix manifest, fix invalid http version from release blunder
+
 1.04 August 9, 2013
     ! #87605 Skip XML::Parser::Lite tests if it is missing [github.com/omega] 
 
