@@ -2961,7 +2961,7 @@ sub defaultlog {
 
 sub import {
     no strict 'refs';
-    local $^W;
+    no warnings qw{ redefine }; # suppress warnings about redefining
     my $pack = shift;
     my(@notrace, @symbols);
     for (@_) {
@@ -2978,7 +2978,6 @@ sub import {
             $minus ? push(@notrace, $all ? @list : $_) : push(@symbols, $all ? @list : $_);
         }
     }
-    no warnings qw{ redefine };
     foreach (@symbols) { *$_ = \&defaultlog }
     foreach (@notrace) { *$_ = sub {} }
 }
