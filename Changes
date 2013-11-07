@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.06 November 7, 2013
+    ! #89948 Remove warning when Content-Id is not present
+
 1.05 August 18, 2013
     ! #87848 Fix manifest, fix invalid http version from release blunder
 
