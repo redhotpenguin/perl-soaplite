@@ -2122,8 +2122,7 @@ sub decode_parts {
             : ['mimepart', {}, $data];
         # This below looks like unnecessary bloat!!!
         # I should probably dereference the mimepart, provide a callback to get the string data
-        $id =~ s/^<([^>]*)>$/$1/; # string any leading and trailing brackets
-        $self->ids->{$id} = $part if $id;
+        $self->ids->{$1} = $part if ($id && $id =~ m/^<([^>]+)>$/); # strip any leading and trailing brackets
         $self->ids->{$location} = $part if $location;
     }
     return $body;
