@@ -8,7 +8,7 @@ use Test::More;
 BEGIN {
     eval { require MIME::Parser; };
 
-    skip "MIME::Parser not installed", 5 if $@;
+    plan(skip_all => "MIME::Parser not installed") if $@;
 }
 
 my ($mp, $env, $part, @part_data);

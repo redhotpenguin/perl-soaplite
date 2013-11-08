@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.07 November 7, 2013
+    ! #89948 Remove warning when Content-Id is not present
+
 1.06 August 21, 2013
     ! #87935 skip all MIME-Parser tests if it is not installed
     ! #87787 Use of uninitialized value $ns in Lite.pm 
