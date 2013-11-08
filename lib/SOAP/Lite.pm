@@ -17,7 +17,7 @@ package SOAP::Lite;
 use strict;
 use warnings;
 
-our $VERSION = '1.06';
+our $VERSION = '1.07';
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 
@@ -190,7 +190,7 @@ sub as_undef { $_[1] ? '1' : '0' }
 sub as_boolean {
     my $self = shift;
     my($value, $name, $type, $attr) = @_;
-    # fix [ 1.06279 ] Boolean serialization error
+    # fix [ 1.05279 ] Boolean serialization error
     return [
         $name,
         {'xsi:type' => 'xsd:boolean', %$attr},
@@ -296,7 +296,7 @@ sub as_base64Binary {
 
 sub as_boolean {
     my ($self, $value, $name, $type, $attr) = @_;
-    # fix [ 1.06279 ] Boolean serialization error
+    # fix [ 1.05279 ] Boolean serialization error
     return [
         $name,
         {
@@ -3896,7 +3896,7 @@ client and server side.
 
 =head1 PERL VERSION WARNING
 
-As of version SOAP::Lite version 1.06, no perl versions before 5.8 will be supported.
+As of version SOAP::Lite version 1.05, no perl versions before 5.8 will be supported.
 
 SOAP::Lite 0.71 will be the last version of SOAP::Lite running on perl 5.005
 
