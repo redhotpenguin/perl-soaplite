@@ -17,7 +17,7 @@ package SOAP::Lite;
 use strict;
 use warnings;
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 
@@ -190,7 +190,7 @@ sub as_undef { $_[1] ? '1' : '0' }
 sub as_boolean {
     my $self = shift;
     my($value, $name, $type, $attr) = @_;
-    # fix [ 1.05279 ] Boolean serialization error
+    # fix [ 1.06279 ] Boolean serialization error
     return [
         $name,
         {'xsi:type' => 'xsd:boolean', %$attr},
@@ -296,7 +296,7 @@ sub as_base64Binary {
 
 sub as_boolean {
     my ($self, $value, $name, $type, $attr) = @_;
-    # fix [ 1.05279 ] Boolean serialization error
+    # fix [ 1.06279 ] Boolean serialization error
     return [
         $name,
         {
@@ -3394,7 +3394,7 @@ EOP
     foreach my $key (keys %{$namespaces}) {
         my ($ns,$prefix) = SOAP::Utils::splitqname($key);
         $self->{'_stub'} .= '  $self->serializer->register_ns("'.$namespaces->{$key}.'","'.$prefix.'");'."\n"
-            if ($ns eq "xmlns");
+            if (defined $ns && ($ns eq "xmlns"));
     }
     $self->{'_stub'} .= <<'EOP';
     my $som = $self->SUPER::call($method => @parameters);
@@ -3897,7 +3897,7 @@ client and server side.
 
 =head1 PERL VERSION WARNING
 
-As of version SOAP::Lite version 1.05, no perl versions before 5.8 will be supported.
+As of version SOAP::Lite version 1.06, no perl versions before 5.8 will be supported.
 
 SOAP::Lite 0.71 will be the last version of SOAP::Lite running on perl 5.005
 

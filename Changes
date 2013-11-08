@@ -15,6 +15,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.06 August 21, 2013
+    ! #87935 skip all MIME-Parser tests if it is not installed
+    ! #87787 Use of uninitialized value $ns in Lite.pm 
+
 1.05 August 18, 2013
     ! #87848 Fix manifest, fix invalid http version from release blunder
 
