@@ -83,7 +83,9 @@ ExtUtils::MakeMaker::WriteMakefile(
                     repository => 'https://github.com/redhotpenguin/soaplite',
                 },
                 keywords => [ 'SOAP', 'SOAP client', 'SOAP server' ],
-
+                no_index => {
+                    directory => [ qw( examples t ) ],
+                },
             },
           )
         : ()
