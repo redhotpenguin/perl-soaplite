@@ -10,7 +10,7 @@ package SOAP::Transport::HTTP;
 
 use strict;
 
-our $VERSION = 1.08;
+our $VERSION = 1.09;
 
 use SOAP::Lite;
 use SOAP::Packager;
@@ -477,7 +477,7 @@ sub make_response {
 # this next line does not look like a good test to see if something is multipart
 # perhaps a /content-type:.*multipart\//gi is a better regex?
     my ($is_multipart) =
-      ( $response =~ /content-type:.* boundary="([^\"]*)"/im );
+      ( $response =~ /^content-type:.* boundary="([^\"]*)"/im );
 
     $self->response(
         HTTP::Response->new(

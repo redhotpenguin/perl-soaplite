@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.09 January 14, 2013
+    ! #92025 tighten multipart content-type matching [dmn@debian.org]
+
 1.08 November 8, 2013
     ! #15703 add no_index for examples to prevent CPAN pollution [githumb.com/sergeyromanov]
 
