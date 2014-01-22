@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+    ! avoid string eval in as_base64 [github/otrosien]
+    ! #88915  warnings issued with using importing with +trace
+
 1.09 January 14, 2013
     ! #92025 tighten multipart content-type matching [dmn@debian.org]
 
