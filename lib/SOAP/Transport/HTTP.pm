@@ -10,7 +10,7 @@ package SOAP::Transport::HTTP;
 
 use strict;
 
-our $VERSION = 1.09;
+our $VERSION = 1.10;
 
 use SOAP::Lite;
 use SOAP::Packager;
@@ -51,8 +51,9 @@ sub patch {
                 && $_[2]->header('Connection') eq 'Keep-Alive' ) {
                 my $data = $_[3]->();
                 my $next =
-                  SOAP::Utils::bytelength($$data) ==
-                  $_[2]->header('Content-Length')
+                  $_[2]->header('Content-Length') &&
+                    SOAP::Utils::bytelength($$data) ==
+                        $_[2]->header('Content-Length')
                   ? sub { my $str = ''; \$str; }
                   : $_[3];
                 my $done = 0;
