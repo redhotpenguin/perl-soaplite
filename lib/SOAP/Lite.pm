@@ -474,6 +474,12 @@ sub proxy {
     return $self->{_proxy} = $protocol_class->new(endpoint => shift, @_);
 }
 
+sub on_debug {
+    my ($self,$logger) = @_;
+    print "DEBUG: Lite.pm: calling setDebugLogger\n";
+    $self->proxy()->setDebugLogger($logger);
+}
+
 sub AUTOLOAD {
     my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::') + 2);
     return if $method eq 'DESTROY';
