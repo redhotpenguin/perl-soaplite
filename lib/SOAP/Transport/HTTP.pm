@@ -83,13 +83,13 @@ sub http_response {
 
 sub setDebugLogger {
     my ($self,$logger) = @_;
-    print "HTTP.pm DEBUG: setDebugLogger: self=$self\n";
+    #print "HTTP.pm DEBUG: setDebugLogger: self=$self\n";
     $self->{debug_logger} = $logger;
 }
 
 sub new {
     my $class = shift;
-    print "HTTP.pm DEBUG: in sub new\n";
+    #print "HTTP.pm DEBUG: in sub new\n";
 
     return $class if ref $class;    # skip if we're already object...
 
