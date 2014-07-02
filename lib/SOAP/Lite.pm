@@ -17,7 +17,7 @@ package SOAP::Lite;
 use strict;
 use warnings;
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 
@@ -3518,6 +3518,16 @@ sub self {
 *UNIVERSAL::AUTOLOAD if 0;
 
 sub autodispatched { \&{*UNIVERSAL::AUTOLOAD} eq \&{*SOAP::AUTOLOAD} };
+
+sub on_debug {
+    my $self = shift;
+    my ($logger) = @_;
+    #print "DEBUG: self=$self\n";
+    #print "DEBUG: logger=$logger\n";
+    #print "DEBUG: transport=$self->transport\n";
+    #print "DEBUG: Lite.pm: calling setDebugLogger\n";
+    $self->transport->setDebugLogger($logger);
+}
 
 sub soapversion {
     my $self = shift;
