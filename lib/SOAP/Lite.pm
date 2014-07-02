@@ -474,12 +474,6 @@ sub proxy {
     return $self->{_proxy} = $protocol_class->new(endpoint => shift, @_);
 }
 
-sub on_debug {
-    my ($self,$logger) = @_;
-    print "DEBUG: Lite.pm: calling setDebugLogger\n";
-    $self->proxy()->setDebugLogger($logger);
-}
-
 sub AUTOLOAD {
     my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::') + 2);
     return if $method eq 'DESTROY';
@@ -3524,6 +3518,16 @@ sub self {
 *UNIVERSAL::AUTOLOAD if 0;
 
 sub autodispatched { \&{*UNIVERSAL::AUTOLOAD} eq \&{*SOAP::AUTOLOAD} };
+
+sub on_debug {
+    my $self = shift;
+    my ($logger) = @_;
+    #print "DEBUG: self=$self\n";
+    #print "DEBUG: logger=$logger\n";
+    #print "DEBUG: transport=$self->transport\n";
+    #print "DEBUG: Lite.pm: calling setDebugLogger\n";
+    $self->transport->setDebugLogger($logger);
+}
 
 sub soapversion {
     my $self = shift;
