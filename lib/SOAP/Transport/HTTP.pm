@@ -10,7 +10,7 @@ package SOAP::Transport::HTTP;
 
 use strict;
 
-our $VERSION = 1.12;
+our $VERSION = 1.13;
 
 use SOAP::Lite;
 use SOAP::Packager;
@@ -83,7 +83,6 @@ sub http_response {
 
 sub setDebugLogger {
     my ($self,$logger) = @_;
-    #print "HTTP.pm DEBUG: setDebugLogger: self=$self\n";
     $self->{debug_logger} = $logger;
 }
 
@@ -131,6 +130,7 @@ sub new {
     SOAP::Trace::objects('()');
 
     $self->setDebugLogger(\&SOAP::Trace::debug);
+
     return $self;
 }
 
@@ -270,7 +270,7 @@ sub send_receive {
 
             $http_request->content_length($bytelength);
             SOAP::Trace::transport($http_request);
-            &{$self->{debug_logger}}( $http_request->as_string );
+            &{$self->{debug_logger}}($http_request->as_string);
 
             $self->SUPER::env_proxy if $ENV{'HTTP_proxy'};
 
@@ -278,7 +278,7 @@ sub send_receive {
             # TODO maybe eval this? what happens on connection close?
             $self->http_response( $self->SUPER::request($http_request) );
             SOAP::Trace::transport( $self->http_response );
-            &{$self->{debug_logger}}( $self->http_response->as_string );
+            &{$self->{debug_logger}}($self->http_response->as_string);
 
             # 100 OK, continue to read?
             if ( (
@@ -343,6 +343,11 @@ $COMPRESS = 'deflate';
 
 sub DESTROY { SOAP::Trace::objects('()') }
 
+sub setDebugLogger {
+    my ($self,$logger) = @_;
+    $self->{debug_logger} = $logger;
+}
+
 sub new {
     require LWP::UserAgent;
     my $self = shift;
@@ -361,6 +366,8 @@ sub new {
                   || $action ne join( '', @_ ) );
     };
     SOAP::Trace::objects('()');
+
+    $self->setDebugLogger(\&SOAP::Trace::debug);
 
     return $self;
 }
@@ -381,7 +388,7 @@ sub BEGIN {
 sub handle {
     my $self = shift->new;
 
-    &{$self->{debug_logger}}( $self->request->content );
+    &{$self->{debug_logger}}($self->request->content);
 
     if ( $self->request->method eq 'POST' ) {
         $self->action( $self->request->header('SOAPAction') || undef );
