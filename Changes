@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.13 December 30, 2014
+    ! Fixed undefined value error when using bugzilla's xmlrpc.cgi (bugzilla's API) [dbeusee]
+
 1.12 November 26, 2014
     ! #100557 Redefined sub in SOAP::Lite::Deserializer::XMLSchema2001
 
