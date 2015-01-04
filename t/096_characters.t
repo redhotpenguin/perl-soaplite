@@ -20,7 +20,6 @@ find( \&filelist, $dir);
 sub filelist {
     my $name = $_;
     return if (-d $name);
-    return if $File::Find::name =~m{\.svn}x;
     push @filelist, $File::Find::name;
 }
 
