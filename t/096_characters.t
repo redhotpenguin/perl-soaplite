@@ -9,10 +9,6 @@ if ( not $ENV{TEST_AUTHOR} ) {
     plan( skip_all => $msg );
 }
 
-my @skip = (
-    qr(\.svn)
-);
-
 my $dir = 'blib/lib';
 if (-d '../t') {
     $dir = '../lib';
