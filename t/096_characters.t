@@ -1,15 +1,6 @@
 #!/usr/bin/perl
 use strict;
-BEGIN {
-    if ( not $ENV{TEST_AUTHOR} ) {
-        my $msg = 'Author test.  Set $ENV{TEST_AUTHOR} to a true value to run.';
-        print "1..0 
-    # $msg";
-        exit 0;
-    }
-    require Test::More;
-    Test::More->import();
-}
+use Test::More;
 use File::Find;
 use IO::File;
 
@@ -17,10 +8,6 @@ if ( not $ENV{TEST_AUTHOR} ) {
     my $msg = 'Author test.  Set $ENV{TEST_AUTHOR} to a true value to run.';
     plan( skip_all => $msg );
 }
-
-my @skip = (
-    qr(\.svn)
-);
 
 my $dir = 'blib/lib';
 if (-d '../t') {
@@ -33,7 +20,6 @@ find( \&filelist, $dir);
 sub filelist {
     my $name = $_;
     return if (-d $name);
-    return if $File::Find::name =~m{\.svn}x;
     push @filelist, $File::Find::name;
 }
 
