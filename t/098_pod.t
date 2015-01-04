@@ -1,12 +1,10 @@
 use strict;
+use Test::More;
+
 if ( not $ENV{TEST_AUTHOR} ) {
     my $msg = 'Author test.  Set $ENV{TEST_AUTHOR} to a true value to run.';
-    print "1..0 
-# $msg";
-    exit 0;
+    plan( skip_all => $msg );
 }
-require Test::More;
-Test::More->import();
 
 eval "use Test::Pod 1.00";
 if ($@) { 
