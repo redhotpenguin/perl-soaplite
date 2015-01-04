@@ -1,15 +1,6 @@
 #!/usr/bin/perl
 use strict;
-BEGIN {
-    if ( not $ENV{TEST_AUTHOR} ) {
-        my $msg = 'Author test.  Set $ENV{TEST_AUTHOR} to a true value to run.';
-        print "1..0 
-    # $msg";
-        exit 0;
-    }
-    require Test::More;
-    Test::More->import();
-}
+use Test::More;
 use File::Find;
 use IO::File;
 
