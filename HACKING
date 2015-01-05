@@ -39,8 +39,8 @@ The following guidelines apply:
     a test first.
     * Use author tests for testing guidelines. Disable author tests for
     users - it's time consuming and of no use to have users run author tests.
-    Author tests are enabled by setting the "TEST_AUTHOR" environment
-    variable to a true value.
+    Author tests are enabled by setting the "AUTHOR_TESTING" environment
+    variable to a true value, or when running "dzil test".
 
 - Indentation and formatting
     * indent with spaces.
