@@ -15,6 +15,10 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+    + Converted the dist from using ExtUtils::MakeMaker to using Dist::Zilla [@mvuets]
+    ! Cleaned up prereqs [@mvuets]
+    ! Cleaned up author and release tests [@mvuets]
+
 1.13 December 30, 2014
     ! Fixed undefined value error when using bugzilla's xmlrpc.cgi (bugzilla's API) [dbeusee]
 
