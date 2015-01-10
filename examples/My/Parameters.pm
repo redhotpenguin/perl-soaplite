@@ -27,7 +27,7 @@ sub autobind {
   return $param1, $param2;
 }
 
-sub addheader { 
+sub addheader {
   my $self = shift;
   my $param1 = shift;
   my $header = pop->headerof(SOAP::SOM::headers);

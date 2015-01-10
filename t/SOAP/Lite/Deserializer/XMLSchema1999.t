@@ -37,7 +37,7 @@ undef $@;
 
 for (qw(
     string
-    float double decimal 
+    float double decimal
     timeDuration recurringDuration uriReference
     integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
@@ -48,6 +48,6 @@ for (qw(
     my $method = "as_$_";
     is SOAP::Lite::Deserializer::XMLSchema1999->$method('something nice'),
     'something nice', "$method('something nice')";
-    
+
 }
 

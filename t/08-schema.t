@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -44,7 +44,7 @@ my($a, $s, $r, $serialized, $deserialized);
   ok(ref $deserialized->body eq 'HASH'); # not blessed anymore since 0.51
 }
 
-{ 
+{
   print "hex encoding test(s)...\n";
 
   $a = "\0 {a}\1";

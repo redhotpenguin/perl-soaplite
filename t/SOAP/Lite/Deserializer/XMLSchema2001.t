@@ -28,10 +28,10 @@ is SOAP::Lite::Deserializer::XMLSchema2001->as_undef('false'),
 for (qw(
     string
     anyType anySimpleType
-    float double decimal dateTime timePeriod gMonth gYearMonth gYear 
+    float double decimal dateTime timePeriod gMonth gYearMonth gYear
     century gMonthDay gDay duration recurringDuration
-    language integer nonPositiveInteger negativeInteger long int short 
-    byte nonNegativeInteger unsignedLong unsignedInt unsignedShort 
+    language integer nonPositiveInteger negativeInteger long int short
+    byte nonNegativeInteger unsignedLong unsignedInt unsignedShort
     unsignedByte positiveInteger date time dateTime
     QName) ) {
 
@@ -39,5 +39,5 @@ for (qw(
     my $method = "as_$_";
     is SOAP::Lite::Deserializer::XMLSchema2001->$method('something nice'),
     'something nice', "$method('something nice')";
-    
+
 }

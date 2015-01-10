@@ -836,7 +836,7 @@ sub handler {
     } else {
         %headers = %{ $r->headers_in }; # Apache2::RequestRec structure
     }
-    
+
     $self->request(
         HTTP::Request->new(
             $r->method() => $r->uri,

@@ -1,11 +1,11 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- UDDI::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
 use strict;
-use UDDI::Lite 
-  import => 'UDDI::Data', 
+use UDDI::Lite
+  import => 'UDDI::Data',
   import => 'UDDI::Lite',
   proxy => "https://some.server.com/endpoint_fot_publishing_API",
 ;

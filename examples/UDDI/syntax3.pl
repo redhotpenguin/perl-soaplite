@@ -1,11 +1,11 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- UDDI::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
 use strict;
-use UDDI::Lite 
-  import => 'UDDI::Data', 
+use UDDI::Lite
+  import => 'UDDI::Data',
   import => 'UDDI::Lite',
   proxy => "https://some.server.com/endpoint_fot_publishing_API",
   on_fault => sub {}, # do nothing for fault, will check it in the code
@@ -14,17 +14,17 @@ use UDDI::Lite
 print "Authorizing...\n";
 my $auth = get_authToken({userID => 'USERID', cred => 'CRED'})->authInfo;
 
-# MAY also work without businessKey, serviceKey and bindingKey assignments, 
+# MAY also work without businessKey, serviceKey and bindingKey assignments,
 # however specification requires them to be assigned to the empty strings
 
 # NB! order of elements DOES matter
 
 my $busent = businessEntity([
-  name("Contoso Manufacturing"), 
+  name("Contoso Manufacturing"),
   description("We make components for business"),
   businessServices(
     businessService([
-      name("Buy components"), 
+      name("Buy components"),
       description("Bindings for buying our components"),
       bindingTemplates(
         bindingTemplate([

@@ -1,5 +1,5 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- UDDI::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 

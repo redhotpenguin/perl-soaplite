@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -14,7 +14,7 @@ use SOAP::Lite
   on_fault => sub {
     my $soap = shift;
     my $res = shift;
-    ref $res ? warn(join "\n", "--- SOAP FAULT ---", $res->faultcode, $res->faultstring, '') 
+    ref $res ? warn(join "\n", "--- SOAP FAULT ---", $res->faultcode, $res->faultstring, '')
              : warn(join "\n", "--- TRANSPORT ERROR ---", $soap->transport->status, '');
     return new SOAP::SOM;
   }
@@ -30,7 +30,7 @@ eval { $s->transport->timeout($SOAP::Test::TIMEOUT = $SOAP::Test::TIMEOUT) };
 $r = $s->test_connection;
 
 unless (defined $r && defined $r->envelope) {
-  print "1..0 # Skip: ", $s->transport->status, "\n"; 
+  print "1..0 # Skip: ", $s->transport->status, "\n";
   exit;
 }
 # ------------------------------------------------------
@@ -87,12 +87,12 @@ plan tests => 12;
 
   my @params;
   {
-    package TestStockQuoteService; 
+    package TestStockQuoteService;
     @TestStockQuoteService::ISA = 'net_xmethods_services_stockquote_StockQuoteService';
     sub call { shift; @params = @_; new SOAP::SOM }
   }
 
-  my @testparams = (SOAP::Data->name(param1 => 'MSFT'), 
+  my @testparams = (SOAP::Data->name(param1 => 'MSFT'),
                     SOAP::Data->name('param2'),
                     SOAP::Header->name(header1 => 'value'));
   TestStockQuoteService->new->getQuote(@testparams);

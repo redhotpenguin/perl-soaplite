@@ -1,5 +1,5 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
@@ -18,10 +18,10 @@ BEGIN {
   # serializer is inherited from SOAP::Serializer
   package My::Serializer; @My::Serializer::ISA = 'SOAP::Serializer';
 
-  # nothing special here. as_OBJECT_TYPE() method will catch serialization 
-  # of the specified type (use '__' instead of '::'), so object of this 
+  # nothing special here. as_OBJECT_TYPE() method will catch serialization
+  # of the specified type (use '__' instead of '::'), so object of this
   # type will be properly serializer even being inside complex data structures
-  sub as_XML__DOM__Document { 
+  sub as_XML__DOM__Document {
     my $self = shift;
     my($value, $name, $type, $attr) = @_;
 

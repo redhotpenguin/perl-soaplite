@@ -11,9 +11,9 @@ SKIP: {
         or skip "cannot test Scalar IO without IO::Scalar", 1;
     my $input = q{};
     my $input_handle = IO::Scalar->new(\$input);
-    
+
     ok $server->in($input_handle);
-    
+
     eval { $server->handle() };
     ok !$@;
 

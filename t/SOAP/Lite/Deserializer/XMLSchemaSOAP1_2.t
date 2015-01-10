@@ -27,5 +27,5 @@ for (qw(
     my $method = "as_$_";
     is SOAP::Lite::Deserializer::XMLSchemaSOAP1_2->$method('something nice'),
     'something nice', "$method('something nice')";
-    
+
 }

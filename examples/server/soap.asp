@@ -7,7 +7,7 @@
 
   Response.ContentType = "text/xml"
   Response.Write(Server.CreateObject("SOAP.Lite") _
-    .server("SOAP::Server") _ 
+    .server("SOAP::Server") _
     .dispatch_to("/Your/Path/To/Deployed/Modules") _
     .handle(Request.BinaryRead(Request.TotalBytes)) _
   )

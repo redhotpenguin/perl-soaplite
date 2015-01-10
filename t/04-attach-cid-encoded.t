@@ -1,4 +1,4 @@
-#!/usr/binperl 
+#!/usr/binperl
 
 #BEGIN {
 #  unless(grep /blib/, @INC) {
@@ -16,7 +16,7 @@ BEGIN {
   require SOAP::Lite;
   eval { SOAP::Packager::MIME->new->initialize_parser; 1 };
   if ($@) {
-    $@ =~ s/ at .+//; 
+    $@ =~ s/ at .+//;
     print "1..0 # Skip: $@"; exit;
   }
 }
@@ -86,7 +86,7 @@ Content-ID: <claim061400a.realxml@claiming-it.com>
 EOX
 
   ok(ref $a);
-  ok(ref $a && ref $a->valueof('//insurance_claim_auto') && 
+  ok(ref $a && ref $a->valueof('//insurance_claim_auto') &&
                    $a->valueof('//insurance_claim_auto')->{theCrashPhoto} =~ /JPEG/);
   ok(ref $a && $a->valueof('//theCrashPhoto') =~ /Raw JPEG image/);
   ok(ref $a && $a->valueof('//theSignedForm') eq "\0\1\2\3   \4\5\6");
@@ -130,7 +130,7 @@ Content-Location: http://claiming-it.com/claim061400a.tiff
 EOX
 
   ok(ref $a);
-  ok(ref $a && ref $a->valueof('//insurance_claim_auto') && 
+  ok(ref $a && ref $a->valueof('//insurance_claim_auto') &&
                    $a->valueof('//insurance_claim_auto')->{theSignedForm} =~ /TIFF/);
   ok(ref $a && $a->valueof('//theSignedForm') =~ /binary TIFF image/);
 
@@ -173,7 +173,7 @@ Content-Location: claim061400a.tiff
 
 EOX
   ok(ref $a);
-  ok(ref $a && ref $a->valueof('//insurance_claim_auto') && 
+  ok(ref $a && ref $a->valueof('//insurance_claim_auto') &&
                    $a->valueof('//insurance_claim_auto')->{theSignedForm} =~ /TIFF/);
   ok(ref $a && $a->valueof('//theSignedForm') =~ /binary TIFF image/);
 
@@ -215,7 +215,7 @@ EOX
 #      <theSignedForm href="cid:the_signed_form.tiff"/>
 
   ok(ref $a);
-  ok(ref $a && ref $a->valueof('//insurance_claim_auto') && 
+  ok(ref $a && ref $a->valueof('//insurance_claim_auto') &&
                    $a->valueof('//insurance_claim_auto')->{theSignedForm} =~ /TIFF/);
   ok(ref $a && $a->valueof('//theSignedForm') =~ /binary TIFF image/);
 }

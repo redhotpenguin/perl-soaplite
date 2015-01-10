@@ -5,11 +5,11 @@ use Test;
 use SOAP::Lite;
 
 my @types1999 = qw(
-   anyURI 
-   string float double decimal timeDuration recurringDuration uriReference 
+   anyURI
+   string float double decimal timeDuration recurringDuration uriReference
    integer nonPositiveInteger negativeInteger long int short byte
    nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-   positiveInteger timeInstant time timePeriod date month year century 
+   positiveInteger timeInstant time timePeriod date month year century
    recurringDate recurringDay language
 );
 
@@ -75,7 +75,7 @@ if ($] < 5.008) {
     print "# Skippng unicode test on perl <5.8 ($])\n";
     ok(1);
     ok(1);
-} 
+}
 else {
     eval {
         # may fail on old perls
@@ -94,7 +94,7 @@ else {
             }
         }
     }
-}    
+}
 
 
 
@@ -107,7 +107,7 @@ ok $@ =~m{ \A String \s value \s expected }xms;
 ok ! SOAP::XMLSchema1999::Serializer->DESTROY();
 
 my $serializer = SOAP::Serializer->new();
-my $fault_envelope = $serializer->envelope( 
+my $fault_envelope = $serializer->envelope(
     fault => 'Code', 'string', 'Detail', 'Actor'
 );
 
