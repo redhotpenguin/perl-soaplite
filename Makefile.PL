@@ -40,7 +40,6 @@ my %WriteMakefileArgs = (
     "IO::File" => 0,
     "Test::More" => 0,
     "Test::Warn" => 0,
-    "Test::XML" => 0,
     "XML::Parser::Lite" => 0
   },
   "VERSION" => "1.13",
@@ -64,7 +63,6 @@ my %FallbackPrereqs = (
   "Task::Weaken" => 0,
   "Test::More" => 0,
   "Test::Warn" => 0,
-  "Test::XML" => 0,
   "URI" => 0,
   "XML::Parser" => "2.23",
   "XML::Parser::Lite" => 0,

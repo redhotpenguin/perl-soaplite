@@ -23,15 +23,8 @@ package main;
 
 use Test::More;
 use SOAP::Lite;
-
-eval {
-	require Test::XML;
-};
-if ($@) {
-	plan skip_all => 'Cannot test without Test::XML ' . $@;
-	exit 0;
-}
-
+eval { require Test::XML }
+    or plan skip_all => 'Cannot test without Test::XML';
 
 my $req11 = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:Something"><soapenv:Header/><soapenv:Body><urn:do_something><stuff>things</stuff></urn:do_something></soapenv:Body></soapenv:Envelope>';
 
