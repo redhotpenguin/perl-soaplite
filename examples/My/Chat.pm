@@ -3,13 +3,13 @@ package My::Chat;
 my @messages;
 my %users;
 
-sub join { 
+sub join {
   my $self = shift;
   my $class = ref($self) || $self;
-  my $nick = shift      or die "User cannot join chat anonymously\n"; 
+  my $nick = shift      or die "User cannot join chat anonymously\n";
   !exists $users{$nick} or die "User '$nick' is already in chatroom. Choose another nick\n";
   $users{$nick} = time;
-  my $messages = shift || 10; 
+  my $messages = shift || 10;
   bless {
     _nick        => $nick,
     _users       => \%users,
@@ -26,8 +26,8 @@ sub get {
   [@mess];
 }
 
-sub send { 
-  push @messages, [shift->{_nick} => shift, time]; 
+sub send {
+  push @messages, [shift->{_nick} => shift, time];
   splice(@messages, 0, -12); # we'll keep only last 12 messages
 }
 

@@ -1,5 +1,5 @@
-#!/bin/env perl 
-#!d:\perl\bin\perl.exe 
+#!/bin/env perl
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
@@ -52,20 +52,20 @@ or
 =head1 DESCRIPTION
 
 SOAPsh.pl is a shell for making SOAP calls. It takes two parameters:
-mandatory endpoint and optional uri (actually it will tell you about it 
+mandatory endpoint and optional uri (actually it will tell you about it
 if you try to run it). Additional commands can follow.
 
-After that you'll be able to run any methods of SOAP::Lite, like autotype, 
-readable, encoding, etc. You can run it the same way as you do it in 
+After that you'll be able to run any methods of SOAP::Lite, like autotype,
+readable, encoding, etc. You can run it the same way as you do it in
 your Perl script. You'll see output from method, result of SOAP call,
 detailed info on SOAP faulure or transport error.
 
 For full list of available methods see documentation for SOAP::Lite.
 
-Along with methods of SOAP::Lite you'll be able (and that's much more 
+Along with methods of SOAP::Lite you'll be able (and that's much more
 interesting) run any SOAP methods you know about on remote server and
-see processed results. You can even switch on debugging (with call 
-something like: C<on_debug(sub{print@_})>) and see SOAP code with 
+see processed results. You can even switch on debugging (with call
+something like: C<on_debug(sub{print@_})>) and see SOAP code with
 headers sent and received.
 
 =head1 COPYRIGHT

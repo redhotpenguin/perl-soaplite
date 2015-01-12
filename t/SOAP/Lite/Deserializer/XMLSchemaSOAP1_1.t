@@ -15,7 +15,7 @@ for (qw(
     string float double decimal timeDuration recurringDuration uriReference
     integer nonPositiveInteger negativeInteger long int short byte
     nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte
-    positiveInteger timeInstant time timePeriod date month year century 
+    positiveInteger timeInstant time timePeriod date month year century
     recurringDate recurringDay language
     anyURI
     ) ) {
@@ -24,5 +24,5 @@ for (qw(
     my $method = "as_$_";
     is SOAP::Lite::Deserializer::XMLSchemaSOAP1_1->$method('something nice'),
     'something nice', "$method('something nice')";
-    
+
 }

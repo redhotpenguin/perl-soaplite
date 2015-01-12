@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {

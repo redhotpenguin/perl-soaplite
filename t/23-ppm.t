@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -14,11 +14,11 @@ exit 0;
 };
 
 use Test;
-use SOAP::Lite 
+use SOAP::Lite
   on_fault => sub {
     my $soap = shift;
     my $res = shift;
-    ref $res ? warn(join " ", "SOAP FAULT:", $res->faultstring, "\n") 
+    ref $res ? warn(join " ", "SOAP FAULT:", $res->faultstring, "\n")
              : warn(join " ", "TRANSPORT ERROR:", $soap->transport->status, "\n");
     return new SOAP::SOM;
   }
@@ -36,7 +36,7 @@ eval { $s->transport->timeout($SOAP::Test::TIMEOUT = $SOAP::Test::TIMEOUT) };
 $r = $s->test_connection;
 
 unless (defined $r && defined $r->envelope) {
-  print "1..0 # Skip: ", $s->transport->status, "\n"; 
+  print "1..0 # Skip: ", $s->transport->status, "\n";
   exit;
 }
 # ------------------------------------------------------
@@ -46,7 +46,7 @@ plan tests => 3;
 {
 # ActiveState's PPM server (http://activestate.com/)
   print "ActiveState's PPM server test(s)...\n";
-  $s = SOAP::Lite 
+  $s = SOAP::Lite
     -> uri('urn:/PPMServer')
     -> proxy($proxy)
   ;
@@ -55,10 +55,10 @@ plan tests => 3;
 # use Data::Dumper;
 # print Dumper $r;
 
-  ok($r =~ 'SOAP-Lite'); 
-  ok($r =~ 'Paul Kulchenko'); 
+  ok($r =~ 'SOAP-Lite');
+  ok($r =~ 'Paul Kulchenko');
 
   $r = $s->fetch_ppd('SOAP-Super-Lite')->result;
 
-  ok(!defined $r); 
+  ok(!defined $r);
 }

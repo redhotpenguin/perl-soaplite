@@ -1,5 +1,5 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
@@ -18,12 +18,12 @@ $d = SOAP::Deserializer->new;
 $d->xmlschemas->{'http://marketdata.earthconnect.net/encodedTypes'} = 'EncodedTypes';
 
 $r = $d->deserialize(q!<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope 
-xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
-xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
-xmlns:tns="http://marketdata.earthconnect.net/" 
-xmlns:types="http://marketdata.earthconnect.net/encodedTypes" 
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<soap:Envelope
+xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+xmlns:tns="http://marketdata.earthconnect.net/"
+xmlns:types="http://marketdata.earthconnect.net/encodedTypes"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
 <soap:Body soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">

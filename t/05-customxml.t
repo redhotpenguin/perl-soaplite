@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -32,7 +32,7 @@ ok(@portfolios == 6);
 foreach my $portfolio (@portfolios) {
   # test attributes
   print $portfolio->type, " ", $portfolio->date, "\n";
-  ok($portfolio->type && $portfolio->date); 
+  ok($portfolio->type && $portfolio->date);
   foreach my $row ($portfolio->Row) {
     # test elements
     print "  ", $row->Element, " ", $row->Value, "\n";

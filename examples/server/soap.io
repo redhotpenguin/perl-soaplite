@@ -1,5 +1,5 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
@@ -27,12 +27,12 @@ SOAP::Transport::IO::Server
   #      in => *STDIN, out => *STDOUT
 
   # don't forget, if you want to accept parameters from command line
-  # \*HANDLER will be understood literally, so this syntax won't work 
+  # \*HANDLER will be understood literally, so this syntax won't work
   # and server will complain
 
   -> new(@ARGV)
 
   # specify path to My/Examples.pm here
-  -> dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method') 
+  -> dispatch_to('/Your/Path/To/Deployed/Modules', 'Module::Name', 'Module::method')
   -> handle
 ;

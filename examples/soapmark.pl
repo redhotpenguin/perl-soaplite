@@ -1,5 +1,5 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
@@ -33,7 +33,7 @@ my %result;
 print STDERR <<DISCLAIMER;
 
 This test should be used only for comparison different Perl server
-implementations running in your environment. 
+implementations running in your environment.
 
 DISCLAIMER
 

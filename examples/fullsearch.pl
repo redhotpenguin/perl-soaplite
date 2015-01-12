@@ -1,9 +1,9 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- UDDI::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
-use UDDI::Lite 
+use UDDI::Lite
   import => 'UDDI::Data',
   import => 'UDDI::Lite',
   proxy => 'http://www-3.ibm.com/services/uddi/inquiryapi'
@@ -12,18 +12,18 @@ use UDDI::Lite
 $\="\n"; $,=", "; # specify separators for print()
 
 my($serviceInfo) = grep { $_->name =~ /stock quote/i } find_business(name('XMethods'))
-  -> businessInfos 
-  -> businessInfo            
+  -> businessInfos
+  -> businessInfo
   -> serviceInfos
-  -> serviceInfo             
-;  
+  -> serviceInfo
+;
 
 print $serviceInfo->name, $serviceInfo->serviceKey;
 
 my $bindingTemplate = get_serviceDetail($serviceInfo->serviceKey)
   -> businessService
   -> bindingTemplates
-  -> bindingTemplate         
+  -> bindingTemplate
 ;
 
 my $accessPoint = $bindingTemplate->accessPoint->value;

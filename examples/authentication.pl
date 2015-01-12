@@ -1,15 +1,15 @@
 #!perl -w
-#!d:\perl\bin\perl.exe 
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
-use SOAP::Lite +autodispatch => 
-  uri => 'http://www.soaplite.com/My/Examples', 
-  proxy => 'http://localhost/', 
+use SOAP::Lite +autodispatch =>
+  uri => 'http://www.soaplite.com/My/Examples',
+  proxy => 'http://localhost/',
 # proxy => 'http://localhost/cgi-bin/soap.cgi', # local CGI server
 # proxy => 'http://localhost/soap',             # local mod_perl server
 # proxy => 'https://localhost/soap',            # local mod_perl SECURE server
-  on_fault => sub { my($soap, $res) = @_; 
+  on_fault => sub { my($soap, $res) = @_;
     die ref $res ? $res->faultdetail : $soap->transport->status, "\n";
   }
 ;

@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
   unless(grep /blib/, @INC) {
@@ -14,7 +14,7 @@ use SOAP::Lite
   on_fault => sub {
     my $soap = shift;
     my $res = shift;
-    ref $res ? warn(join "\n", "--- SOAP FAULT ---", $res->faultcode, $res->faultstring, '') 
+    ref $res ? warn(join "\n", "--- SOAP FAULT ---", $res->faultcode, $res->faultstring, '')
              : warn(join "\n", "--- TRANSPORT ERROR ---", $soap->transport->status, '');
     return new SOAP::SOM;
   }
@@ -32,7 +32,7 @@ eval { $s->transport->timeout($SOAP::Test::TIMEOUT = $SOAP::Test::TIMEOUT) };
 $r = $s->test_connection;
 
 unless (defined $r && defined $r->envelope) {
-  print "1..0 # Skip: ", $s->transport->status, "\n"; 
+  print "1..0 # Skip: ", $s->transport->status, "\n";
   exit;
 }
 # ------------------------------------------------------
@@ -42,7 +42,7 @@ plan tests => 2;
 {
 # Local server with Apache SOAP (http://xml.apache.org/soap)
   print "Apache SOAP server test(s)...\n";
-  $s = SOAP::Lite 
+  $s = SOAP::Lite
     -> uri('urn:xmltoday-delayed-quotes')
     -> proxy($proxy)
   ;

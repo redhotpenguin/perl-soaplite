@@ -31,7 +31,7 @@ sub getStateStruct {
     my $self = shift;
     my %states = %{shift()};
     # be careful to distinguish block from hash. Just {} won't work
-    +{map {$_ => $states[$states{$_}]} keys %states}; 
+    +{map {$_ => $states[$states{$_}]} keys %states};
 }
 
 1;

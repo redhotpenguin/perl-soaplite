@@ -13,9 +13,9 @@ package validator1;
 
 sub whichToolkit { shift if UNIVERSAL::isa($_[0] => __PACKAGE__);
   return +{
-    toolkitDocsUrl => 'http://www.soaplite.com/', 
-    toolkitName => 'XMLRPC::Lite', 
-    toolkitVersion => XMLRPC::Lite->VERSION, 
+    toolkitDocsUrl => 'http://www.soaplite.com/',
+    toolkitName => 'XMLRPC::Lite',
+    toolkitVersion => XMLRPC::Lite->VERSION,
     toolkitOperatingSystem => $^O,
   }
 }
@@ -67,9 +67,9 @@ sub nestedStructTest { shift if UNIVERSAL::isa($_[0] => __PACKAGE__);
 
 sub simpleStructReturnTest { shift if UNIVERSAL::isa($_[0] => __PACKAGE__);
   my $number = shift;
-  return +{ 
+  return +{
     times10 => $number * 10,
     times100 => $number * 100,
-    times1000 => $number * 1000 
+    times1000 => $number * 1000
   };
 }

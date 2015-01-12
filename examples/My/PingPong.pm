@@ -1,6 +1,6 @@
 package My::PingPong;
 
-sub new { 
+sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   bless {_num=>shift} => $class;

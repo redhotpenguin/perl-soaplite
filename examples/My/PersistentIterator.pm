@@ -2,7 +2,7 @@ package My::PersistentIterator;
 
 my $iterator;
 
-sub new { 
+sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   $iterator ||= (bless {_num=>shift} => $class);

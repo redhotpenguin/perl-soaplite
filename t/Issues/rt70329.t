@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # Tests the error described in rt.cpan.org #70329
-# 
+#
 # The error came from handling multiref ids, and unconditionally
 # overwriting the id attribute
 #

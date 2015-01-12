@@ -1,4 +1,4 @@
-#!/bin/env perl 
+#!/bin/env perl
 
 BEGIN {
     unless ( grep /blib/, @INC ) {
@@ -272,18 +272,18 @@ This is a multi-part message in MIME format.
 
 --_----------=_1241121589160890
 Content-Disposition: inline
-Content-Length: 36
+Content-Length: 35
 Content-Transfer-Encoding: binary
 Content-Type: text/html
 
-<body>Here's <i>my</i> text</body> 
+<body>Here's <i>my</i> text</body>
 --_----------=_1241121589160890
 Content-Disposition: inline
-Content-Length: 16
+Content-Length: 15
 Content-Transfer-Encoding: binary
 Content-Type: text/plain
 
- Here's my text 
+Here's my text
 --_----------=_1241121589160890--
 
 --MIME_boundary--

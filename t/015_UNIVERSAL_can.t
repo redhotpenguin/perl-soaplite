@@ -45,9 +45,9 @@ use SOAP::Lite +autodispatch =>
 
 
 ok $f->bar() == 1;
-if ($f->can("bar")) { 
-    ok $f->bar == 2; 
+if ($f->can("bar")) {
+    ok $f->bar == 2;
 }
-if ($f->can("proxy")) { 
-    ok $f->proxy("bar") == 3; 
+if ($f->can("proxy")) {
+    ok $f->proxy("bar") == 3;
 }
