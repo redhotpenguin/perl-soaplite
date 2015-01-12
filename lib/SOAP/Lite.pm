@@ -4367,6 +4367,7 @@ To change SOAP::Lite's behaviour to use uri/method as SOAPAction header, use
 the following code:
 
     $client->on_action( sub { join '/', @_ } );
+
 =item on_fault(callback)
 
     $client->on_fault(sub { popup_dialog($_[1]) });
