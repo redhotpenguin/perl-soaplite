@@ -25,7 +25,6 @@ my %WriteMakefileArgs = (
   "PREREQ_PM" => {
     "Class::Inspector" => 0,
     "Compress::Zlib" => 0,
-    "Crypt::SSLeay" => 0,
     "IO::SessionData" => "1.03",
     "IO::Socket::SSL" => 0,
     "LWP::UserAgent" => 0,
