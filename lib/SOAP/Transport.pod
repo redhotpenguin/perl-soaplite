@@ -176,7 +176,9 @@ To get certificate authentication working you need to set three environment vari
   $ENV{HTTPS_CERT_FILE} = 'client-cert.pem';
   $ENV{HTTPS_KEY_FILE}  = 'client-key.pem';
 
-These settings are referenced by C<Crypt::SSLeay>, the module SOAP::Lite used for HTTPS support. Other options (e.g. CA peer verification) can be specified in a similar way. See L<Crypt::SSLeay> documentation for more information.
+These settings are referenced by C<Crypt::SSLeay>. Other options (e.g. CA peer verification) can be specified in a similar way. See L<Crypt::SSLeay> documentation for more information.
+
+Please note that you probably should not be using L<Crypt::SSLeay> because it does not perform hostname verification; LWP::UserAgent uses IO::Socket::SSL by default. See also L<https://metacpan.org/pod/Crypt::SSLeay#DO-YOU-NEED-Crypt::SSLeay>.
 
 Those who would like to use encrypted keys may find the following thread in the SOAP::Lite newsgroup helpful:
 
