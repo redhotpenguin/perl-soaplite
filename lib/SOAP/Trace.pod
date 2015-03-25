@@ -116,7 +116,7 @@ You can also use a single callback for multiple signals using the code below:
 
 The transport signal is unique in the that the signal is not a text string, but the actually HTTP::Request being sent (just prior to be sent), or HTTP::Response object (immediately after it was received). The following code sample shows how to make use of this:
 
-  use SOAP::Lite +trace => [ transport => &log_message ];
+  use SOAP::Lite +trace => [ transport => \&log_message ];
 
   sub log_message {
     my ($in) = @_;
