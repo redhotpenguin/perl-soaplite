@@ -1741,7 +1741,7 @@ sub xmlparser {
             ? undef
             : do {
                 require XML::Parser;
-                XML::Parser->new() }
+                XML::Parser->new( NoExpand => 1, Handlers => { Default => sub {} } ) }
             }
             || eval { require XML::Parser::Lite; XML::Parser::Lite->new }
             || die "XML::Parser is not @{[$SOAP::Constants::DO_NOT_USE_XML_PARSER ? 'used' : 'available']} and ", $@;
@@ -4165,7 +4165,7 @@ If using $session->call ($method, $callData, $callHeader), SOAP::Lite serializes
     </soap:Header>
     <soap:Body>
       <myMethod xmlns="http://www.someuri.com">
-        <foo />  
+        <foo />
       </myMethod>
     </soap:Body>
   </soap:Envelope>
