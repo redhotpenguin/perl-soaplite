@@ -1,6 +1,8 @@
 package SOAP::Transport::CGI_TEST::Client;
 
-use strict; use warnings;
+use strict;
+use warnings;
+
 use IPC::Open2;
 use File::Basename qw(dirname);
 
@@ -39,11 +41,14 @@ sub send_receive {
 }
 
 package main;
+
 no strict;
-use Test::More qw(no_plan);
+no warnings qw(redefine once uninitialized);
+
+use Test::More;
 use SOAP::Lite; # +trace;
 my $soap = SOAP::Lite->new()->proxy('http://');
-no warnings qw(redefine once);
+
 
 # make override send_receive in CGI client
 *SOAP::Transport::HTTP::Client::send_receive =
@@ -65,3 +70,5 @@ else {
 
     }
 }
+
+done_testing();

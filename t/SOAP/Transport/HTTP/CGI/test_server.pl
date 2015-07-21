@@ -1,5 +1,8 @@
 package main;
-use strict; use warnings;
+
+use strict;
+use warnings;
+
 use SOAP::Lite;
 use SOAP::Transport::HTTP;
 
@@ -11,8 +14,10 @@ $soap->handle();
 
 sub test {
     my ($self, $envelope) = @_;
-    return SOAP::Data->name('testResult')->value('Überall')->type('string');
 
+use Encode;
+#    return SOAP::Data->name('testResult')->value('Überall')->type('string');
+    return SOAP::Data->name('testResult')->value(Encode::encode_utf('Überall'))->type('string');
 }
 
 1;

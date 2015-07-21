@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.15 July 21, 2015
+    + Preventing "billion laughs" exponential entity expansion attack [github/thilo-fester]
+
 1.14 March 24, 2015
     + Add header and body tags [@bubi6608]
     ! Fixed typo in trace logging example [@oschwald]
