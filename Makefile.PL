@@ -39,7 +39,7 @@ my %WriteMakefileArgs = (
     "Test::Warn" => 0,
     "XML::Parser::Lite" => 0
   },
-  "VERSION" => "1.13",
+  "VERSION" => "1.15",
   "test" => {
     "TESTS" => "t/*.t t/Issues/*.t t/SOAP/*.t t/SOAP/Lite/*.t t/SOAP/Lite/Deserializer/*.t t/SOAP/Schema/*.t t/SOAP/Transport/*.t t/SOAP/Transport/HTTP/*.t"
   }
