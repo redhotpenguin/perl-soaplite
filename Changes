@@ -15,6 +15,12 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.17 July 30, 2015
+    ! #106051 Fix utf8 encoding for CGI test (thanks cpan/ETHER for tips)
+
+1.16 July 23, 2015
+    ! Fix empty release. Note to self - do not release code when wife is in early labor
+
 1.15 July 21, 2015
     + Preventing "billion laughs" exponential entity expansion attack [github/thilo-fester]
 
