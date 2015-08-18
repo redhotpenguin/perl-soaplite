@@ -268,7 +268,7 @@ sub send_receive {
                   if ( $tmpType !~ /$addition/ );
             }
 
-            $http_request->content_length($bytelength);
+            $http_request->content_length($bytelength) unless $compressed;
             SOAP::Trace::transport($http_request);
             &{$self->{debug_logger}}($http_request->as_string);
 
