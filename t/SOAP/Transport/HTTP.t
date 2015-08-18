@@ -6,7 +6,7 @@ use_ok qw(SOAP::Transport::HTTP);
 # Skip if we don't have Test::MockObject.
 SKIP: {
     eval "require Test::MockObject"
-        or skip "Cannot simulate transport layer without Test::MockObject", 3;
+      or skip 'Cannot simulate transport layer without Test::MockObject', 4;
 
     require HTTP::Response;
 
@@ -24,11 +24,11 @@ SKIP: {
         },
     );
     my $client;
-    ok $client = SOAP::Transport::HTTP::Client->new();
-    $client->send_receive(endpoint => 'http://example.org',
-		envelope => '');
-    is $client->code(), '200';
-    is $client->message(), '200 OK';
+    ok $client = SOAP::Transport::HTTP::Client->new(), 'SOAP::Transport::HTTP::Client->new()';
+    my $response = $client->send_receive( endpoint => 'http://example.org', envelope => '' );
+    is $response, '', 'send_receive() returns ""';
+    is $client->code(),    '200',    'after send_receive() code is 200';
+    is $client->message(), '200 OK', 'after send_receive() message is 200 OK';
 }
 
 # client
