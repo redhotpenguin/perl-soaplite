@@ -17,7 +17,7 @@ package SOAP::Lite;
 use strict;
 use warnings;
 
-our $VERSION = '1.17';
+our $VERSION = '1.19';
 
 package SOAP::XMLSchemaApacheSOAP::Deserializer;
 

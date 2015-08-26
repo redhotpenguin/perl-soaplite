@@ -15,6 +15,9 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.19 August 26, 2015
+    ! #106665 Correct the version manually, no autoversioning, and the maintainer screwed up
+
 1.18 August 25, 2015
     ! Fix a couple of cases where undefined values were being passed to functions [github/redhotpenguin]
     ! Do not set content_length for compressed request [github/bor]
