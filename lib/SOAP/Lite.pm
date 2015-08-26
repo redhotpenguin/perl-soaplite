@@ -337,6 +337,8 @@ sub disqualify {
 
 sub splitqname {
     local($1,$2);
+
+    return unless $_[0];
     $_[0] =~ /^(?:([^:]+):)?(.+)$/;
     return ($1,$2)
 }
@@ -3188,12 +3190,14 @@ FAKE
 #                  warn "document/literal support is EXPERIMENTAL in SOAP::Lite"
 #                  if !$has_warned && ($has_warned = 1);
                                     my ($input_ns,$input_name) = SOAP::Utils::splitqname($msg->part->element);
-                                    foreach my $schema ($s->types->schema) {
-                                        foreach my $element ($schema->element) {
-                                            next unless $element->name eq $input_name;
-                                            push @parts,parse_schema_element($element);
+                                    if ($input_name) {
+                                        foreach my $schema ($s->types->schema) {
+                                            foreach my $element ($schema->element) {
+                                                next unless $element->name eq $input_name;
+                                                push @parts,parse_schema_element($element);
+                                            }
+                                            $services{$opername}->{parameters} = [ @parts ];
                                         }
-                                        $services{$opername}->{parameters} = [ @parts ];
                                     }
                                 }
                                 else {

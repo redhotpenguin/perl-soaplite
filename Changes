@@ -15,6 +15,11 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=SOAP-Lite
 THIS RELEASE
 -----------------------------------------------------------------------
 
+1.18 August 25, 2015
+    ! Fix a couple of cases where undefined values were being passed to functions [github/redhotpenguin]
+    ! Do not set content_length for compressed request [github/bor]
+    ! Add test for check return of send_receive(), add titles for some tests [github/bor]
+
 1.17 July 30, 2015
     ! #106051 Fix utf8 encoding for CGI test (thanks cpan/ETHER for tips)
 
