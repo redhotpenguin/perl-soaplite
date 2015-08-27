@@ -47,6 +47,9 @@ no warnings qw(redefine once uninitialized);
 
 use Test::More;
 use SOAP::Lite; # +trace;
+use utf8;
+use Encode;
+
 my $soap = SOAP::Lite->new()->proxy('http://');
 
 
@@ -61,7 +64,7 @@ my $result = $som->result;
 if ($] >= 5.008) {
     ok utf8::is_utf8($result), 'return utf8 string';
     {
-        is $result, 'Überall', 'utf8 content: ' . $result;
+        is $result, Encode::encode_utf8('Überall'), 'utf8 content: ' . $result;
     }
 }
 else {
