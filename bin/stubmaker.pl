@@ -11,6 +11,8 @@
 #    stubmaker.pl -[vd] <WSDL URL>
 ###################################################
 
+# VERSION
+
 use SOAP::Lite;
 use Getopt::Long;
 
