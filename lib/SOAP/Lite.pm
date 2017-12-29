@@ -5723,7 +5723,7 @@ of this software.
 
 Latest development takes place on GitHub.com. Come on by and fork it.
 
-git@github.com:redhotpenguin/soaplite.git
+git@github.com:redhotpenguin/perl-soaplite.git
 
 Also see the HACKING file.
 
