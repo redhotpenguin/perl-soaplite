@@ -3524,7 +3524,7 @@ use SOAP::Lite::Utils;
 use SOAP::Constants;
 use SOAP::Packager;
 
-use Scalar::Util qw(weaken blessed);
+use Scalar::Util qw(weaken blessed reftype);
 
 @ISA = qw(SOAP::Cloneable);
 
@@ -3853,15 +3853,27 @@ sub call {
                 my($value) = $_->value; # take first value
 
                 # fillup parameters
-                UNIVERSAL::isa($_[$param] => 'SOAP::Data')
-                    ? $_[$param]->SOAP::Data::value($value)
-                    : UNIVERSAL::isa($_[$param] => 'ARRAY')
-                        ? (@{$_[$param]} = @$value)
-                        : UNIVERSAL::isa($_[$param] => 'HASH')
-                            ? (%{$_[$param]} = %$value)
-                            : UNIVERSAL::isa($_[$param] => 'SCALAR')
-                                ? (${$_[$param]} = $$value)
-                                : ($_[$param] = $value)
+                if ( reftype( $_[$param] ) ) {
+                    if ( reftype( $_[$param] ) eq 'SCALAR' ) {
+                        ${ $_[$param] } = $$value;
+                    }
+                    elsif ( reftype( $_[$param] ) eq 'ARRAY' ) {
+                        @{ $_[$param] } = @$value;
+                    }
+                    elsif ( reftype( $_[$param] ) eq 'HASH' ) {
+                        if ( eval { $_[$param]->isa('SOAP::Data') } ) {
+                            $_[$param]->SOAP::Data::value($value);
+                        }
+                        elsif ( reftype($value) eq 'REF' ) {
+                            %{ $_[$param] } = %$$value;
+                        }
+                        else { %{ $_[$param] } = %$value; }
+                    }
+                    else { $_[$param] = $value; }
+                }
+                else {
+                    $_[$param] = $value;
+                }
             }
         }
     }
