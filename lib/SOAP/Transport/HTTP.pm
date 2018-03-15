@@ -217,6 +217,7 @@ sub send_receive {
             else {
                 require Encode;
                 $envelope = Encode::encode($encoding, $envelope);
+                $bytelength = SOAP::Utils::bytelength($envelope);
             }
             #  if !$SOAP::Constants::DO_NOT_USE_LWP_LENGTH_HACK
             #      && length($envelope) != $bytelength;
