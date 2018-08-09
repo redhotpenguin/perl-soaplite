@@ -70,7 +70,7 @@ Creates a new object instance and returns it. Like the constructors for both C<S
 
 =item send_receive(key/value pairs)
 
-    $client->send_recieve(%hash_table);
+    $client->send_receive(%hash_table);
 
 (Required for client classes only) When the SOAP::Lite objects attempt to send out requests, the means for doing so is to attempt to call this method on the object held within the SOAP::Transport object contained within the client itself. All clients are expected to provide this, and the call to this method always passes four values for the hash keys:
 
