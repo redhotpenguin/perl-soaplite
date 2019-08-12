@@ -558,6 +558,39 @@ sub make_response {
     $self->SUPER::make_response(@_);
 }
 
+sub read_from_client_chunked {
+    my ($self) = @_;
+
+    my $content = '';
+
+    my $buffer;
+    binmode(STDIN);
+
+    while ( sysread( STDIN, my $buffer, 1024 ) ) {
+        $content .= $buffer;
+    }
+
+    return $content;
+
+}
+
+sub read_from_client {
+    my ($self, $length) = @_;
+
+    my $content = '';
+
+    my $buffer;
+    binmode(STDIN);
+
+    while ( sysread( STDIN, $buffer, $length ) ) {
+        $content .= $buffer;
+        last if ( length($content) >= $length );
+    }
+
+    return $content;
+
+}
+
 sub handle {
     my $self = shift->new;
 
@@ -572,6 +605,7 @@ sub handle {
     my $content = q{};
 
     if ($chunked) {
+        # $self -> read_from_client_chunked();
         my $buffer;
         binmode(STDIN);
         while ( read( STDIN, my $buffer, 1024 ) ) {
@@ -594,6 +628,7 @@ sub handle {
 
         #my $content = q{};
         if ( !$chunked ) {
+            # $self -> read_from_client($length);
             my $buffer;
             binmode(STDIN);
             if ( defined $ENV{'MOD_PERL'} ) {
