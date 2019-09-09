@@ -558,6 +558,39 @@ sub make_response {
     $self->SUPER::make_response(@_);
 }
 
+sub read_from_client_chunked {
+    my ($self) = @_;
+
+    my $content = '';
+
+    my $buffer;
+    binmode(STDIN);
+
+    while ( sysread( STDIN, my $buffer, 1024 ) ) {
+        $content .= $buffer;
+    }
+
+    return $content;
+
+}
+
+sub read_from_client {
+    my ($self, $length) = @_;
+
+    my $content = '';
+
+    my $buffer;
+    binmode(STDIN);
+
+    while ( sysread( STDIN, $buffer, $length ) ) {
+        $content .= $buffer;
+        last if ( length($content) >= $length );
+    }
+
+    return $content;
+
+}
+
 sub handle {
     my $self = shift->new;
 
@@ -572,11 +605,7 @@ sub handle {
     my $content = q{};
 
     if ($chunked) {
-        my $buffer;
-        binmode(STDIN);
-        while ( read( STDIN, my $buffer, 1024 ) ) {
-            $content .= $buffer;
-        }
+        $content .= $self -> read_from_client_chunked();
         $length = length($content);
     }
 
@@ -594,19 +623,7 @@ sub handle {
 
         #my $content = q{};
         if ( !$chunked ) {
-            my $buffer;
-            binmode(STDIN);
-            if ( defined $ENV{'MOD_PERL'} ) {
-                while ( read( STDIN, $buffer, $length ) ) {
-                    $content .= $buffer;
-                    last if ( length($content) >= $length );
-                }
-            } else {
-                while ( sysread( STDIN, $buffer, $length ) ) {
-                    $content .= $buffer;
-                    last if ( length($content) >= $length );
-                }
-            }
+            $content .= $self -> read_from_client($length);
         }
 
         $self->request(
@@ -640,6 +657,45 @@ sub handle {
     print STDOUT "$status $code ", HTTP::Status::status_message($code),
       "\015\012", $self->response->headers_as_string("\015\012"), "\015\012",
       $self->response->content;
+}
+
+# ======================================================================
+package SOAP::Transport::HTTP::CGI::Persistent;
+
+use vars qw(@ISA);
+@ISA = qw(SOAP::Transport::HTTP::CGI);
+
+sub read_from_client_chunked {
+    my ($self) = @_;
+
+    my $content = '';
+
+    my $buffer;
+    binmode(STDIN);
+
+    while ( read( STDIN, my $buffer, 1024 ) ) {
+        $content .= $buffer;
+    }
+
+    return $content;
+
+}
+
+sub read_from_client {
+    my ($self, $length) = @_;
+
+    my $content = '';
+
+    my $buffer;
+    binmode(STDIN);
+
+    while ( read( STDIN, $buffer, $length ) ) {
+        $content .= $buffer;
+        last if ( length($content) >= $length );
+    }
+
+    return $content;
+
 }
 
 # ======================================================================

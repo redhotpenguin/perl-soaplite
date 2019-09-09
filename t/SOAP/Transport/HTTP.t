@@ -70,6 +70,15 @@ isa_ok $server, 'SOAP::Server';
 
 test_make_fault($server);
 
+# package SOAP::Transport::HTTP::CGI::Persistent;
+
+ok $server = SOAP::Transport::HTTP::CGI::Persistent->new();
+isa_ok $server, 'SOAP::Transport::HTTP::CGI';
+isa_ok $server, 'SOAP::Transport::HTTP::Server';
+isa_ok $server, 'SOAP::Server';
+
+test_make_fault($server);
+
 # package SOAP::Transport::HTTP::Daemon
 my $transport;
 
