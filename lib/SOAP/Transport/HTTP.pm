@@ -626,6 +626,14 @@ sub handle {
             $content .= $self -> read_from_client($length);
         }
 
+        # Cygwin has special environment variables like !:: or !C:
+        local %ENV = %ENV;
+        if ($^O eq 'cygwin') {
+            for my $key (keys %ENV) {
+                delete $ENV{$key} if $key =~ /^!/;
+            }
+        }
+
         $self->request(
             HTTP::Request->new(
                 $ENV{'REQUEST_METHOD'} || '' => $ENV{'SCRIPT_NAME'},
